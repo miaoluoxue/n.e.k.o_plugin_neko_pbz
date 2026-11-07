@@ -1,0 +1,8 @@
+# 与 N.E.K.O 现有插件保持一致的规则集
+target-version = "py311"
+line-length = 120
+extend-exclude = ["vendor", "mod", "static"]
+respect-gitignore = false
+
+[lint]
+select = ["E4", "E7", "E9", "F", "I"]

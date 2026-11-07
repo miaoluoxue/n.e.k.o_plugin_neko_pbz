@@ -1,0 +1,7 @@
+{
+  "plugin.name": "影之刃零 · 猫娘陪玩",
+  "plugin.description": "让宿主猫娘陪主人玩《影之刃零》，读当前局面、Boss/小怪/铃铛/任务，跨会话记忆，只读当前装备。",
+  "panel.title": "影之刃零陪玩",
+  "panel.connected": "已连接",
+  "panel.waiting": "等待游戏"
+}

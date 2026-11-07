@@ -1,0 +1,27 @@
+from __future__ import annotations
+
+from plugin.plugins.neko_pbz.core.config import ConfigStore
+
+
+def test_llm_settings_roundtrip(tmp_path):
+    store = ConfigStore(tmp_path)
+    cfg = store.save({
+        "llm_enabled": True,
+        "llm_provider": "openai_compatible",
+        "llm_model": "deepseek-chat",
+        "llm_api_key": "sk-test",
+        "llm_base_url": "https://api.deepseek.com",
+        "llm_timeout": 18,
+        "llm_max_calls_per_minute": 8,
+    })
+    assert cfg["llm_enabled"] is True
+    loaded = store.load()
+    assert loaded["llm_model"] == "deepseek-chat"
+    assert loaded["llm_api_key"] == "sk-test"
+    assert loaded["llm_base_url"] == "https://api.deepseek.com"
+    assert loaded["llm_timeout"] == 18
+    assert loaded["llm_max_calls_per_minute"] == 8
+    assert (tmp_path / "config" / "general.json").exists()
+    assert (tmp_path / "config" / "llm.json").exists()
+    assert (tmp_path / "config" / "ui.json").exists()
+    assert not (tmp_path / "config" / "user.json").exists()

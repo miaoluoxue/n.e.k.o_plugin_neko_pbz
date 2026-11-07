@@ -1,0 +1,255 @@
+{
+  "version": 1,
+  "entities": [
+    {
+      "id": "boss.cangang",
+      "type": "boss",
+      "name": "痴狂暴徒：残钢",
+      "aliases": ["残钢"],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss/精英组",
+        "threat": "高",
+        "note": "同场可能出现金面、铁面等同伴；具体招式待实机核验。",
+        "recommended_defense": "先观察出手顺序，避免同时吃多方向攻击"
+      }
+    },
+    {
+      "id": "boss.leidang",
+      "type": "boss",
+      "name": "雷当",
+      "aliases": ["虎炮：雷当"],
+      "region": "后期章节",
+      "spoiler_level": 2,
+      "confidence": 0.5,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss",
+        "threat": "高",
+        "note": "与影之武装「虎炮」相关；具体阶段待核验。",
+        "recommended_defense": "先确认场地障碍与远程手段"
+      }
+    },
+    {
+      "id": "boss.yuzan",
+      "type": "boss",
+      "name": "玉瓒",
+      "aliases": ["三号·乐师偶：玉瓒"],
+      "region": "人偶相关关卡",
+      "spoiler_level": 2,
+      "confidence": 0.5,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss",
+        "threat": "中高",
+        "note": "与妖锯、幻术琵琶等掉落/能力线索相关；具体招式待核验。",
+        "recommended_defense": "留意远程与幻术类干扰"
+      }
+    },
+    {
+      "id": "boss.tie_gui",
+      "type": "boss",
+      "name": "铁鬼",
+      "aliases": ["玉妖铁鬼"],
+      "region": "拳心任务线",
+      "spoiler_level": 2,
+      "confidence": 0.5,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss/切磋",
+        "threat": "高",
+        "note": "与铁拳套、妖锯铸魂材料线索相关；具体招式待核验。"
+      }
+    },
+    {
+      "id": "boss.guichai",
+      "type": "boss",
+      "name": "鬼差",
+      "aliases": [],
+      "region": "杀气塔",
+      "spoiler_level": 2,
+      "confidence": 0.45,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss/精英",
+        "threat": "高",
+        "note": "常出现在杀气塔高层平台附近；具体招式待实机核验。"
+      }
+    },
+    {
+      "id": "boss.menghua",
+      "type": "boss",
+      "name": "梦华",
+      "aliases": [],
+      "region": "后期章节",
+      "spoiler_level": 2,
+      "confidence": 0.45,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss",
+        "threat": "高",
+        "note": "与圣母相关线索出现；具体阶段与掉落待核验。"
+      }
+    },
+    {
+      "id": "boss.sanmian_muo",
+      "type": "boss",
+      "name": "三面魔偶",
+      "aliases": [],
+      "region": "人偶/山庄线",
+      "spoiler_level": 2,
+      "confidence": 0.45,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss",
+        "threat": "高",
+        "note": "与记忆之花线索相关；多面/阶段机制待实机核验。"
+      }
+    },
+    {
+      "id": "mob.heavy",
+      "type": "mob",
+      "name": "重甲兵",
+      "aliases": ["重甲敌人"],
+      "spoiler_level": 1,
+      "confidence": 0.6,
+      "source": "runtime",
+      "facts": {
+        "archetype": "heavy",
+        "threat": "中",
+        "priority": "不要正面硬换，找破防或绕后窗口",
+        "tip": "重甲类通常起手慢，但收招保护更强。"
+      }
+    },
+    {
+      "id": "mob.exploder",
+      "type": "mob",
+      "name": "自爆/机关单位",
+      "aliases": ["自爆怪", "机关怪"],
+      "spoiler_level": 1,
+      "confidence": 0.55,
+      "source": "runtime",
+      "facts": {
+        "archetype": "exploder",
+        "threat": "高",
+        "priority": "优先远距离处理，别让它贴近",
+        "tip": "爆炸前通常有明显蓄力或提示音。"
+      }
+    },
+    {
+      "id": "mob.summon",
+      "type": "mob",
+      "name": "召唤物",
+      "aliases": ["召唤小怪"],
+      "spoiler_level": 1,
+      "confidence": 0.55,
+      "source": "runtime",
+      "facts": {
+        "archetype": "summon",
+        "threat": "中",
+        "priority": "会打断你或给 Boss 增益的先杀",
+        "tip": "不要只看 Boss 血条，召唤物可能才是节奏来源。"
+      }
+    },
+    {
+      "id": "mob.horde",
+      "type": "mob",
+      "name": "群怪",
+      "aliases": ["怪群"],
+      "spoiler_level": 1,
+      "confidence": 0.6,
+      "source": "runtime",
+      "facts": {
+        "archetype": "horde",
+        "threat": "中",
+        "priority": "保持一个方向退路，避免被包围",
+        "tip": "先用位移或远程拆散队形，再回头处理近战。"
+      }
+    },
+    {
+      "id": "mob.elite_guard",
+      "type": "mob",
+      "name": "精英卫兵",
+      "aliases": ["精英敌人"],
+      "spoiler_level": 1,
+      "confidence": 0.55,
+      "source": "runtime",
+      "facts": {
+        "archetype": "elite",
+        "threat": "高",
+        "priority": "先清小怪或先破精英，视场地而定",
+        "tip": "精英的起手常有变招，别按普通兵节奏处理。"
+      }
+    },
+    {
+      "id": "bell.valley_start",
+      "type": "bell",
+      "name": "开端之地",
+      "aliases": ["悲泣溪谷起点"],
+      "region": "悲泣溪谷",
+      "spoiler_level": 1,
+      "confidence": 0.8,
+      "source": "catalog",
+      "facts": {"category": "检查点", "use": "存档/复活/传送", "tip": "进入新区域先确认这口铃。"}
+    },
+    {
+      "id": "bell.valley_plain",
+      "type": "bell",
+      "name": "溪谷平原入口",
+      "aliases": [],
+      "region": "悲泣溪谷",
+      "spoiler_level": 1,
+      "confidence": 0.8,
+      "source": "catalog",
+      "facts": {"category": "检查点", "use": "存档/复活/传送", "tip": "往营地与杀气塔方向的关键折返点。"}
+    },
+    {
+      "id": "bell.shachi_tower_1",
+      "type": "bell",
+      "name": "溪谷杀气塔一层",
+      "aliases": ["杀气塔一层铃铛"],
+      "region": "杀气塔",
+      "spoiler_level": 1,
+      "confidence": 0.8,
+      "source": "catalog",
+      "facts": {"category": "检查点", "use": "存档/复活/传送", "tip": "塔内探索前先确认这口铃。"}
+    },
+    {
+      "id": "bell.mother_cave",
+      "type": "bell",
+      "name": "圣母像山洞",
+      "aliases": [],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "catalog",
+      "facts": {"category": "检查点", "use": "存档/复活/传送", "tip": "山洞内有隐藏路线，靠近时注意高差与可破坏物。"}
+    },
+    {
+      "id": "bell.pangzhen_market",
+      "type": "bell",
+      "name": "庞镇市集",
+      "aliases": ["市集铃铛"],
+      "region": "庞镇",
+      "spoiler_level": 1,
+      "confidence": 0.75,
+      "source": "catalog",
+      "facts": {"category": "检查点", "use": "存档/复活/传送", "tip": "城镇内适合整理装备和药品。"}
+    },
+    {
+      "id": "bell.red_house",
+      "type": "bell",
+      "name": "红房子",
+      "aliases": [],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.65,
+      "source": "catalog",
+      "facts": {"category": "检查点", "use": "存档/复活/传送", "tip": "入口隐藏，探索时留意机关与电梯。"}
+    }
+  ],
+  "relations": []
+}

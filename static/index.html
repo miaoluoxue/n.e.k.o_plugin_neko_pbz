@@ -1,0 +1,2038 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>影帐 · 影之刃零猫娘陪玩</title>
+<style>
+:root{
+  --ink:#0a0c0f; --ink2:#11151a; --ink3:#171c22; --paper:#e8dfcc;
+  --muted:#8f968f; --line:rgba(220,205,175,.14); --line2:rgba(220,205,175,.26);
+  --gold:#c9a45c; --gold2:#e7cb8e; --red:#b6463e; --red2:#e06a60;
+  --jade:#7fae98; --blue:#7d9ec4; --shadow:0 24px 80px rgba(0,0,0,.45);
+  --radius:18px; --font:"Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;color:var(--paper);font:14px/1.6 var(--font);
+  background:
+    radial-gradient(900px 500px at 8% -8%,rgba(201,164,92,.12),transparent 62%),
+    radial-gradient(900px 600px at 100% 0%,rgba(182,70,62,.10),transparent 58%),
+    linear-gradient(160deg,#090b0e 0%,#0d1115 48%,#080a0c 100%);
+  overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;
+  background-image:
+    repeating-linear-gradient(105deg,transparent 0 58px,rgba(232,223,204,.035) 59px,transparent 60px),
+    repeating-linear-gradient(15deg,transparent 0 90px,rgba(232,223,204,.02) 91px,transparent 92px);
+  mask-image:radial-gradient(circle at 50% 20%,#000 20%,transparent 85%);
+}
+.app{display:flex;min-height:100vh;position:relative;z-index:1}
+
+/* ── rail ── */
+.rail{width:206px;flex:0 0 206px;border-right:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(12,15,19,.96),rgba(8,10,13,.92));
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;backdrop-filter:blur(14px)}
+.brand{display:flex;align-items:center;gap:11px;padding:22px 18px 18px;border-bottom:1px solid var(--line)}
+.seal{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;font-size:19px;
+  color:#f4e4c2;background:linear-gradient(145deg,#9d3630,#5f1f1c);
+  border:1px solid rgba(255,220,180,.28);box-shadow:0 0 22px rgba(182,70,62,.28);font-weight:700}
+.brand-t{font-size:16px;letter-spacing:.18em;font-weight:600}
+.brand-s{font-size:8px;letter-spacing:.16em;color:var(--muted);margin-top:2px}
+.brand-s2{font-size:8px;letter-spacing:.22em;color:rgba(201,164,92,.62);margin-top:1px}
+.theme-quick{width:auto;min-width:92px;padding:5px 9px;border-radius:999px;font-size:11px;
+  background:rgba(232,223,204,.035);border-color:var(--line);color:#b9beb6}
+.nav{padding:14px 10px;display:flex;flex-direction:column;gap:4px;flex:1}
+.nav button{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:10px 12px;
+  border-radius:11px;color:#a9afa8;font-size:13px;letter-spacing:.05em;transition:.18s;border:1px solid transparent}
+.nav button:hover{background:rgba(232,223,204,.05);color:var(--paper)}
+.nav button.active{background:linear-gradient(90deg,rgba(201,164,92,.16),rgba(201,164,92,.04));
+  color:var(--gold2);border-color:rgba(201,164,92,.26)}
+.nav .ico{width:20px;text-align:center;font-size:15px;opacity:.9}
+.rail-foot{padding:14px 16px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.dot{width:8px;height:8px;border-radius:50%;background:#535a56;flex:none}
+.dot.on{background:var(--jade);box-shadow:0 0 12px rgba(127,174,152,.8);animation:pulse 2.4s infinite}
+.dot.bad{background:var(--red2);box-shadow:0 0 12px rgba(224,106,96,.7)}
+@keyframes pulse{50%{opacity:.55;transform:scale(.86)}}
+
+/* ── main ── */
+main{flex:1;min-width:0;padding:0 26px 42px;max-width:1700px;margin:0 auto}
+.topbar{height:70px;display:flex;align-items:center;justify-content:space-between;gap:18px;
+  border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(9,12,15,.82);
+  backdrop-filter:blur(16px);z-index:20}
+.crumbs{font-size:12px;letter-spacing:.16em;color:var(--muted)}
+.crumbs b{color:var(--paper);font-weight:500;letter-spacing:.08em}
+.pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.pill{font-size:11px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);
+  background:rgba(232,223,204,.035);color:#b9beb6;display:flex;align-items:center;gap:6px}
+.pill.hot{border-color:rgba(182,70,62,.42);color:#efb0a8;background:rgba(182,70,62,.08)}
+.pill.good{border-color:rgba(127,174,152,.4);color:#b8d9c8;background:rgba(127,174,152,.07)}
+.pill.link{cursor:pointer}
+.pill.link:hover{border-color:rgba(201,164,92,.5);color:var(--gold2)}
+.view{display:none;padding-top:16px;animation:fade .28s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── shared ── */
+.grid{display:grid;gap:16px;align-items:start}
+.g-hero{grid-template-columns:1.3fr .7fr}
+.g-3{grid-template-columns:1fr 1fr 1fr}
+.g-2{grid-template-columns:1fr 1fr}
+@media(max-width:1180px){.g-3{grid-template-columns:1fr 1fr}.g-hero{grid-template-columns:1fr}}
+@media(max-width:820px){.g-3,.g-2{grid-template-columns:1fr}}
+.card{position:relative;border:1px solid var(--line);border-radius:var(--radius);
+  background:linear-gradient(180deg,rgba(24,29,35,.92),rgba(15,19,24,.94));
+  box-shadow:var(--shadow);padding:18px;overflow:hidden}
+.card::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,164,92,.6),transparent)}
+.card h3{margin:0 0 14px;font-size:12px;letter-spacing:.18em;color:var(--gold);
+  font-weight:600;display:flex;align-items:center;gap:8px}
+.card h3 .sub{color:var(--muted);letter-spacing:.05em;font-weight:400;font-size:10px;margin-left:auto}
+.muted{color:var(--muted)}
+.small{font-size:11px}
+.row{display:flex;justify-content:space-between;gap:14px;padding:7px 0;border-bottom:1px dashed rgba(232,223,204,.07)}
+.row:last-child{border-bottom:0}
+.row .k{color:var(--muted);font-size:12px}
+.row .v{text-align:right;font-size:13px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);
+  background:rgba(232,223,204,.03);color:#c5c9c0}
+.chip.gold{border-color:rgba(201,164,92,.4);color:var(--gold2);background:rgba(201,164,92,.06)}
+.chip.red{border-color:rgba(182,70,62,.4);color:#eab0a9;background:rgba(182,70,62,.07)}
+.empty{padding:18px;text-align:center;color:var(--muted);font-size:12px;border:1px dashed var(--line);border-radius:12px}
+
+/* ── hero ── */
+.hero{padding:22px 24px 18px;min-height:228px;display:flex;flex-direction:column;justify-content:space-between;
+  background:
+    radial-gradient(600px 260px at 8% 0%,rgba(201,164,92,.13),transparent 60%),
+    linear-gradient(145deg,rgba(28,33,39,.96),rgba(13,17,21,.97))}
+.hero-top{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+.scene-label{font-size:10px;letter-spacing:.2em;color:var(--muted)}
+.neko-tag{display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:2px 8px;
+  border:1px solid rgba(165,59,49,.35);border-radius:999px;font-family:Georgia,serif;
+  font-size:8px;letter-spacing:.18em;color:rgba(231,203,142,.88);background:rgba(165,59,49,.1)}
+.neko-tag::before{content:"";width:4px;height:4px;border-radius:50%;background:var(--red2);box-shadow:0 0 6px rgba(224,106,96,.7)}
+.style-emblem{position:absolute;right:82px;top:26px;font-family:"STKaiti","KaiTi",serif;
+  font-size:126px;line-height:1;color:rgba(201,164,92,.055);pointer-events:none;z-index:1;
+  text-shadow:0 0 30px rgba(0,0,0,.4)}
+.style-emblem::before{content:"卷"}
+.region{font-size:30px;letter-spacing:.12em;font-weight:600;margin:4px 0 2px;line-height:1.2}
+.scene-desc{font-size:12px;color:#aeb4ab;max-width:560px}
+.companion-line{margin-top:16px;padding:13px 15px;border-left:2px solid var(--gold);
+  background:linear-gradient(90deg,rgba(201,164,92,.08),transparent);border-radius:0 10px 10px 0;
+  font-size:13px;color:#ded6c4;min-height:44px}
+.companion-line::before{content:"猫娘";font-size:9px;letter-spacing:.16em;color:var(--gold);display:block;margin-bottom:3px}
+.session-chips{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.stat{font-size:10px;letter-spacing:.08em;color:var(--muted)}
+.stat b{display:block;font-size:19px;color:var(--paper);font-weight:500;letter-spacing:.02em;margin-top:2px}
+.llm-strip{display:flex;align-items:center;gap:16px;margin-top:12px;padding:9px 14px;border-radius:14px;
+  border:1px solid rgba(201,164,92,.2);background:linear-gradient(90deg,rgba(201,164,92,.075),rgba(232,223,204,.02));
+  flex-wrap:wrap}
+.llm-strip .lead{font-size:11px;letter-spacing:.14em;color:var(--gold);min-width:110px}
+.llm-strip .num{font-size:15px;color:var(--paper)}
+.llm-strip .num small{font-size:9px;color:var(--muted);letter-spacing:.08em;margin-right:3px}
+.llm-strip .grow{flex:1}
+.scan-mini{display:flex;align-items:center;gap:14px;margin-top:9px;padding:8px 14px;
+  border:1px solid rgba(127,174,152,.18);border-radius:12px;
+  background:linear-gradient(90deg,rgba(127,174,152,.07),rgba(232,223,204,.02));
+  font-size:11px;color:#b7c3ba;flex-wrap:wrap}
+.scan-mini .mini-title{font-family:"STKaiti","KaiTi",serif;font-size:13px;letter-spacing:.16em;color:var(--jade)}
+.scan-mini .mini-ping{width:8px;height:8px;border-radius:50%;background:var(--red2);
+  box-shadow:0 0 8px rgba(224,106,96,.65)}
+.scan-mini .mini-grow{flex:1}
+.scan-mini button{padding:5px 11px;font-size:10px;border-radius:999px}
+.bond-card{display:flex;align-items:center;gap:14px;margin-top:4px}
+.neko-avatar{width:56px;height:70px;border-radius:2px;position:relative;flex:none;
+  display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;
+  font-family:"STKaiti","KaiTi",serif;font-size:12px;letter-spacing:.2em;color:var(--gold2);
+  background:linear-gradient(145deg,#271d18,#100d0b);
+  border:1px solid rgba(180,69,58,.6);
+  box-shadow:inset 0 0 18px rgba(0,0,0,.7),0 0 18px rgba(180,69,58,.18)}
+.neko-avatar::before{content:"";position:absolute;inset:4px;border:1px solid rgba(209,164,92,.3);border-radius:1px}
+.neko-avatar::after{content:"猫";position:absolute;right:-5px;bottom:-5px;width:21px;height:21px;
+  display:grid;place-items:center;background:#9b3d35;color:#f3e4c8;font-size:10px;
+  border-radius:2px;transform:rotate(-4deg);z-index:2}
+.loadout-groups{display:grid;grid-template-columns:1fr 1fr;gap:11px 12px}
+.lgroup h4{margin:0 0 6px;font-family:"STKaiti","KaiTi",serif;font-size:12px;
+  letter-spacing:.14em;color:var(--gold2);font-weight:500}
+.lgroup h4 small{font-family:var(--font);font-size:9px;color:var(--muted);letter-spacing:.06em;margin-left:5px}
+.slot-grid{display:flex;gap:5px;flex-wrap:wrap;min-height:42px}
+.slot{min-width:94px;max-width:100%;padding:7px 8px;border-radius:3px;
+  border:1px solid rgba(201,164,92,.18);background:rgba(201,164,92,.04);
+  display:flex;align-items:center;gap:7px}
+.slot .glyph{width:22px;height:22px;flex:none;display:grid;place-items:center;border-radius:2px;
+  border:1px solid rgba(201,164,92,.28);font-family:"STKaiti","KaiTi",serif;font-size:11px;color:var(--gold2)}
+.slot .body{min-width:0}
+.slot .nm{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot .meta{font-size:9px;color:var(--muted);margin-top:1px}
+.slot.empty{border-style:dashed;opacity:.55;color:var(--muted);justify-content:center;font-size:10px}
+.bond-level{font-size:17px;letter-spacing:.08em}
+.bond-text{color:var(--muted);font-size:10px;margin-top:3px}
+.bond-meter{height:7px;border-radius:8px;background:#24292d;overflow:hidden;margin-top:13px}
+.bond-meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--jade),var(--gold2));transition:.5s}
+.bond-nums{display:flex;gap:14px;margin-top:9px;font-size:10px;color:var(--muted)}
+.bond-nums b{display:block;color:var(--paper);font-size:15px;font-weight:500}
+
+/* ── rings ── */
+.rings{display:flex;align-items:center;justify-content:space-around;gap:12px;padding:8px 0 4px}
+.ring{--p:0;--c:var(--gold);width:126px;height:126px;border-radius:50%;position:relative;
+  background:conic-gradient(var(--c) calc(var(--p)*1%),rgba(232,223,204,.08) 0);
+  display:grid;place-items:center;transition:.5s}
+.ring::before{content:"";position:absolute;inset:8px;border-radius:50%;background:#11151a;border:1px solid var(--line)}
+.ring .in{position:relative;text-align:center}
+.ring .num{font-size:25px;font-weight:600;letter-spacing:.02em}
+.ring .lab{font-size:9px;letter-spacing:.18em;color:var(--muted);margin-top:2px}
+.ring.hp{--c:var(--red2)}
+.ring.shachi{--c:var(--blue)}
+
+/* ── radar ── */
+.radar-wrap{display:flex;gap:16px;align-items:center}
+.radar{width:176px;height:176px;border-radius:50%;position:relative;flex:none;
+  border:1px solid rgba(127,174,152,.28);overflow:hidden;
+  background:radial-gradient(circle,rgba(127,174,152,.08),transparent 65%),#0d1215}
+.radar::before,.radar::after{content:"";position:absolute;border-radius:50%;border:1px solid rgba(127,174,152,.14)}
+.radar::before{inset:34px}.radar::after{inset:68px}
+.radar .axis-v{position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(127,174,152,.12)}
+.radar .axis-h{position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(127,174,152,.12)}
+.sweep{position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from 0deg,rgba(127,174,152,.26),transparent 72deg);
+  animation:sweep 5s linear infinite;opacity:.6}
+@keyframes sweep{to{transform:rotate(360deg)}}
+.blip{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--red2);
+  box-shadow:0 0 10px rgba(224,106,96,.8);transform:translate(-50%,-50%)}
+.blip.boss{width:11px;height:11px;background:var(--gold2);box-shadow:0 0 14px rgba(231,203,142,.9)}
+.radar-legend{font-size:11px;color:var(--muted);line-height:1.9}
+.enemy-list{display:flex;flex-direction:column;gap:6px;margin-top:10px;max-height:130px;overflow:auto}
+.enemy{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:6px 8px;border-radius:8px;background:rgba(232,223,204,.03)}
+
+/* ── boss ── */
+.boss-name{font-size:21px;letter-spacing:.08em}
+.boss-hp{height:7px;border-radius:8px;background:#252a2c;overflow:hidden;margin:10px 0}
+.boss-hp i{display:block;height:100%;background:linear-gradient(90deg,var(--red),var(--gold))}
+.boss-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.history{display:grid;gap:8px;margin-top:12px}
+.history .h{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:9px;
+  background:rgba(232,223,204,.035);font-size:11px;color:#bfc3ba}
+
+/* ── timeline ── */
+.timeline{position:relative;max-height:430px;overflow:auto;padding-left:16px}
+.timeline::before{content:"";position:absolute;left:4px;top:5px;bottom:5px;width:1px;background:var(--line2)}
+.event{position:relative;padding:8px 0 8px 10px;border-bottom:1px dashed rgba(232,223,204,.06)}
+.event::before{content:"";position:absolute;left:-15px;top:15px;width:7px;height:7px;border-radius:50%;background:var(--gold)}
+.event.p0::before{background:var(--red2);box-shadow:0 0 9px rgba(224,106,96,.7)}
+.event.p2::before{background:var(--jade)}
+.event .e-top{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:var(--muted);letter-spacing:.08em}
+.event .e-text{font-size:12px;color:#d2d5cc;margin-top:3px}
+
+/* ── scroll / memory ── */
+.scroll{padding:20px 22px;border-radius:14px;color:#29251d;
+  background:
+    linear-gradient(180deg,rgba(255,252,244,.96),rgba(235,225,206,.94));
+  box-shadow:inset 0 0 40px rgba(120,95,55,.12),var(--shadow);
+  white-space:pre-wrap;font-size:13px;line-height:1.9;min-height:220px}
+.scroll .seal2{display:inline-block;margin-bottom:8px;padding:2px 7px;border:1px solid #a44237;
+  color:#a44237;border-radius:4px;font-size:10px;letter-spacing:.14em}
+.promise{display:flex;gap:9px;padding:9px 0;border-bottom:1px dashed rgba(232,223,204,.08);font-size:12px}
+.promise .mark{color:var(--gold)}
+
+/* ── knowledge ── */
+.kb-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kb-stat{padding:13px;border-radius:12px;background:rgba(232,223,204,.035);border:1px solid var(--line)}
+.kb-stat b{display:block;font-size:21px;font-weight:500;margin-top:4px}
+.kb-filters{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.kb-filters button{padding:5px 10px;font-size:10px;border-radius:999px;background:rgba(232,223,204,.03)}
+.kb-filters button.active{border-color:rgba(201,164,92,.5);color:var(--gold2);background:rgba(201,164,92,.1)}
+.searchbar{display:flex;gap:9px;margin:14px 0}
+input,select,button{font:inherit}
+input,select{background:#0d1115;border:1px solid var(--line);color:var(--paper);border-radius:10px;
+  padding:9px 11px;outline:none;width:100%;transition:.18s}
+input:focus,select:focus{border-color:rgba(201,164,92,.55);box-shadow:0 0 0 3px rgba(201,164,92,.07)}
+button{cursor:pointer;border:1px solid var(--line);background:rgba(232,223,204,.05);color:var(--paper);
+  padding:9px 14px;border-radius:10px;transition:.18s;white-space:nowrap}
+button:hover{background:rgba(232,223,204,.1);border-color:var(--line2);transform:translateY(-1px)}
+button.primary{border:0;background:linear-gradient(135deg,#8e6d33,#c9a45c);color:#1a140a;font-weight:700}
+button.danger{border-color:rgba(182,70,62,.45);color:#efb0a8;background:rgba(182,70,62,.08)}
+.kb-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+@media(max-width:820px){.kb-grid{grid-template-columns:1fr}.kb-stats{grid-template-columns:1fr 1fr}}
+.kb-item{padding:12px;border-radius:11px;border:1px solid var(--line);background:rgba(232,223,204,.025)}
+.kb-item .t{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.kb-item .t small{color:var(--gold);font-size:9px;letter-spacing:.12em}
+.kb-item .d{color:var(--muted);font-size:11px;margin-top:5px}
+
+/* ── forms ── */
+.field{display:block;margin-bottom:12px}
+.field > span{display:block;font-size:10px;letter-spacing:.12em;color:var(--muted);margin-bottom:5px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;
+  border-bottom:1px dashed rgba(232,223,204,.07);font-size:13px}
+.switch:last-child{border-bottom:0}
+.switch input{width:17px;height:17px;accent-color:var(--gold);flex:none}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.llm-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.llm-stat{padding:14px;border-radius:12px;border:1px solid var(--line);background:rgba(232,223,204,.03)}
+.llm-stat b{display:block;font-size:23px;font-weight:500}
+.scene-bars{display:grid;gap:7px}
+.scene-bar .top{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
+.scene-bar .track{height:5px;border-radius:6px;background:#22272b;overflow:hidden;margin-top:3px}
+.scene-bar .track i{display:block;height:100%;background:linear-gradient(90deg,var(--jade),var(--gold))}
+.note{padding:11px 13px;border-left:2px solid var(--gold);background:rgba(201,164,92,.055);
+  border-radius:0 10px 10px 0;font-size:11px;color:#bdb9ad;line-height:1.8}
+.toast{position:fixed;right:24px;bottom:24px;z-index:99;padding:11px 16px;border-radius:11px;
+  background:#171c21;border:1px solid var(--line2);box-shadow:var(--shadow);opacity:0;
+  transform:translateY(8px);transition:.22s;pointer-events:none;font-size:12px}
+.toast.show{opacity:1;transform:none}
+
+/* ── paper theme / density / motion ── */
+body[data-theme="paper"]{
+  --paper:#2b251b; --muted:#6f6757; --line:rgba(72,60,35,.16);
+  --line2:rgba(72,60,35,.28); --gold:#8b6728; --gold2:#6f4f1d;
+  --red:#9b3d35; --red2:#b84e44; --jade:#4f7d68; --blue:#516f96;
+  --shadow:0 18px 50px rgba(91,72,38,.16);
+  background:
+    radial-gradient(900px 500px at 8% -8%,rgba(155,61,53,.08),transparent 60%),
+    radial-gradient(800px 500px at 100% 0%,rgba(139,103,40,.12),transparent 55%),
+    linear-gradient(160deg,#f6efdf,#efe5d0 55%,#e8dcc3);
+}
+body[data-theme="paper"]::before{opacity:.35}
+body[data-theme="paper"] .rail{background:linear-gradient(180deg,rgba(250,244,231,.96),rgba(236,226,207,.94))}
+body[data-theme="paper"] .card{background:linear-gradient(180deg,rgba(255,252,244,.92),rgba(245,237,221,.94))}
+body[data-theme="paper"] .hero{background:
+  radial-gradient(600px 260px at 8% 0%,rgba(139,103,40,.12),transparent 60%),
+  linear-gradient(145deg,rgba(255,251,242,.98),rgba(239,229,211,.96))}
+body[data-theme="paper"] .topbar{background:rgba(246,239,225,.86)}
+body[data-theme="paper"] input,body[data-theme="paper"] select{background:#fffaf0;color:#2b251b}
+body[data-theme="paper"] button{background:rgba(80,60,30,.06);color:#2b251b}
+body[data-theme="paper"] .event .e-text,body[data-theme="paper"] .companion-line,
+body[data-theme="paper"] .radar-legend,body[data-theme="paper"] .row .v{color:#3a3226}
+body[data-theme="paper"] .radar{background:radial-gradient(circle,rgba(79,125,104,.10),transparent 65%),#f3ead8}
+body[data-theme="paper"] .blip{box-shadow:0 0 10px rgba(184,78,68,.55)}
+body[data-theme="paper"] .scroll{box-shadow:inset 0 0 38px rgba(120,95,55,.12),0 18px 40px rgba(91,72,38,.12)}
+body[data-density="compact"] .card{padding:14px}
+body[data-density="compact"] .hero{min-height:218px;padding:18px 20px}
+body[data-density="compact"] .grid{gap:11px}
+body[data-density="compact"] .view{padding-top:13px}
+body[data-density="compact"] .rings{gap:8px}
+body[data-density="compact"] .ring{width:108px;height:108px}
+body[data-density="compact"] .companion-line{margin-top:10px;padding:9px 12px;min-height:38px}
+body[data-density="compact"] .session-chips{margin-top:11px;padding-top:9px}
+body.reduce-motion *,body.reduce-motion *::before,body.reduce-motion *::after{
+  animation:none !important;transition:none !important;
+}
+body[data-theme="crimson"]{
+  --paper:#efe0d3; --muted:#a78c82; --line:rgba(220,130,108,.16);
+  --line2:rgba(220,130,108,.3); --gold:#d08a5e; --gold2:#edb58c;
+  --red:#d65a4c; --red2:#f07162; --jade:#b98a6d; --blue:#b77f78;
+  background:
+    radial-gradient(900px 520px at 8% -8%,rgba(214,90,76,.15),transparent 62%),
+    radial-gradient(900px 560px at 100% 0%,rgba(208,138,94,.1),transparent 55%),
+    linear-gradient(160deg,#100b0b,#170e0e 50%,#090808);
+}
+body[data-theme="crimson"] .card{background:linear-gradient(180deg,rgba(38,23,22,.94),rgba(22,14,14,.96))}
+body[data-theme="crimson"] .rail{background:linear-gradient(180deg,rgba(18,10,10,.97),rgba(10,7,7,.94))}
+body[data-theme="jade"]{
+  --paper:#e2eadf; --muted:#8b9a90; --line:rgba(150,190,165,.15);
+  --line2:rgba(150,190,165,.3); --gold:#a8bd86; --gold2:#d1dfad;
+  --red:#c16a5e; --red2:#de8578; --jade:#7fb99b; --blue:#7fa8b5;
+  background:
+    radial-gradient(900px 520px at 8% -8%,rgba(127,185,155,.13),transparent 62%),
+    radial-gradient(900px 560px at 100% 0%,rgba(168,189,134,.08),transparent 55%),
+    linear-gradient(160deg,#090e0c,#0d1512 50%,#070a09);
+}
+body[data-theme="jade"] .card{background:linear-gradient(180deg,rgba(20,32,27,.94),rgba(12,20,17,.96))}
+body[data-theme="jade"] .rail{background:linear-gradient(180deg,rgba(10,18,15,.97),rgba(7,11,9,.94))}
+.boss-intel{margin-top:10px;padding:10px 12px;border-radius:10px;
+  border:1px solid var(--line);background:rgba(201,164,92,.05);font-size:11px;color:#c8c8bd;line-height:1.8}
+.boss-intel b{color:var(--gold2);font-weight:500}
+.quest-list{display:grid;gap:8px;margin-top:8px}
+.quest{padding:9px 11px;border-radius:10px;background:rgba(232,223,204,.03);border:1px solid var(--line)}
+.quest .qname{display:flex;justify-content:space-between;gap:8px;font-size:12px}
+.quest .qtask{font-size:10px;color:var(--muted);margin-top:4px}
+.bell-line{display:flex;align-items:center;gap:10px;padding:12px;border-radius:11px;
+  border:1px solid var(--line);background:rgba(127,174,152,.055);font-size:12px}
+.bell-line .glyph{font-size:21px}
+.path-row{font-size:10px;color:var(--muted);word-break:break-all}
+@media(max-width:860px){
+  .rail{width:64px;flex-basis:64px}
+  .brand-t,.brand-s,.nav span:not(.ico),.rail-foot span:last-child{display:none}
+  .brand{justify-content:center;padding:16px 6px}
+  .nav button{justify-content:center;padding:11px 6px}
+  .nav .ico{width:auto}
+  main{padding:0 14px 30px}
+  .region{font-size:24px}
+}
+
+/* ══════════════════════════════════════════════════════════
+   v2 / 武侠舞台：水墨、朱印、戏台、卷轴
+   ══════════════════════════════════════════════════════════ */
+main{padding-bottom:96px}
+body{
+  background:
+    radial-gradient(1100px 620px at 6% -10%,rgba(201,164,92,.16),transparent 60%),
+    radial-gradient(900px 620px at 104% 6%,rgba(165,59,49,.13),transparent 58%),
+    radial-gradient(700px 500px at 50% 115%,rgba(111,155,134,.08),transparent 65%),
+    linear-gradient(155deg,#080a0c,#0e1215 48%,#070809);
+}
+body::before{
+  opacity:.32;
+  background-image:
+    repeating-linear-gradient(102deg,transparent 0 48px,rgba(232,223,204,.028) 49px,transparent 51px),
+    repeating-linear-gradient(14deg,transparent 0 86px,rgba(232,223,204,.018) 87px,transparent 89px),
+    radial-gradient(circle at 18% 28%,rgba(0,0,0,.55),transparent 24%),
+    radial-gradient(circle at 82% 68%,rgba(0,0,0,.4),transparent 28%);
+  mask-image:radial-gradient(circle at 50% 28%,#000 20%,transparent 90%);
+}
+.rail{
+  background:
+    linear-gradient(180deg,rgba(12,15,18,.98),rgba(7,9,11,.97)),
+    repeating-linear-gradient(0deg,transparent 0 70px,rgba(201,164,92,.03) 71px);
+  position:sticky;
+}
+.rail::after{
+  content:"";position:absolute;right:-2px;top:0;bottom:0;width:2px;
+  background:linear-gradient(180deg,transparent,rgba(201,164,92,.55) 18%,rgba(165,59,49,.5) 52%,rgba(201,164,92,.25) 82%,transparent);
+  filter:blur(.3px);
+}
+.brand{padding:20px 16px 17px}
+.brand .seal{
+  border-radius:4px;transform:rotate(-4deg);
+  background:linear-gradient(145deg,#b5463a,#6c211d);
+  box-shadow:0 0 0 1px rgba(255,220,180,.22),0 0 28px rgba(181,70,58,.3);
+}
+.brand-t{font-family:"STKaiti","KaiTi","FangSong",serif;font-size:19px;letter-spacing:.24em}
+.brand-s{font-size:8px;letter-spacing:.2em;color:rgba(201,164,92,.7)}
+.nav{padding:13px 8px}
+.nav button{
+  font-family:"STKaiti","KaiTi","FangSong",serif;font-size:14px;letter-spacing:.14em;
+  border-radius:3px;position:relative;padding:10px 13px;
+}
+.nav button.active{
+  background:linear-gradient(90deg,rgba(165,59,49,.18),rgba(201,164,92,.05));
+  border-color:rgba(201,164,92,.28);
+}
+.nav button.active::after{
+  content:"";position:absolute;left:14px;right:36px;bottom:5px;height:2px;
+  background:linear-gradient(90deg,rgba(201,164,92,.9),transparent);
+  border-radius:50%;transform:rotate(-.6deg);
+}
+.topbar{
+  border-bottom:1px solid rgba(201,164,92,.2);
+  box-shadow:0 1px 0 rgba(0,0,0,.35);
+}
+.crumbs{font-family:"STKaiti","KaiTi","FangSong",serif;font-size:13px;letter-spacing:.18em}
+.card{
+  border-radius:6px;border-color:rgba(201,164,92,.18);
+  background:
+    linear-gradient(180deg,rgba(22,27,31,.94),rgba(12,16,19,.96)),
+    repeating-linear-gradient(0deg,transparent 0 40px,rgba(232,223,204,.018) 41px);
+  box-shadow:inset 0 0 0 1px rgba(232,223,204,.025),0 24px 70px rgba(0,0,0,.34);
+}
+.card::before{
+  height:2px;
+  background:linear-gradient(90deg,transparent,rgba(201,164,92,.75),rgba(165,59,49,.55),transparent);
+}
+.card::after{
+  content:"";position:absolute;right:0;top:0;width:32px;height:32px;
+  background:linear-gradient(225deg,rgba(201,164,92,.16),transparent 55%);
+  clip-path:polygon(100% 0,100% 100%,0 0);pointer-events:none;
+}
+.card h3{
+  font-family:"STKaiti","KaiTi","FangSong",serif;font-size:14px;letter-spacing:.2em;
+  color:var(--gold2);
+}
+.hero{
+  border-radius:6px;min-height:252px;padding:26px 26px 20px;
+  background:
+    radial-gradient(480px 280px at 78% 8%,rgba(201,164,92,.16),transparent 65%),
+    linear-gradient(145deg,rgba(27,32,35,.98),rgba(12,15,18,.98));
+  isolation:isolate;
+}
+.hero-art{position:absolute;inset:0;opacity:.78;z-index:0;pointer-events:none}
+.hero-top,.hero > .companion-line,.hero > .session-chips{position:relative;z-index:2}
+.hero-art svg{width:100%;height:100%}
+.hero-sun{fill:rgba(165,59,49,.42);stroke:rgba(224,106,96,.55);stroke-width:2}
+.hero-ink{fill:rgba(4,7,9,.45)}
+.hero-ink-1{fill:rgba(5,8,10,.55)}
+.hero-ink-2{fill:rgba(3,5,7,.72)}
+.hero-brush{fill:none;stroke:rgba(232,223,204,.13);stroke-width:7;stroke-linecap:round;filter:blur(1px)}
+.hero-brush-2{stroke:rgba(165,59,49,.2);stroke-width:4}
+.hero::after{
+  content:"";position:absolute;left:22px;right:22px;bottom:13px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,164,92,.5),rgba(165,59,49,.35),transparent);
+}
+.hero-vertical{
+  position:absolute;right:28px;top:50%;transform:translateY(-50%);
+  writing-mode:vertical-rl;font-family:"STKaiti","KaiTi","FangSong",serif;
+  font-size:31px;letter-spacing:.24em;color:rgba(232,223,204,.24);line-height:1.25;
+  text-shadow:0 0 24px rgba(0,0,0,.7);z-index:1;
+}
+.hero-vertical small{
+  display:block;font-family:Georgia,serif;font-size:8px;letter-spacing:.28em;
+  color:rgba(201,164,92,.5);margin-top:8px;
+}
+.region{
+  font-family:"STKaiti","KaiTi","FangSong",serif;font-size:38px;letter-spacing:.14em;
+  text-shadow:0 3px 20px rgba(0,0,0,.55);
+}
+.scene-label{font-size:9px;letter-spacing:.28em;color:rgba(201,164,92,.85)}
+.companion-line{
+  border-left:2px solid rgba(201,164,92,.75);position:relative;
+  background:linear-gradient(90deg,rgba(201,164,92,.1),rgba(201,164,92,.015));
+  border-radius:0 3px 3px 0;max-width:78%;
+}
+.companion-line::after{
+  content:"";position:absolute;right:-8px;top:-8px;width:16px;height:16px;
+  border-top:1px solid rgba(165,59,49,.4);border-right:1px solid rgba(165,59,49,.4);
+}
+.session-chips .stat b{font-family:Georgia,"STKaiti",serif;letter-spacing:.04em}
+.ring{
+  border:1px solid rgba(201,164,92,.2);
+  box-shadow:inset 0 0 26px rgba(0,0,0,.55),0 0 0 5px rgba(201,164,92,.025);
+}
+.ring::before{background:radial-gradient(circle,#111518,#0a0d10)}
+.ring .num{font-family:Georgia,"STKaiti",serif;font-size:27px}
+.llm-strip{
+  border-radius:4px;border-color:rgba(201,164,92,.22);
+  background:linear-gradient(90deg,rgba(201,164,92,.09),rgba(165,59,49,.04),transparent);
+}
+.bond-card .neko-avatar{
+  border-radius:2px;
+  filter:drop-shadow(0 0 16px rgba(180,69,58,.18));
+}
+.bond-level{font-family:"STKaiti","KaiTi",serif;font-size:19px}
+.brand-footer{
+  position:fixed;left:206px;right:0;bottom:0;height:58px;z-index:40;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  border-top:1px solid rgba(201,164,92,.22);
+  background:linear-gradient(180deg,rgba(10,13,16,.88),rgba(7,9,11,.97));
+  backdrop-filter:blur(16px);
+  box-shadow:0 -14px 40px rgba(0,0,0,.35);
+}
+.f-seal{
+  width:24px;height:24px;display:grid;place-items:center;border-radius:2px;
+  background:linear-gradient(145deg,#a53b31,#641e1a);color:#f5e4c5;
+  font-family:"STKaiti","KaiTi",serif;font-size:13px;transform:rotate(-3deg);
+}
+.f-game{
+  font-family:"STKaiti","KaiTi","FangSong",serif;font-size:18px;letter-spacing:.24em;
+  color:var(--paper);
+}
+.f-dot{color:rgba(201,164,92,.6)}
+.f-sub{font-family:Georgia,serif;font-size:9px;letter-spacing:.26em;color:rgba(201,164,92,.75)}
+
+/* scan */
+.scan-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:15px}
+.eyebrow{font-family:Georgia,serif;font-size:9px;letter-spacing:.28em;color:var(--red2)}
+.scan-head h2{font-family:"STKaiti","KaiTi",serif;font-size:30px;letter-spacing:.16em;margin:4px 0}
+.scan-head p{margin:0;font-size:11px}
+.scan-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+.scan-compass-card{grid-row:span 2}
+.vision-card{grid-column:1/-1}
+.scan-compass{
+  width:300px;height:300px;margin:12px auto 8px;border-radius:50%;position:relative;
+  border:1px solid rgba(201,164,92,.3);
+  background:
+    radial-gradient(circle,rgba(165,59,49,.09),transparent 60%),
+    repeating-radial-gradient(circle,transparent 0 36px,rgba(201,164,92,.08) 37px,transparent 38px),
+    #0b0f12;
+  box-shadow:inset 0 0 46px rgba(0,0,0,.7),0 0 0 7px rgba(201,164,92,.025);
+  overflow:hidden;
+}
+.scan-ring{position:absolute;border-radius:50%;border:1px solid rgba(201,164,92,.13)}
+.scan-ring.r1{inset:34px}.scan-ring.r2{inset:82px}.scan-ring.r3{inset:130px}
+.scan-axis{position:absolute;background:rgba(201,164,92,.12)}
+.scan-axis.v{left:50%;top:0;bottom:0;width:1px}
+.scan-axis.h{top:50%;left:0;right:0;height:1px}
+.scan-sweep{position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from 0deg,rgba(165,59,49,.3),rgba(201,164,92,.08) 44deg,transparent 86deg);
+  animation:sweep 5s linear infinite;opacity:.7}
+.cardinal{position:absolute;font-family:"STKaiti","KaiTi",serif;font-size:12px;color:rgba(201,164,92,.7)}
+.cardinal.n{top:8px;left:50%;transform:translateX(-50%)}
+.cardinal.s{bottom:8px;left:50%;transform:translateX(-50%)}
+.cardinal.e{right:9px;top:50%;transform:translateY(-50%)}
+.cardinal.w{left:9px;top:50%;transform:translateY(-50%)}
+.scan-compass .blip{width:9px;height:9px}
+.scan-compass .blip.boss{width:13px;height:13px}
+.scan-legend{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.scan-list{display:grid;gap:7px;max-height:310px;overflow:auto}
+.scan-list .enemy{
+  display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:9px 11px;
+  border:1px solid rgba(201,164,92,.1);border-radius:3px;background:rgba(201,164,92,.025);
+}
+.scan-list .enemy .meta{font-size:10px;color:var(--muted)}
+.scan-boss-name{font-family:"STKaiti","KaiTi",serif;font-size:26px;letter-spacing:.1em}
+.scan-bell{display:flex;align-items:center;gap:13px;padding:14px;border:1px solid rgba(127,174,152,.2);
+  border-radius:4px;background:rgba(127,174,152,.04)}
+.scan-bell-icon{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;
+  border:1px solid rgba(201,164,92,.35);font-family:"STKaiti","KaiTi",serif;font-size:22px;
+  color:var(--gold2);background:radial-gradient(circle,rgba(201,164,92,.13),transparent)}
+
+body[data-theme="paper"] .brand-footer{
+  background:linear-gradient(180deg,rgba(248,241,227,.9),rgba(239,229,211,.98));
+  border-top-color:rgba(72,60,35,.2);
+}
+body[data-theme="paper"] .hero-art{opacity:.42}
+body[data-theme="paper"] .hero-vertical{color:rgba(72,60,35,.18)}
+body[data-theme="paper"] .scan-compass{
+  background:radial-gradient(circle,rgba(139,103,40,.09),transparent 60%),
+    repeating-radial-gradient(circle,transparent 0 36px,rgba(72,60,35,.09) 37px,transparent 38px),#f4ead6;
+}
+@media(max-width:1180px){
+  .scan-layout{grid-template-columns:1fr}
+  .scan-compass-card{grid-row:auto}
+}
+@media(max-width:860px){
+  .brand-footer{left:64px;height:52px;gap:8px}
+  .f-game{font-size:15px}.f-sub{font-size:7px;letter-spacing:.16em}
+  .scan-compass{width:250px;height:250px}
+  .region{font-size:28px}
+  .hero-vertical{display:none}
+}
+/* ══════════════════════════════════════════════════════════
+   四套结构风格：不是配色，而是版式/边框/导航/装饰的变化
+   ══════════════════════════════════════════════════════════ */
+body[data-style="scroll"] .card{
+  background:
+    linear-gradient(180deg,rgba(24,28,31,.95),rgba(13,16,19,.97)),
+    repeating-linear-gradient(0deg,transparent 0 42px,rgba(232,223,204,.018) 43px);
+  box-shadow:inset 0 12px 0 -10px rgba(201,164,92,.32),
+             inset 0 -12px 0 -10px rgba(165,59,49,.26),
+             0 24px 70px rgba(0,0,0,.38);
+}
+body[data-style="scroll"] .hero{
+  background:
+    radial-gradient(480px 280px at 76% 8%,rgba(165,59,49,.16),transparent 62%),
+    linear-gradient(160deg,rgba(24,29,32,.98),rgba(10,13,15,.99));
+}
+body[data-style="scroll"] .brand-footer{
+  background:linear-gradient(180deg,rgba(12,14,16,.9),rgba(7,9,10,.98));
+}
+
+/* 戏台花窗：对称、朱幕、金钱纹 */
+body[data-style="opera"]{
+  --paper:#f3e4c8; --muted:#a88f78; --line:rgba(218,167,88,.22);
+  --line2:rgba(218,167,88,.38); --gold:#d1a45c; --gold2:#f0cf8c;
+  --red:#b4453a; --red2:#df6a58; --jade:#9f8a65; --blue:#b07a68;
+  background:
+    radial-gradient(900px 500px at 50% -10%,rgba(209,164,92,.16),transparent 60%),
+    radial-gradient(700px 500px at 0% 100%,rgba(180,69,58,.2),transparent 65%),
+    linear-gradient(180deg,#140c0b,#1b0f0d 55%,#0d0808);
+}
+body[data-style="opera"] .rail{
+  width:190px;flex-basis:190px;
+  background:
+    repeating-linear-gradient(90deg,rgba(180,69,58,.13) 0 10px,rgba(95,26,23,.16) 10px 20px),
+    linear-gradient(180deg,#1b0d0c,#0f0808);
+}
+body[data-style="opera"] .brand{justify-content:center;text-align:center;flex-direction:column;gap:6px}
+body[data-style="opera"] .brand .seal{
+  width:44px;height:44px;border-radius:50% 50% 42% 42%;
+  background:radial-gradient(circle at 50% 35%,#d56a52,#8c2d25 70%);
+}
+body[data-style="opera"] .nav button{justify-content:center;border-bottom:1px solid rgba(209,164,92,.12);border-radius:0}
+body[data-style="opera"] .nav button.active{background:linear-gradient(90deg,transparent,rgba(209,164,92,.2),transparent)}
+body[data-style="opera"] .hero{
+  min-height:330px;text-align:center;
+  background:
+    radial-gradient(520px 260px at 50% 0%,rgba(209,164,92,.2),transparent 65%),
+    linear-gradient(180deg,rgba(54,20,18,.95),rgba(18,10,9,.98));
+  border:2px double rgba(209,164,92,.42);
+}
+body[data-style="opera"] .hero::before{
+  content:"";position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(90deg,transparent 0 38px,rgba(209,164,92,.07) 39px 40px,transparent 41px 76px),
+    radial-gradient(ellipse at 50% 0%,rgba(180,69,58,.26),transparent 65%);
+  mask-image:linear-gradient(#000 0 62%,transparent 92%);
+  pointer-events:none;
+}
+body[data-style="opera"] .hero-art{display:none}
+body[data-style="opera"] .hero-vertical{display:none}
+body[data-style="opera"] .hero-top{justify-content:center;text-align:center}
+body[data-style="opera"] .hero-top > div:first-child{max-width:780px}
+body[data-style="opera"] .region{font-size:42px;letter-spacing:.24em}
+body[data-style="opera"] .companion-line{
+  max-width:700px;margin:18px auto 0;text-align:center;
+  border:1px solid rgba(209,164,92,.36);border-width:1px 0;
+  background:linear-gradient(90deg,transparent,rgba(209,164,92,.12),transparent);
+}
+body[data-style="opera"] .session-chips{justify-content:center}
+body[data-style="opera"] .card{
+  border:2px double rgba(209,164,92,.3);border-radius:1px;
+  background:linear-gradient(180deg,rgba(45,25,21,.96),rgba(21,12,10,.98));
+  box-shadow:inset 0 0 0 1px rgba(209,164,92,.08),0 22px 55px rgba(0,0,0,.4);
+}
+body[data-style="opera"] .card::before{
+  height:1px;background:linear-gradient(90deg,transparent,rgba(209,164,92,.75),transparent);
+}
+body[data-style="opera"] .card::after{
+  background:linear-gradient(225deg,rgba(180,69,58,.28),transparent 58%);
+}
+body[data-style="opera"] .brand-footer{
+  background:linear-gradient(180deg,rgba(23,12,10,.94),rgba(12,7,6,.99));
+  border-top:2px double rgba(209,164,92,.32);
+}
+
+/* 江湖战报：切角 HUD、窄图标栏、斜切红边 */
+body[data-style="hud"]{
+  --paper:#dfe6e4; --muted:#8a9896; --line:rgba(120,180,170,.16);
+  --line2:rgba(120,180,170,.3); --gold:#d8a24a; --gold2:#f0c874;
+  --red:#df4d3c; --red2:#ff6b57; --jade:#65b8a5; --blue:#6a9db8;
+  background:
+    repeating-linear-gradient(135deg,rgba(255,255,255,.015) 0 1px,transparent 1px 12px),
+    linear-gradient(160deg,#06090b,#0b1114 58%,#050708);
+}
+body[data-style="hud"] .rail{width:78px;flex-basis:78px;background:rgba(6,9,11,.98)}
+body[data-style="hud"] .brand{justify-content:center;padding:16px 4px}
+body[data-style="hud"] .brand-t,body[data-style="hud"] .brand-s,
+body[data-style="hud"] .nav span:not(.ico),body[data-style="hud"] .rail-foot span:last-child{display:none}
+body[data-style="hud"] .nav button{
+  justify-content:center;padding:15px 3px;border-radius:0;
+  clip-path:polygon(0 0,100% 0,100% 76%,82% 100%,0 100%);
+  border:1px solid rgba(216,162,74,.12);margin-bottom:5px;
+}
+body[data-style="hud"] .nav .ico{font-size:17px;color:var(--gold2);font-family:Consolas,monospace}
+body[data-style="hud"] .card{
+  border-radius:0;border:1px solid rgba(223,77,60,.22);border-left:3px solid var(--red);
+  clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px));
+  background:
+    repeating-linear-gradient(135deg,rgba(223,77,60,.035) 0 2px,transparent 2px 16px),
+    linear-gradient(180deg,rgba(15,23,26,.97),rgba(7,11,13,.98));
+}
+body[data-style="hud"] .card::before{height:2px;background:linear-gradient(90deg,var(--red),var(--gold),transparent)}
+body[data-style="hud"] .card::after{display:none}
+body[data-style="hud"] .card h3{font-family:Consolas,"Microsoft YaHei",monospace;color:var(--red2);letter-spacing:.26em}
+body[data-style="hud"] .hero{
+  min-height:252px;border-radius:0;border-left:5px solid var(--red);
+  clip-path:polygon(0 0,calc(100% - 26px) 0,100% 26px,100% 100%,0 100%);
+  background:
+    linear-gradient(115deg,rgba(223,77,60,.12),transparent 34%),
+    repeating-linear-gradient(135deg,rgba(255,255,255,.018) 0 2px,transparent 2px 18px),
+    #0a1013;
+}
+body[data-style="hud"] .hero-art{opacity:.18}
+body[data-style="hud"] .hero-vertical{
+  font-family:Consolas,monospace;font-size:22px;letter-spacing:.26em;color:rgba(223,77,60,.55);
+}
+body[data-style="hud"] .region{font-family:Consolas,"Microsoft YaHei",monospace;letter-spacing:.12em;text-transform:uppercase}
+body[data-style="hud"] .companion-line{border-left:3px solid var(--red);background:rgba(223,77,60,.06)}
+body[data-style="hud"] .ring{border-radius:10%;border:1px solid rgba(216,162,74,.3)}
+body[data-style="hud"] .llm-strip{border-radius:0;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)}
+body[data-style="hud"] .brand-footer{
+  left:78px;justify-content:flex-start;padding-left:24px;
+  border-top:2px solid var(--red);background:rgba(6,9,11,.98);
+}
+body[data-style="hud"] .scan-compass{border-radius:2%;border-color:rgba(223,77,60,.4)}
+body[data-style="hud"] .scan-ring{border-radius:2%}
+body[data-style="hud"] .scan-sweep{border-radius:2%}
+
+/* 青绿山水：浅绢、青绿、留白、软边 */
+body[data-style="landscape"]{
+  --paper:#23352c; --muted:#697a6f; --line:rgba(70,110,87,.18);
+  --line2:rgba(70,110,87,.32); --gold:#6d8a5d; --gold2:#91aa73;
+  --red:#a35a4c; --red2:#bd7567; --jade:#5f9379; --blue:#6f97a0;
+  background:
+    radial-gradient(900px 520px at 50% -8%,rgba(111,151,160,.16),transparent 60%),
+    radial-gradient(700px 500px at 0% 100%,rgba(95,147,121,.16),transparent 65%),
+    linear-gradient(160deg,#f7f2e4,#edf0e3 55%,#e3e9da);
+}
+body[data-style="landscape"]::before{opacity:.28}
+body[data-style="landscape"] .rail{
+  background:linear-gradient(180deg,rgba(248,245,235,.96),rgba(234,238,226,.96));
+  border-right-color:rgba(70,110,87,.18);
+}
+body[data-style="landscape"] .brand-t,body[data-style="landscape"] .nav button,
+body[data-style="landscape"] .crumbs,body[data-style="landscape"] .card h3,
+body[data-style="landscape"] .region{color:#2c4036}
+body[data-style="landscape"] .brand-s,body[data-style="landscape"] .nav button,
+body[data-style="landscape"] .rail-foot{color:#6b7b70}
+body[data-style="landscape"] .nav button.active{background:rgba(95,147,121,.12);border-color:rgba(95,147,121,.2)}
+body[data-style="landscape"] .topbar{background:rgba(246,243,232,.9);border-bottom-color:rgba(70,110,87,.18)}
+body[data-style="landscape"] .card{
+  background:linear-gradient(180deg,rgba(255,253,247,.92),rgba(241,242,232,.92));
+  border-color:rgba(70,110,87,.2);border-radius:14px;
+  box-shadow:0 18px 50px rgba(50,70,55,.12);
+}
+body[data-style="landscape"] .card::before{background:linear-gradient(90deg,transparent,rgba(95,147,121,.6),transparent)}
+body[data-style="landscape"] .hero{
+  background:
+    radial-gradient(480px 260px at 72% 8%,rgba(163,90,76,.14),transparent 62%),
+    linear-gradient(160deg,rgba(252,250,242,.98),rgba(230,237,224,.97));
+  border-color:rgba(70,110,87,.2);
+}
+body[data-style="landscape"] .hero-art{opacity:.55}
+body[data-style="landscape"] .hero-sun{fill:rgba(163,90,76,.26);stroke:rgba(163,90,76,.35)}
+body[data-style="landscape"] .hero-ink{fill:rgba(111,151,160,.2)}
+body[data-style="landscape"] .hero-ink-1{fill:rgba(95,147,121,.22)}
+body[data-style="landscape"] .hero-ink-2{fill:rgba(70,110,87,.16)}
+body[data-style="landscape"] .hero-brush{stroke:rgba(70,110,87,.2)}
+body[data-style="landscape"] .hero-vertical{color:rgba(44,64,54,.24)}
+body[data-style="landscape"] .companion-line{color:#33473b;background:linear-gradient(90deg,rgba(95,147,121,.1),transparent)}
+body[data-style="landscape"] .row .v,body[data-style="landscape"] .event .e-text,
+body[data-style="landscape"] .scan-list .enemy,body[data-style="landscape"] .bond-text{color:#3b5044}
+body[data-style="landscape"] .scene-desc,body[data-style="landscape"] .muted,
+body[data-style="landscape"] .card h3 .sub,body[data-style="landscape"] .session-chips .stat,
+body[data-style="landscape"] .event .e-top{color:#61746a}
+body[data-style="landscape"] .stat b,body[data-style="landscape"] .ring .num{color:#2c4036}
+body[data-style="landscape"] .ring::before{background:#f7f4ea !important}
+body[data-style="landscape"] .ring .lab{color:#6b7b70}
+body[data-style="landscape"] .neko-tag{color:#8a3b32;border-color:rgba(163,90,76,.4);
+  background:rgba(163,90,76,.08)}
+body[data-style="landscape"] .pill,body[data-style="landscape"] .theme-quick{
+  color:#43584b;border-color:rgba(70,110,87,.22);background:rgba(255,253,247,.72)}
+body[data-style="landscape"] .pill.good{color:#3f6d58;border-color:rgba(95,147,121,.35)}
+body[data-style="landscape"] input,body[data-style="landscape"] select{background:#fbf8ef;color:#2c4036}
+body[data-style="landscape"] button{background:rgba(70,110,87,.06);color:#2c4036}
+body[data-style="landscape"] .ring::before{background:#f7f4ea}
+body[data-style="landscape"] .radar,body[data-style="landscape"] .scan-compass{
+  background:radial-gradient(circle,rgba(95,147,121,.12),transparent 65%),#f1f3e8;
+}
+body[data-style="landscape"] .brand-footer{
+  background:linear-gradient(180deg,rgba(248,245,235,.92),rgba(236,239,227,.98));
+  border-top-color:rgba(70,110,87,.2);
+}
+body[data-style="landscape"] .f-game,body[data-style="landscape"] .f-sub{color:#2c4036}
+
+body[data-style="opera"] .style-emblem{right:50%;transform:translateX(50%);top:34px;
+  font-size:150px;color:rgba(209,164,92,.075)}
+body[data-style="opera"] .style-emblem::before{content:"戏"}
+body[data-style="opera"] .scan-mini{justify-content:center;border:1px double rgba(209,164,92,.3);
+  background:linear-gradient(90deg,transparent,rgba(180,69,58,.09),transparent)}
+body[data-style="hud"] .style-emblem{right:26px;top:20px;font-family:Consolas,monospace;
+  font-size:112px;color:rgba(223,77,60,.11);letter-spacing:-.08em}
+body[data-style="hud"] .style-emblem::before{content:"战"}
+body[data-style="hud"] .scan-mini{clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%);
+  border-color:rgba(223,77,60,.35);border-left:3px solid var(--red);border-radius:0;
+  background:repeating-linear-gradient(135deg,rgba(223,77,60,.04) 0 2px,transparent 2px 14px)}
+body[data-style="landscape"] .style-emblem{right:100px;top:28px;font-size:145px;
+  color:rgba(70,110,87,.08)}
+body[data-style="landscape"] .style-emblem::before{content:"山"}
+body[data-style="landscape"] .scan-mini{background:rgba(255,252,244,.72);
+  border-color:rgba(70,110,87,.2);color:#3b5044}
+body[data-style="landscape"] .scan-mini .mini-title{color:#5f7d69}
+
+@media(max-width:860px){
+  body[data-style="hud"] .rail{width:58px;flex-basis:58px}
+  body[data-style="hud"] .brand-footer{left:58px}
+  body[data-style="opera"] .rail{width:64px;flex-basis:64px}
+  body[data-style="opera"] .brand-footer{left:64px}
+}
+
+/* ══════════════════════════════════════════════════════════
+   v3 风格材质：每套风格都作用于导航/卡片/按钮/装饰
+   ══════════════════════════════════════════════════════════ */
+.style-atmosphere{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.app{position:relative;z-index:1}
+.deco{display:none;position:absolute}
+.atmo-ink{fill:rgba(8,10,12,.55);filter:blur(10px)}
+.atmo-lantern{
+  width:46px;height:66px;border-radius:48% 48% 42% 42%;
+  background:radial-gradient(circle at 40% 30%,#e88a68,#a73d32 58%,#5b1715);
+  box-shadow:0 0 32px rgba(214,90,76,.35),inset 0 0 14px rgba(255,220,170,.28);
+}
+.atmo-lantern::before{
+  content:"";position:absolute;left:50%;top:-64px;width:1px;height:66px;
+  background:linear-gradient(transparent,rgba(209,164,92,.6))
+}
+.atmo-lantern::after{
+  content:"";position:absolute;left:50%;bottom:-22px;width:2px;height:24px;
+  background:linear-gradient(rgba(209,164,92,.8),transparent)
+}
+.atmo-lantern.l{left:218px;top:84px}
+.atmo-lantern.r{right:34px;top:84px}
+.atmo-opera-mask{right:5%;top:11%;width:min(32vw,390px);height:auto;
+  fill:none;stroke:rgba(209,164,92,.34);stroke-width:4;filter:drop-shadow(0 0 28px rgba(180,69,58,.18))}
+.atmo-hud-grid{
+  inset:0;
+  background:
+    repeating-linear-gradient(0deg,rgba(223,77,60,.035) 0 1px,transparent 1px 46px),
+    repeating-linear-gradient(90deg,rgba(216,162,74,.028) 0 1px,transparent 1px 62px),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.012) 0 1px,transparent 1px 4px);
+  mask-image:radial-gradient(circle at 50% 40%,#000 20%,transparent 88%);
+}
+.atmo-mountains{left:0;right:0;bottom:0;width:100%;height:46vh}
+.atmo-mountains .m1{fill:rgba(99,150,132,.18)}
+.atmo-mountains .m2{fill:rgba(66,112,94,.16)}
+.atmo-mist{
+  left:-10%;right:-10%;bottom:12%;height:16vh;
+  background:linear-gradient(180deg,transparent,rgba(245,248,240,.22),transparent);
+  filter:blur(14px)
+}
+body[data-style="scroll"] .atmo-ink{display:block;right:-12%;top:-18%;width:78%;height:80%}
+body[data-style="opera"] .atmo-lantern,
+body[data-style="opera"] .atmo-opera-mask{display:block}
+body[data-style="hud"] .atmo-hud-grid{display:block}
+body[data-style="landscape"] .atmo-mountains,
+body[data-style="landscape"] .atmo-mist{display:block}
+
+/* 水墨：卷轴杆、朱印、笔锋导航 */
+body[data-style="scroll"] .card{border-radius:2px}
+body[data-style="scroll"] .card::before{
+  height:4px;top:0;
+  background:linear-gradient(90deg,transparent,rgba(201,164,92,.55) 12%,rgba(201,164,92,.16) 62%,transparent);
+  border-radius:50%;filter:blur(.2px)
+}
+body[data-style="scroll"] .card::after{
+  content:"印";right:11px;top:11px;width:24px;height:24px;
+  display:grid;place-items:center;background:rgba(165,59,49,.55);color:rgba(243,228,200,.75);
+  border:1px solid rgba(243,228,200,.22);font-family:"STKaiti","KaiTi",serif;font-size:10px;
+  clip-path:none;transform:rotate(-4deg)
+}
+body[data-style="scroll"] .nav button{border:0;border-left:2px solid transparent;border-radius:0;
+  background:linear-gradient(90deg,rgba(201,164,92,.035),transparent)}
+body[data-style="scroll"] .nav button.active{border-left-color:var(--red2);
+  background:linear-gradient(90deg,rgba(165,59,49,.16),rgba(201,164,92,.04),transparent)}
+body[data-style="scroll"] .nav button.active::after{
+  left:36px;right:12px;bottom:7px;height:3px;border-radius:60% 40% 55% 45%;
+  background:linear-gradient(90deg,rgba(201,164,92,.8),rgba(201,164,92,.05))
+}
+body[data-style="scroll"] .card h3{letter-spacing:.28em}
+
+/* 戏曲：红漆金框、云纹角花、戏台灯笼 */
+body[data-style="opera"] .card{
+  border:2px double rgba(209,164,92,.42);
+  background:
+    radial-gradient(circle at 100% 0%,rgba(209,164,92,.08),transparent 42%),
+    linear-gradient(180deg,rgba(63,25,21,.97),rgba(24,12,10,.98));
+}
+body[data-style="opera"] .card::before{
+  height:6px;
+  background:
+    radial-gradient(circle at 10px 0,transparent 5px,rgba(209,164,92,.4) 6px,transparent 7px) 0 0/20px 8px repeat-x,
+    linear-gradient(90deg,transparent,rgba(209,164,92,.45),transparent);
+}
+body[data-style="opera"] .card::after{
+  width:52px;height:52px;right:7px;top:7px;background:
+    radial-gradient(circle at 100% 0,transparent 10px,rgba(209,164,92,.28) 11px,transparent 12px),
+    conic-gradient(from 180deg,rgba(209,164,92,.22),transparent 45%);
+  clip-path:polygon(100% 0,100% 100%,0 0)
+}
+body[data-style="opera"] .card h3{
+  display:block;text-align:center;padding:4px 0 5px;margin:-4px -4px 12px;
+  border-bottom:1px solid rgba(209,164,92,.2);
+  background:linear-gradient(90deg,transparent,rgba(180,69,58,.22),transparent)
+}
+body[data-style="opera"] .nav button{border:1px solid transparent;border-bottom-color:rgba(209,164,92,.14);border-radius:0}
+body[data-style="opera"] .nav button.active{border-color:rgba(209,164,92,.35);
+  background:linear-gradient(90deg,rgba(180,69,58,.24),rgba(209,164,92,.08))}
+body[data-style="opera"] button.primary{background:linear-gradient(135deg,#9b3028,#d19c55)}
+body[data-style="opera"] .brand-footer::before{
+  content:"";position:absolute;left:0;right:0;top:-7px;height:7px;
+  background:radial-gradient(circle at 12px 7px,transparent 6px,rgba(180,69,58,.7) 7px,transparent 8px) 0 0/24px 8px repeat-x
+}
+
+/* HUD：切角、刻度、扫描线 */
+body[data-style="hud"] .card{position:relative}
+body[data-style="hud"] .card::before{
+  height:2px;background:linear-gradient(90deg,var(--red),var(--gold) 42%,transparent 90%)
+}
+body[data-style="hud"] .card::after{
+  content:"";width:44px;height:44px;right:0;bottom:0;top:auto;
+  background:repeating-linear-gradient(90deg,rgba(216,162,74,.35) 0 1px,transparent 1px 6px);
+  clip-path:polygon(100% 0,100% 100%,0 100%)
+}
+body[data-style="hud"] .nav button{border-left:2px solid transparent}
+body[data-style="hud"] .nav button.active{border-left-color:var(--gold2);background:rgba(223,77,60,.12)}
+body[data-style="hud"] button{border-radius:0;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)}
+body[data-style="hud"] .hero::after{
+  content:"";left:0;right:0;bottom:0;height:16px;
+  background:repeating-linear-gradient(90deg,rgba(223,77,60,.4) 0 1px,transparent 1px 12px);
+  opacity:.55
+}
+body[data-style="hud"] .topbar{box-shadow:inset 0 -2px 0 rgba(223,77,60,.35)}
+
+/* 青绿山水：纸纹、山脚波纹、竹叶导航 */
+body[data-style="landscape"] .card{
+  border-radius:16px;
+  background:
+    linear-gradient(180deg,rgba(255,253,247,.95),rgba(241,243,232,.94)),
+    repeating-linear-gradient(92deg,transparent 0 18px,rgba(70,110,87,.018) 19px,transparent 20px);
+}
+body[data-style="landscape"] .card::before{
+  height:1px;background:linear-gradient(90deg,transparent,rgba(95,147,121,.6),transparent)
+}
+body[data-style="landscape"] .card::after{
+  content:"";width:100%;height:22px;left:0;right:0;bottom:0;top:auto;
+  background:
+    radial-gradient(ellipse at 20% 0,transparent 48%,rgba(95,147,121,.12) 50%,transparent 55%),
+    radial-gradient(ellipse at 70% 0,transparent 48%,rgba(111,151,160,.1) 50%,transparent 55%);
+  clip-path:none
+}
+body[data-style="landscape"] .nav button{border:0;border-left:2px solid transparent;border-radius:0 10px 10px 0}
+body[data-style="landscape"] .nav button.active{border-left-color:var(--jade);background:rgba(95,147,121,.12)}
+body[data-style="landscape"] .nav button::before{
+  content:"❧";margin-right:5px;color:rgba(95,147,121,.5);font-size:11px
+}
+body[data-style="landscape"] button{border-radius:12px;background:rgba(95,147,121,.08);color:#2c4036}
+body[data-style="landscape"] .brand-footer::before{
+  content:"";position:absolute;left:0;right:0;top:-18px;height:18px;
+  background:radial-gradient(ellipse at 30% 100%,rgba(95,147,121,.18),transparent 60%),
+             radial-gradient(ellipse at 75% 100%,rgba(111,151,160,.14),transparent 62%)
+}
+</style>
+</head>
+<body>
+<div class="style-atmosphere" aria-hidden="true">
+  <svg class="deco atmo-ink" viewBox="0 0 900 600" preserveAspectRatio="none">
+    <path d="M80 80 C180 20 280 65 350 130 C410 185 300 250 210 235 C120 220 35 160 80 80Z"/>
+    <path d="M610 330 C710 270 840 300 870 390 C900 485 760 540 675 500 C590 460 540 380 610 330Z"/>
+    <path d="M310 480 C370 440 460 470 470 525 C480 580 370 600 320 565 C270 530 265 505 310 480Z"/>
+  </svg>
+  <div class="deco atmo-lantern l"></div>
+  <div class="deco atmo-lantern r"></div>
+  <svg class="deco atmo-opera-mask" viewBox="0 0 220 270">
+    <path d="M110 12 C55 12 28 62 30 120 C32 195 68 252 110 252 C152 252 188 195 190 120 C192 62 165 12 110 12Z"/>
+    <path d="M54 92 C78 76 96 78 110 96 C124 78 142 76 166 92"/>
+    <path d="M62 122 C82 110 98 112 110 126 C122 112 138 110 158 122"/>
+    <path d="M110 132 C102 158 98 174 110 184 C122 174 118 158 110 132Z"/>
+    <path d="M82 206 C98 198 122 198 138 206"/>
+    <path d="M110 28 L110 62"/>
+  </svg>
+  <div class="deco atmo-hud-grid"></div>
+  <svg class="deco atmo-mountains" viewBox="0 0 1600 520" preserveAspectRatio="none">
+    <path class="m1" d="M0 420 C160 300 260 360 380 260 C500 160 610 330 760 240 C930 135 1030 300 1180 225 C1320 155 1450 245 1600 170 L1600 520 L0 520Z"/>
+    <path class="m2" d="M0 470 C180 390 300 430 460 340 C620 250 740 405 900 330 C1080 245 1200 370 1350 305 C1470 255 1540 290 1600 270 L1600 520 L0 520Z"/>
+  </svg>
+  <div class="deco atmo-mist"></div>
+</div>
+<div class="app">
+  <aside class="rail">
+    <div class="brand">
+      <div class="seal">影</div>
+      <div>
+        <div class="brand-t">影帐</div>
+        <div class="brand-s">PBZ × N.E.K.O</div>
+        <div class="brand-s2">江湖陪玩</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <button class="active" data-view="battle"><span class="ico">⚔</span><span>战局</span></button>
+      <button data-view="scan"><span class="ico">侦</span><span>侦察</span></button>
+      <button data-view="duel"><span class="ico">◎</span><span>交锋</span></button>
+      <button data-view="memory"><span class="ico">卷</span><span>忆卷</span></button>
+      <button data-view="knowledge"><span class="ico">籍</span><span>百晓</span></button>
+      <button data-view="llm"><span class="ico">灵</span><span>灵犀</span></button>
+      <button data-view="settings"><span class="ico">调</span><span>调息</span></button>
+    </nav>
+    <div class="rail-foot"><span id="dot" class="dot"></span><span id="conn">未连接</span></div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div class="crumbs">影帐 · <b id="crumbs">战局</b></div>
+      <div class="pills">
+        <select id="themeQuick" class="theme-quick" title="快速切换界面风格">
+          <option value="scroll">水墨卷轴</option><option value="opera">戏台花窗</option>
+          <option value="hud">江湖战报</option><option value="landscape">青绿山水</option>
+        </select>
+        <span id="pillRegion" class="pill">未知区域</span>
+        <span id="pillBoss" class="pill">无 Boss</span>
+        <span id="pillLLM" class="pill link">灵犀 · 未启用</span>
+        <span id="pillVoice" class="pill">宿主 TTS</span>
+      </div>
+    </header>
+
+    <!-- 战局 -->
+    <section id="view-battle" class="view active">
+      <div class="grid g-hero">
+        <article class="card hero">
+          <div class="hero-art" aria-hidden="true">
+            <svg viewBox="0 0 900 320" preserveAspectRatio="none">
+              <circle cx="720" cy="78" r="38" class="hero-sun"/>
+              <path d="M0 265 C120 210 190 245 290 190 C390 135 455 215 560 165 C665 115 735 190 900 120 L900 320 L0 320 Z" class="hero-ink hero-ink-1"/>
+              <path d="M0 292 C150 255 240 285 360 235 C500 178 590 250 720 205 C800 178 860 190 900 175 L900 320 L0 320 Z" class="hero-ink hero-ink-2"/>
+              <path d="M70 48 C160 70 230 55 330 82" class="hero-brush"/>
+              <path d="M600 250 C680 225 760 240 850 205" class="hero-brush hero-brush-2"/>
+            </svg>
+          </div>
+          <div class="hero-vertical">影之刃零<small>PHANTOM BLADE ZERO</small></div>
+          <div class="style-emblem" aria-hidden="true"></div>
+          <div class="hero-top">
+            <div>
+              <div id="sceneLabel" class="scene-label">雾隐 · 探索</div>
+              <div class="neko-tag">N.E.K.O · 陪玩</div>
+              <div id="region" class="region">等待入局</div>
+              <div id="sceneDesc" class="scene-desc">启动游戏后，这里会显示当前区域与猫娘的即时陪伴。</div>
+            </div>
+            <span id="sceneChip" class="chip gold">静候</span>
+          </div>
+          <div id="lastLine" class="companion-line muted">猫娘还没有开口。先入江湖吧。</div>
+          <div class="session-chips">
+            <div class="stat">本局时长<b id="sessionTime">00:00</b></div>
+            <div class="stat">死亡<b id="sessionDeaths">0</b></div>
+            <div class="stat">Boss 击杀<b id="sessionVictories">0</b></div>
+            <div class="stat">去过区域<b id="sessionZones">0</b></div>
+          </div>
+        </article>
+        <article class="card">
+          <h3>气血 / 杀气 <span class="sub">实时</span></h3>
+          <div class="rings">
+            <div id="ringHp" class="ring hp" style="--p:0"><div class="in"><div id="hpNum" class="num">--</div><div class="lab">生命</div></div></div>
+            <div id="ringShachi" class="ring shachi" style="--p:0"><div class="in"><div id="shachiNum" class="num">--</div><div class="lab">杀气</div></div></div>
+          </div>
+          <div class="row"><span class="k">战斗状态</span><span id="combat" class="v">—</span></div>
+          <div class="row"><span class="k">感知延迟</span><span id="stateAge" class="v">—</span></div>
+        </article>
+      </div>
+      <div class="llm-strip">
+        <span class="lead">灵犀 · 独立 LLM</span>
+        <span class="num"><small>调用</small><b id="llmCallsMini">0</b></span>
+        <span class="num"><small>Token</small><b id="llmTokensMini">0</b></span>
+        <span class="num"><small>状态</small><b id="llmStateMini">未启用</b></span>
+        <span class="muted small">只负责记忆摘要与知识整理；台词与 TTS 仍由宿主人设负责。</span>
+        <span class="grow"></span>
+        <button id="btnGoLLM">配置灵犀 / 查看消耗</button>
+      </div>
+      <div class="scan-mini">
+        <span class="mini-title">侦察</span>
+        <span class="mini-ping"></span>
+        <span id="miniEnemyCount">0 个目标</span>
+        <span id="miniBoss">无 Boss</span>
+        <span id="miniBell">铃铛未知</span>
+        <span class="mini-grow"></span>
+        <button id="btnMiniScan">查看侦察</button>
+      </div>
+
+      <div class="grid g-3" style="margin-top:12px">
+        <article class="card">
+          <h3>当前任务 <span class="sub">追踪</span></h3>
+          <div id="questList" class="quest-list"><div class="empty">还没有读到任务</div></div>
+        </article>
+        <article class="card">
+          <h3>最近铃铛 <span class="sub">检查点</span></h3>
+          <div id="bellLine" class="bell-line"><span class="glyph">铃</span><span class="muted">尚未靠近铃铛</span></div>
+        </article>
+        <article class="card">
+          <h3>NEKO 羁绊 <span class="sub">跨会话</span></h3>
+          <div class="bond-card">
+            <div class="neko-avatar"><span>NEKO</span></div>
+            <div>
+              <div id="bondLevel" class="bond-level">初识</div>
+              <div id="bondText" class="bond-text">共赴江湖，忆卷会慢慢变厚。</div>
+            </div>
+          </div>
+          <div class="bond-meter"><i id="bondBar"></i></div>
+          <div class="bond-nums">
+            <span>会话<b id="bondSessions">0</b></span>
+            <span>Boss<b id="bondBosses">0</b></span>
+            <span>约定<b id="bondPromises">0</b></span>
+          </div>
+        </article>
+      </div>
+
+      <div class="grid g-3" style="margin-top:12px">
+        <article class="card">
+          <h3>随身 <span class="sub">仅当前装备</span></h3>
+          <div class="loadout-groups">
+            <div class="lgroup"><h4>主武器 <small>主 / 副</small></h4><div id="mainWeaponList" class="slot-grid"></div></div>
+            <div class="lgroup"><h4>影之武装 <small>多槽</small></h4><div id="edgeSlotList" class="slot-grid"></div></div>
+            <div class="lgroup"><h4>饰品 <small>多槽</small></h4><div id="accessorySlotList" class="slot-grid"></div></div>
+            <div class="lgroup"><h4>药瓶 / 快捷 <small>消耗</small></h4><div id="medicineSlotList" class="slot-grid"></div></div>
+          </div>
+          <div class="note" style="margin-top:12px">不读取背包与材料数量；只根据当前装备与 Boss 知识给建议。</div>
+        </article>
+        <article class="card">
+          <h3>当前 Boss <span class="sub">情报</span></h3>
+          <div id="bossName" class="boss-name">暂无</div>
+          <div class="boss-hp"><i id="bossHpBar" style="width:0"></i></div>
+          <div class="boss-meta">
+            <span id="bossPhase" class="chip">阶段 ?</span>
+            <span id="bossHpText" class="chip">--%</span>
+          </div>
+          <div id="bossIntel" class="boss-intel" style="display:none"></div>
+          <div id="bossHistory" class="history"><div class="empty">还没有这个 Boss 的交手记录</div></div>
+        </article>
+        <article class="card">
+          <h3>前方 <span class="sub">前向扫描</span></h3>
+          <div class="radar-wrap">
+            <div class="radar">
+              <div class="sweep"></div><div class="axis-v"></div><div class="axis-h"></div>
+              <div id="blips"></div>
+            </div>
+            <div class="radar-legend">
+              <div><span class="chip red">红</span> 敌人</div>
+              <div><span class="chip gold">金</span> Boss</div>
+              <div id="radarCount" class="muted">未扫描</div>
+            </div>
+          </div>
+          <div id="enemyList" class="enemy-list"><div class="empty">扫描范围安静</div></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 侦察 -->
+    <section id="view-scan" class="view">
+      <div class="scan-head">
+        <div>
+          <div class="eyebrow">RECON · 影罗盘</div>
+          <h2>侦察前方</h2>
+          <p class="muted">Boss、小怪、方位、距离与最近铃铛。扫描结果来自游戏内只读接口。</p>
+        </div>
+        <button class="primary" id="btnScan">重新扫描</button>
+      </div>
+      <div class="scan-layout">
+        <article class="card scan-compass-card">
+          <h3>前向罗盘 <span id="scanStatus" class="sub">等待游戏</span></h3>
+          <div class="scan-compass">
+            <div class="scan-ring r1"></div><div class="scan-ring r2"></div><div class="scan-ring r3"></div>
+            <div class="scan-axis v"></div><div class="scan-axis h"></div>
+            <div class="scan-sweep"></div>
+            <span class="cardinal n">前</span><span class="cardinal e">右</span>
+            <span class="cardinal s">后</span><span class="cardinal w">左</span>
+            <div id="scanBlips"></div>
+          </div>
+          <div class="scan-legend"><span class="chip red">赤点 · 敌人</span><span class="chip gold">金点 · Boss</span><span class="chip">灰圈 · 45m</span></div>
+        </article>
+        <article class="card">
+          <h3>敌情 <span id="scanCount" class="sub">0 个目标</span></h3>
+          <div id="scanEnemyList" class="scan-list"><div class="empty">扫描范围安静</div></div>
+        </article>
+        <article class="card">
+          <h3>Boss 侦察 <span class="sub">百晓</span></h3>
+          <div id="scanBossName" class="scan-boss-name">暂无 Boss</div>
+          <div class="boss-hp" style="margin:10px 0"><i id="scanBossHp" style="width:0"></i></div>
+          <div class="boss-meta"><span id="scanBossPhase" class="chip">阶段 ?</span><span id="scanBossHpText" class="chip">--%</span></div>
+          <div id="scanBossIntel" class="boss-intel" style="display:none"></div>
+        </article>
+        <article class="card">
+          <h3>铃铛侦察 <span class="sub">检查点</span></h3>
+          <div id="scanBell" class="scan-bell"><div class="scan-bell-icon">铃</div><div><b>尚未靠近铃铛</b><div class="muted small">靠近未激活铃铛时会在这里提示</div></div></div>
+          <div id="scanBellIds" class="chips"></div>
+        </article>
+        <article class="card vision-card">
+          <h3>视觉侦察 <span id="visionStatus" class="sub">宿主视觉模型</span></h3>
+          <p class="muted small" style="margin:0 0 10px">结构化数据看不到时，截取当前游戏窗口交给宿主视觉模型。游戏内按 F11 触发；面板按钮需要游戏在前台。只截游戏窗口，不截桌面。</p>
+          <div class="actions">
+            <button class="primary" id="btnVision">看当前画面</button>
+            <span id="visionMeta" class="muted small"></span>
+          </div>
+          <div id="visionResult" class="note" style="margin-top:11px">还没有进行视觉侦察。</div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 交锋 -->
+    <section id="view-duel" class="view">
+      <div class="grid g-2">
+        <article class="card">
+          <h3>交锋记录 <span class="sub">本档</span></h3>
+          <div id="bossHistoryBig" class="history"><div class="empty">还没有 Boss 交手记录</div></div>
+        </article>
+        <article class="card">
+          <h3>事件流 <span class="sub">最近 30 条</span></h3>
+          <div id="eventList" class="timeline"><div class="empty">还没有事件</div></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 忆卷 -->
+    <section id="view-memory" class="view">
+      <div class="grid g-2">
+        <article class="card">
+          <h3>忆卷 <span class="sub">跨会话</span></h3>
+          <div id="memoryScroll" class="scroll"><span class="seal2">未落笔</span>这一局结束后，猫娘会把 Boss、卡关、装备与约定写入忆卷。</div>
+          <div class="actions">
+            <button class="primary" id="btnRefreshMemory">刷新忆卷</button>
+            <button id="btnExportMemory">导出忆卷</button>
+            <button class="danger" id="btnClearMemory">清除本档记忆</button>
+          </div>
+        </article>
+        <article class="card">
+          <h3>约定 <span class="sub">下次还记得</span></h3>
+          <div id="promiseList"><div class="empty">还没有约定</div></div>
+          <h3 style="margin-top:20px">本地统计</h3>
+          <div id="memoryStats" class="chips"></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 百晓 -->
+    <section id="view-knowledge" class="view">
+      <article class="card">
+        <h3>百晓 <span class="sub">Boss / 小怪 / 武器 / 影之武装 / 铃铛 / 铸魂</span></h3>
+        <div id="kbStats" class="kb-stats">
+          <div class="kb-stat"><span class="muted">实体</span><b id="kbEntities">0</b></div>
+          <div class="kb-stat"><span class="muted">关系</span><b id="kbRelations">0</b></div>
+          <div class="kb-stat"><span class="muted">已验证建议</span><b id="kbTips">0</b></div>
+          <div class="kb-stat"><span class="muted">待实机核验</span><b id="kbPending">0</b></div>
+        </div>
+        <div id="kbCoverage" class="chips" style="margin-top:12px"></div>
+        <div id="kbFilters" class="kb-filters">
+          <button class="active" data-kb-type="">全部</button>
+          <button data-kb-type="boss">Boss</button>
+          <button data-kb-type="mob">小怪</button>
+          <button data-kb-type="weapon">主武器</button>
+          <button data-kb-type="phantom_edge">影之武装</button>
+          <button data-kb-type="accessory">饰品</button>
+          <button data-kb-type="medicine">药瓶</button>
+          <button data-kb-type="mechanic">机制</button>
+          <button data-kb-type="playbook">玩法库</button>
+          <button data-kb-type="bell">铃铛</button>
+        </div>
+        <div class="searchbar">
+          <input id="kbQuery" placeholder="输入 Boss、小怪、武器、影之武装、铃铛、铸魂……">
+          <button class="primary" id="btnSearch">查</button>
+          <button id="btnReloadKB">重载种子</button>
+        </div>
+        <div id="kbResults" class="kb-grid"><div class="empty">输入关键词，猫娘只给有来源的条目。</div></div>
+      </article>
+    </section>
+
+    <!-- 灵犀 -->
+    <section id="view-llm" class="view">
+      <div class="grid g-2">
+        <article class="card">
+          <h3>灵犀 <span class="sub">独立 LLM（记忆整理）</span></h3>
+          <label class="switch"><span>启用独立 LLM</span><input id="llmEnabled" type="checkbox"></label>
+          <label class="field" style="margin-top:12px"><span>Provider</span>
+            <select id="llmProvider">
+              <option value="openai_compatible">OpenAI 兼容 / 本地</option>
+              <option value="openai">OpenAI</option>
+              <option value="anthropic">Anthropic</option>
+              <option value="gemini">Gemini</option>
+            </select>
+          </label>
+          <label class="field"><span>Model</span><input id="llmModel" placeholder="deepseek-chat / gpt-4o / qwen2.5"></label>
+          <label class="field"><span>API Key</span><input id="llmKey" type="password" placeholder="留空不修改"></label>
+          <label class="field"><span>Base URL</span><input id="llmBase" placeholder="https://api.deepseek.com 或 http://127.0.0.1:11434"></label>
+          <div class="two">
+            <label class="field"><span>超时（秒）</span><input id="llmTimeout" type="number" min="3" max="120"></label>
+            <label class="field"><span>每分钟上限</span><input id="llmRate" type="number" min="1" max="120"></label>
+          </div>
+          <div class="actions">
+            <button class="primary" id="btnSaveLLM">保存灵犀</button>
+            <button id="btnTestLLM">测试连接</button>
+            <button class="danger" id="btnClearKey">清除 Key</button>
+          </div>
+          <div class="note" style="margin-top:13px">优先级：配置了独立 LLM 就优先用它；没配置时自动回退宿主主体 LLM。灵犀只做记忆摘要与知识整理，猫娘的最终台词、情绪和 TTS 仍由宿主当前人设负责。</div>
+        </article>
+        <article class="card">
+          <h3>Token 账 <span class="sub">本插件统计 · 宿主回退为估算</span></h3>
+          <div class="llm-stats">
+            <div class="llm-stat"><span class="muted small">调用</span><b id="llmCalls">0</b></div>
+            <div class="llm-stat"><span class="muted small">总 Token</span><b id="llmTokens">0</b></div>
+            <div class="llm-stat"><span class="muted small">状态</span><b id="llmState" style="font-size:15px">未启用</b></div>
+          </div>
+          <div id="sceneBars" class="scene-bars"><div class="empty">还没有调用记录</div></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 调息 -->
+    <section id="view-settings" class="view">
+      <div class="grid g-2">
+        <article class="card">
+          <h3>陪伴节奏</h3>
+          <label class="switch"><span>宿主 TTS 播报猫娘回复</span><input id="voiceEnabled" type="checkbox"></label>
+          <label class="switch"><span>游戏内字幕</span><input id="overlayEnabled" type="checkbox"></label>
+          <label class="switch"><span>允许主动开口</span><input id="proactive" type="checkbox"></label>
+          <label class="field" style="margin-top:12px"><span>剧透等级</span>
+            <select id="spoiler">
+              <option value="0">0 · 只讲眼前</option>
+              <option value="1">1 · 区域与机制</option>
+              <option value="2">2 · 攻略级</option>
+            </select>
+          </label>
+          <div class="two">
+            <label class="field"><span>Boss 建议最少</span><input id="adviceMin" type="number" min="1" max="3"></label>
+            <label class="field"><span>Boss 建议最多</span><input id="adviceMax" type="number" min="1" max="3"></label>
+          </div>
+          <div class="two">
+            <label class="field"><span>界面风格</span>
+              <select id="uiStyle">
+                <option value="scroll">水墨卷轴</option><option value="opera">戏台花窗</option>
+                <option value="hud">江湖战报</option><option value="landscape">青绿山水</option>
+              </select>
+            </label>
+            <label class="field"><span>辅助配色</span>
+              <select id="uiTheme">
+                <option value="ink">墨夜</option><option value="paper">宣纸</option>
+                <option value="crimson">赤影</option><option value="jade">青锋</option>
+              </select>
+            </label>
+          </div>
+          <label class="field"><span>信息密度</span>
+            <select id="uiDensity"><option value="comfortable">舒适</option><option value="compact">紧凑</option></select>
+          </label>
+          <label class="field"><span>界面缩放 <b id="uiScaleLabel">100%</b></span>
+            <input id="uiScale" type="range" min="90" max="115" step="5">
+          </label>
+          <label class="switch"><span>减少动效</span><input id="uiMotion" type="checkbox"></label>
+          <label class="switch"><span>显示前向雷达</span><input id="uiShowRadar" type="checkbox"></label>
+          <label class="switch"><span>显示灵犀摘要</span><input id="uiShowLlmStrip" type="checkbox"></label>
+        <label class="switch"><span>允许截图识别（宿主视觉模型）</span><input id="visionEnabled" type="checkbox"></label>
+        <label class="switch"><span>仅游戏在前台时截图</span><input id="visionForeground" type="checkbox"></label>
+          <div class="actions">
+            <button class="primary" id="btnSave">保存调息</button>
+            <button id="btnTestVoice">测试语音</button>
+          </div>
+        </article>
+        <article class="card">
+          <h3>静默 / 维护</h3>
+          <div class="actions">
+            <button data-quiet="30">安静 30 分钟</button>
+            <button data-quiet="60">安静 60 分钟</button>
+            <button data-quiet="0">解除静默</button>
+          </div>
+          <div class="row" style="margin-top:10px"><span class="k">桥接目录</span><span id="bridgeDir" class="v small">—</span></div>
+          <div class="row"><span class="k">宿主会话通道</span><span id="hostBus" class="v">—</span></div>
+          <div class="row"><span class="k">语音等待</span><span id="waiting" class="v">—</span></div>
+          <div class="row"><span class="k">配置目录</span><span id="pathConfig" class="path-row">—</span></div>
+          <div class="row"><span class="k">记忆目录</span><span id="pathMemory" class="path-row">—</span></div>
+          <div class="row"><span class="k">知识目录</span><span id="pathKnowledge" class="path-row">—</span></div>
+          <div class="note" style="margin-top:13px">游戏内 F10 可显示/隐藏字幕。重启游戏后 Mod 才会重新加载。</div>
+        </article>
+      </div>
+    </section>
+
+    <footer class="brand-footer">
+      <span class="f-seal">零</span>
+      <span class="f-game">影之刃零</span>
+      <span class="f-dot">·</span>
+      <span class="f-sub">PHANTOM BLADE ZERO × N.E.K.O</span>
+    </footer>
+  </main>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+const PLUGIN_ID = 'neko_pbz';
+const RUNS_URL = '/runs';
+const TIMEOUT = 30000;
+let last = {};
+let kbType = '';
+
+const SCENES = {
+  exploring: {label:'探索', desc:'听风辨路，猫娘陪你看江湖。', cls:'gold'},
+  alerted:   {label:'警觉', desc:'前方有动静，先把敌人位置看清。', cls:'red'},
+  combat:    {label:'交锋', desc:'刀已出鞘，猫娘会收敛闲聊。', cls:'red'},
+  boss:      {label:'Boss', desc:'强敌当前，先确认铃铛与装备。', cls:'red'},
+  low_hp:    {label:'残血', desc:'气血告急，先稳住节奏。', cls:'red'},
+  critical:  {label:'濒危', desc:'再吃一下就要倒了。', cls:'red'},
+  death:     {label:'败阵', desc:'先缓一下，猫娘在这儿。', cls:'red'},
+  quiet:     {label:'静默', desc:'过场或菜单中，猫娘先不打扰。', cls:'gold'}
+};
+
+const $ = id => document.getElementById(id);
+const delay = ms => new Promise(r => setTimeout(r, ms));
+const isEditing = () => {
+  const a = document.activeElement;
+  return a && (a.tagName === 'INPUT' || a.tagName === 'SELECT');
+};
+function toast(text){
+  const el = $('toast'); el.textContent = text; el.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+function fmtTime(s){
+  s = Math.max(0, Number(s)||0);
+  const m = Math.floor(s/60), h = Math.floor(m/60);
+  return h ? `${h}:${String(m%60).padStart(2,'0')}:${String(Math.floor(s%60)).padStart(2,'0')}`
+           : `${String(m).padStart(2,'0')}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+}
+function pct(v){ return Math.max(0, Math.min(100, Number(v)||0)); }
+
+async function callEntry(entryId, params={}){
+  const resp = await fetch(RUNS_URL, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({plugin_id:PLUGIN_ID, entry_id:entryId, args:params||{}})
+  });
+  if(!resp.ok) throw new Error('runs create ' + resp.status);
+  const data = await resp.json();
+  if(!data.run_id) throw new Error('no run_id');
+  const deadline = Date.now() + TIMEOUT;
+  while(Date.now() < deadline){
+    const poll = await fetch(RUNS_URL + '/' + data.run_id);
+    if(!poll.ok){ await delay(130); continue; }
+    const rec = await poll.json();
+    if(rec.status === 'succeeded'){
+      const exp = await fetch(RUNS_URL + '/' + data.run_id + '/export');
+      if(!exp.ok){ await delay(130); continue; }
+      const ed = await exp.json();
+      const items = ed.items || [];
+      let ti = items.find(x => x.label === 'trigger_response');
+      if(!ti) ti = items.find(x => x.type === 'json' && x.json);
+      if(!ti) ti = items[0] || {};
+      const j = ti.json || {};
+      const pr = j.plugin_response || j;
+      if(pr && pr.success) return pr.data;
+      throw new Error((pr && (pr.error || pr.message)) || 'entry failed');
+    }
+    if(rec.status === 'failed') throw new Error('run failed');
+    await delay(130);
+  }
+  throw new Error('timeout');
+}
+
+function switchView(name, el){
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  (el || document.querySelector(`.nav button[data-view="${name}"]`)).classList.add('active');
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+  const titles = {battle:'战局',scan:'侦察',duel:'交锋',memory:'忆卷',knowledge:'百晓',llm:'灵犀',settings:'调息'};
+  $('crumbs').textContent = titles[name] || name;
+}
+document.querySelectorAll('.nav button').forEach(b => b.onclick = () => switchView(b.dataset.view, b));
+
+function renderRing(id, numId, value){
+  const p = pct(value);
+  $(id).style.setProperty('--p', p);
+  $(numId).textContent = value == null || value === '' ? '--' : Math.round(p) + '%';
+}
+function renderRadar(enemies){
+  const box = $('blips'); box.innerHTML = '';
+  enemies = enemies || [];
+  $('radarCount').textContent = enemies.length ? `${enemies.length} 个目标` : '扫描范围安静';
+  const dirs = {front:0, front_right:45, right:90, right_back:135, behind:180,
+                left_back:225, left:270, front_left:315};
+  enemies.forEach(e => {
+    const d = document.createElement('div');
+    d.className = 'blip' + (e.boss ? ' boss' : '');
+    const angle = (dirs[e.direction] ?? 0) * Math.PI / 180;
+    const r = Math.min(44, 10 + (Number(e.distance)||10) / 45 * 36);
+    d.style.left = (50 + Math.sin(angle) * r) + '%';
+    d.style.top = (50 - Math.cos(angle) * r) + '%';
+    d.title = `${e.name || '敌人'} · ${e.distance ?? '?'}m`;
+    box.appendChild(d);
+  });
+}
+function renderEnemies(enemies){
+  const el = $('enemyList'); el.innerHTML = '';
+  if(!enemies || !enemies.length){
+    el.innerHTML = '<div class="empty">扫描范围安静</div>'; return;
+  }
+  enemies.forEach(e => {
+    const d = document.createElement('div'); d.className = 'enemy';
+    const dir = {front:'正前',front_left:'左前',front_right:'右前',left:'左侧',right:'右侧',behind:'后方'}[e.direction] || '';
+    d.innerHTML = `<span>${e.name || '未知目标'}</span><span class="muted">${dir} ${e.distance != null ? '· ' + e.distance + 'm' : ''}</span>`;
+    el.appendChild(d);
+  });
+}
+function renderBoss(s){
+  const b = s.boss;
+  $('bossName').textContent = b ? (b.name || '未知 Boss') : '暂无';
+  const hp = pct(b && b.hp_percent);
+  $('bossHpBar').style.width = hp + '%';
+  $('bossHpText').textContent = b && b.hp_percent != null ? Math.round(hp) + '%' : '--%';
+  $('bossPhase').textContent = b ? `阶段 ${b.phase ?? '?'}` : '阶段 ?';
+  $('pillBoss').textContent = b ? `Boss · ${b.name || '未知'}` : '无 Boss';
+  $('pillBoss').className = 'pill' + (b ? ' hot' : '');
+  const intel = s.boss_intel;
+  const box = $('bossIntel');
+  if(intel && b){
+    const facts = intel.facts || {};
+    const bits = [];
+    if(facts.threat) bits.push(`威胁：${facts.threat}`);
+    if(facts.recommended_defense) bits.push(`应对：${facts.recommended_defense}`);
+    if(facts.arena) bits.push(`场地：${facts.arena}`);
+    if(facts.tip) bits.push(facts.tip);
+    box.innerHTML = `<b>百晓</b> ${bits.join(' ｜ ') || '暂无已核验情报'}${intel.hidden_by_spoiler ? '（详细内容被剧透等级隐藏）' : ''}`;
+    box.style.display = (bits.length || intel.hidden_by_spoiler) ? '' : 'none';
+  }else{
+    box.style.display = 'none';
+  }
+}
+function renderHistory(list, target){
+  const el = $(target); el.innerHTML = '';
+  if(!list || !list.length){ el.innerHTML = '<div class="empty">还没有 Boss 交手记录</div>'; return; }
+  list.forEach(h => {
+    const d = document.createElement('div'); d.className = 'h';
+    const best = h.best_hp_percent != null ? Math.round(h.best_hp_percent) + '%' : '—';
+    d.innerHTML = `<span>${h.boss_name || h.boss_id}</span><span class="muted">${h.attempts} 次 · 死 ${h.deaths} · 最好 ${best}${h.first_kill_at ? ' · 已杀' : ''}</span>`;
+    el.appendChild(d);
+  });
+}
+function renderEvents(events){
+  const el = $('eventList'); el.innerHTML = '';
+  if(!events || !events.length){ el.innerHTML = '<div class="empty">还没有事件</div>'; return; }
+  events.slice().reverse().forEach(x => {
+    const d = document.createElement('div');
+    d.className = 'event ' + String(x.priority || '').toLowerCase();
+    const text = x.text || x.fallback || (x.tips && x.tips.length ? x.tips.join(' / ') : '') || (x.submitted ? '已交给宿主' : '');
+    d.innerHTML = `<div class="e-top"><span>${x.type || 'event'}</span><span>${x.priority || ''}</span></div><div class="e-text">${text || '—'}</div>`;
+    el.appendChild(d);
+  });
+}
+function renderMemory(s){
+  const digest = s.memory_digest || '';
+  $('memoryScroll').innerHTML = `<span class="seal2">忆卷</span>${digest || '这一局结束后，猫娘会把 Boss、卡关、装备与约定写入忆卷。'}`;
+  const pl = $('promiseList'); pl.innerHTML = '';
+  if(!s.promises || !s.promises.length) pl.innerHTML = '<div class="empty">还没有约定</div>';
+  else s.promises.forEach(p => {
+    const d = document.createElement('div'); d.className = 'promise';
+    d.innerHTML = `<span class="mark">◆</span><span>${p.text}${p.due_hint ? '（' + p.due_hint + '）' : ''}</span>`;
+    pl.appendChild(d);
+  });
+  const m = s.memory || {};
+  $('memoryStats').innerHTML = `存档 ${m.saves ?? 0} · Boss 记录 ${m.encounters ?? 0} · 会话 ${m.sessions ?? 0} · 约定 ${m.promises ?? 0}`;
+}
+function renderBond(s){
+  const m = s.memory || {};
+  const sessions = Number(m.sessions) || 0;
+  const bosses = Number(m.encounters) || 0;
+  const promises = Number(m.promises) || 0;
+  const score = sessions * 4 + bosses * 6 + promises * 4 + (s.memory_digest ? 8 : 0);
+  const level = score >= 80 ? '生死相托' : score >= 45 ? '并肩江湖'
+              : score >= 20 ? '渐生默契' : score >= 6 ? '初结同行' : '初识';
+  $('bondLevel').textContent = level;
+  $('bondText').textContent = score >= 45 ? '你走过的路，NEKO 都记得。'
+    : score >= 20 ? '开始记住彼此的习惯了。' : '共赴江湖，忆卷会慢慢变厚。';
+  $('bondBar').style.width = Math.min(100, Math.round(score / 100 * 100)) + '%';
+  $('bondSessions').textContent = sessions;
+  $('bondBosses').textContent = bosses;
+  $('bondPromises').textContent = promises;
+}
+function renderKB(s){
+  const k = s.knowledge || {};
+  $('kbEntities').textContent = k.entities ?? 0;
+  $('kbRelations').textContent = k.relations ?? 0;
+  $('kbTips').textContent = k.tips ?? 0;
+  $('kbPending').textContent = k.unverified_tips ?? 0;
+  const labels = {boss:'Boss', mob:'小怪', bell:'铃铛', weapon:'主武器',
+                  phantom_edge:'影之武装', accessory:'饰品', medicine:'药瓶',
+                  mechanic:'机制', playbook:'玩法库'};
+  const coverage = k.coverage || {};
+  $('kbCoverage').innerHTML = Object.keys(labels)
+    .map(type => `<span class="chip">${labels[type]} ${coverage[type] ?? 0}</span>`)
+    .join('');
+}
+function renderLLM(s){
+  const l = s.llm || {};
+  const modeLabel = l.mode === 'independent' ? '独立 LLM'
+    : l.mode === 'host' ? '宿主主体回退'
+    : (l.enabled ? '待检查' : '未配置');
+  $('llmState').textContent = modeLabel;
+  const st = l.stats || {};
+  $('llmCalls').textContent = st.calls ?? 0;
+  $('llmTokens').textContent = st.total_tokens ?? 0;
+  $('llmCallsMini').textContent = st.calls ?? 0;
+  $('llmTokensMini').textContent = st.total_tokens ?? 0;
+  $('llmStateMini').textContent = modeLabel;
+  $('pillLLM').textContent = `灵犀 · ${l.mode === 'independent' ? '独立' : l.mode === 'host' ? '宿主回退' : '未配置'} · ${st.total_tokens ?? 0} tk`;
+  $('pillLLM').className = 'pill link' + (l.available ? ' good' : '');
+  const bars = $('sceneBars');
+  const scenes = st.by_scene || {};
+  const keys = Object.keys(scenes);
+  if(!keys.length){ bars.innerHTML = '<div class="empty">还没有调用记录</div>'; }
+  else{
+    const max = Math.max(...keys.map(k => scenes[k].tokens || 0), 1);
+    bars.innerHTML = keys.map(k => {
+      const t = scenes[k].tokens || 0;
+      return `<div class="scene-bar"><div class="top"><span>${k}</span><span>${scenes[k].calls} 次 · ${t} tk</span></div><div class="track"><i style="width:${Math.round(t/max*100)}%"></i></div></div>`;
+    }).join('');
+  }
+  if(!isEditing()){
+    $('llmEnabled').checked = !!l.enabled;
+    $('llmProvider').value = l.provider || 'openai_compatible';
+    $('llmModel').value = l.model || '';
+    $('llmBase').value = l.base_url || '';
+    $('llmKey').placeholder = l.key_set ? '已配置，留空不修改' : 'sk-...（本地可留空）';
+  }
+}
+$('btnGoLLM').onclick = () => switchView('llm');
+$('pillLLM').onclick = () => switchView('llm');
+$('btnScan').onclick = async () => {
+  try{
+    const r = await callEntry('pbz_scan', {});
+    renderScan(r.data || {});
+    renderScanMini(r.data || {});
+    toast(r.output || '侦察已刷新');
+  }catch(e){ toast('扫描失败：' + e.message); }
+};
+$('btnMiniScan').onclick = () => switchView('scan');
+$('btnVision').onclick = async () => {
+  try{
+    const r = await callEntry('pbz_vision_scan', {});
+    toast(r.output || '视觉侦察完成');
+    $('visionResult').textContent = r.output || '';
+    await refresh();
+  }catch(e){ toast('视觉侦察失败：' + e.message); }
+};
+function renderQuests(quests){
+  const el = $('questList'); el.innerHTML = '';
+  if(!quests || !quests.length){ el.innerHTML = '<div class="empty">还没有读到任务</div>'; return; }
+  quests.slice(0,4).forEach(q => {
+    const tasks = (q.tasks || []).map(t => {
+      const cur = t.current == null ? '?' : t.current;
+      const req = t.required == null ? '?' : t.required;
+      return `${cur}/${req}${t.complete ? ' ✓' : ''}`;
+    });
+    const d = document.createElement('div'); d.className = 'quest';
+    d.innerHTML = `<div class="qname"><span>${q.name || q.id || '任务'}</span><span class="muted">${q.state || ''}</span></div>${tasks.length ? `<div class="qtask">${tasks.join(' · ')}</div>` : ''}`;
+    el.appendChild(d);
+  });
+}
+function renderBell(bell){
+  const el = $('bellLine');
+  if(!bell || (!bell.near && !bell.activated)){
+    el.innerHTML = '<span class="glyph">铃</span><span class="muted">尚未靠近铃铛</span>'; return;
+  }
+  const name = bell.name || bell.id || '铃铛';
+  const state = bell.activated ? '已激活' : '未激活';
+  const dist = bell.distance != null ? ` · ${bell.distance}m` : '';
+  el.innerHTML = `<span class="glyph">${bell.activated ? '🔔' : '铃'}</span><span>${name} · ${state}${dist}</span>`;
+}
+function dirLabel(d){
+  return {front:'正前',front_left:'左前',front_right:'右前',left:'左侧',right:'右侧',behind:'后方'}[d] || '方位未知';
+}
+function renderScan(s){
+  const enemies = s.enemies || [];
+  const boss = s.boss || null;
+  $('scanStatus').textContent = s.connected
+    ? `实时 · ${s.state_age == null ? '—' : s.state_age + 's'}` : '等待游戏';
+  const blips = $('scanBlips'); blips.innerHTML = '';
+  const dirs = {front:0, front_right:45, right:90, right_back:135, behind:180,
+                left_back:225, left:270, front_left:315};
+  enemies.forEach(e => {
+    const d = document.createElement('div');
+    d.className = 'blip' + (e.is_boss || boss && e.name === boss.name ? ' boss' : '');
+    const angle = (dirs[e.direction] ?? 0) * Math.PI / 180;
+    const r = Math.min(44, 9 + (Number(e.distance) || 10) / 45 * 37);
+    d.style.left = (50 + Math.sin(angle) * r) + '%';
+    d.style.top = (50 - Math.cos(angle) * r) + '%';
+    d.title = `${e.name || '敌人'} · ${e.distance ?? '?'}m`;
+    blips.appendChild(d);
+  });
+  $('scanCount').textContent = `${enemies.length} 个目标`;
+  const list = $('scanEnemyList'); list.innerHTML = '';
+  if(!enemies.length){
+    list.innerHTML = '<div class="empty">扫描范围安静，不据此保证前方绝对安全。</div>';
+  }else{
+    enemies.forEach(e => {
+      const row = document.createElement('div'); row.className = 'enemy';
+      row.innerHTML = `<span>${e.name || '未知目标'}</span><span class="muted">${e.distance != null ? e.distance + 'm' : '—'}</span><span class="meta">${dirLabel(e.direction)}${e.hp_percent != null ? ' · 血量 ' + Math.round(e.hp_percent) + '%' : ''}${e.is_boss ? ' · BOSS' : ''}</span>`;
+      list.appendChild(row);
+    });
+  }
+  $('scanBossName').textContent = boss ? (boss.name || '未知 Boss') : '暂无 Boss';
+  $('scanBossHp').style.width = pct(boss && boss.hp_percent) + '%';
+  $('scanBossHpText').textContent = boss && boss.hp_percent != null ? Math.round(boss.hp_percent) + '%' : '--%';
+  $('scanBossPhase').textContent = boss ? `阶段 ${boss.phase ?? '?'}` : '阶段 ?';
+  const intel = s.boss_intel;
+  const ibox = $('scanBossIntel');
+  if(intel && boss){
+    const facts = intel.facts || {};
+    const bits = [];
+    if(facts.threat) bits.push(`威胁：${facts.threat}`);
+    if(facts.recommended_defense) bits.push(`应对：${facts.recommended_defense}`);
+    if(facts.arena) bits.push(`场地：${facts.arena}`);
+    if(facts.tip) bits.push(facts.tip);
+    ibox.innerHTML = `<b>百晓</b> ${bits.join(' ｜ ') || '暂无已核验情报'}${intel.hidden_by_spoiler ? '（详细内容被剧透等级隐藏）' : ''}`;
+    ibox.style.display = (bits.length || intel.hidden_by_spoiler) ? '' : 'none';
+  }else{
+    ibox.style.display = 'none';
+  }
+  const bell = s.bell || {};
+  const sb = $('scanBell');
+  if(bell.near || bell.activated){
+    const state = bell.activated ? '已激活' : '未激活';
+    const dist = bell.distance != null ? ` · ${bell.distance}m` : '';
+    sb.innerHTML = `<div class="scan-bell-icon">${bell.activated ? '🔔' : '铃'}</div><div><b>${bell.name || bell.id || '铃铛'}</b><div class="muted small">${state}${dist}</div></div>`;
+  }else{
+    sb.innerHTML = '<div class="scan-bell-icon">铃</div><div><b>尚未靠近铃铛</b><div class="muted small">靠近未激活铃铛时会在这里提示</div></div>';
+  }
+  const ids = bell.activated_ids || [];
+  $('scanBellIds').innerHTML = ids.slice(0, 8).map(x => `<span class="chip">${x}</span>`).join('');
+}
+function renderScanMini(s){
+  const enemies = s.enemies || [];
+  const boss = s.boss || null;
+  const bell = s.bell || {};
+  $('miniEnemyCount').textContent = `${enemies.length} 个目标`;
+  $('miniBoss').textContent = boss ? `Boss · ${boss.name || '未知'} ${boss.hp_percent != null ? Math.round(boss.hp_percent) + '%' : ''}` : '无 Boss';
+  $('miniBell').textContent = (bell.near || bell.activated)
+    ? `铃铛 · ${bell.activated ? '已激活' : '未激活'}${bell.distance != null ? ' · ' + bell.distance + 'm' : ''}`
+    : '铃铛未知';
+}
+function renderVision(s){
+  const v = s.vision || {};
+  $('visionStatus').textContent = v.enabled === false ? '已关闭'
+    : (v.ok ? '最近成功' : '宿主视觉模型');
+  const size = v.width && v.height ? ` · ${v.width}×${v.height}` : '';
+  $('visionMeta').textContent = v.captured_at
+    ? `上次 ${new Date(v.captured_at * 1000).toLocaleTimeString('zh-CN')}${size}`
+    : '尚未截图';
+  if(v.error) $('visionResult').textContent = `提示：${v.error}`;
+  else if(v.submitted) $('visionResult').textContent = '画面已交给宿主视觉模型，猫娘正在回应。';
+}
+function applyUI(ui){
+  ui = ui || {};
+  document.body.dataset.style = ui.style || 'scroll';
+  document.body.dataset.theme = ui.theme || 'ink';
+  document.body.dataset.density = ui.density || 'comfortable';
+  document.body.classList.toggle('reduce-motion', ui.motion === false);
+  document.querySelector('.app').style.zoom = String((Number(ui.scale) || 100) / 100);
+  document.querySelector('.llm-strip').style.display =
+    ui.show_llm_strip === false ? 'none' : '';
+  const radarCard = document.querySelector('.radar')?.closest('.card');
+  if(radarCard) radarCard.style.display = ui.show_radar === false ? 'none' : '';
+}
+function slotMeta(item){
+  if(!item || typeof item !== 'object') return '';
+  const bits = [];
+  if(item.tier != null) bits.push(`+${item.tier}`);
+  if(item.soulcast_form) bits.push(item.soulcast_form);
+  if(item.uses != null) bits.push(`余 ${item.uses}${item.max_uses ? '/' + item.max_uses : ''}`);
+  else if(item.count != null) bits.push(`×${item.count}`);
+  if(item.charges != null) bits.push(`充能 ${item.charges}`);
+  return bits.join(' · ');
+}
+function fillSlots(id, items, glyph, minSlots){
+  const el = $(id); if(!el) return;
+  el.innerHTML = '';
+  const list = (items || []).filter(Boolean);
+  list.forEach(item => {
+    const name = typeof item === 'string' ? item : (item.name || item.id || '未知');
+    const meta = typeof item === 'string' ? '' : slotMeta(item);
+    const d = document.createElement('div'); d.className = 'slot';
+    d.innerHTML = `<span class="glyph">${glyph}</span><span class="body"><span class="nm">${name}</span>${meta ? `<span class="meta">${meta}</span>` : ''}</span>`;
+    el.appendChild(d);
+  });
+  for(let i = list.length; i < minSlots; i++){
+    const d = document.createElement('div');
+    d.className = 'slot empty'; d.textContent = '空槽';
+    el.appendChild(d);
+  }
+}
+function renderLoadout(s){
+  let mains = s.main_weapons || [];
+  if(!mains.length && s.weapon) mains = [{name:s.weapon}];
+  if(s.secondary_weapon) mains = [...mains, s.secondary_weapon];
+  fillSlots('mainWeaponList', mains, '刃', 2);
+  const edges = s.edges_detail && s.edges_detail.length
+    ? s.edges_detail : (s.phantom_edges || []);
+  fillSlots('edgeSlotList', edges, '影', 3);
+  fillSlots('accessorySlotList', s.accessories || [], '饰', 2);
+  fillSlots('medicineSlotList', s.medicines || [], '药', 3);
+}
+function render(s){
+  last = s || {};
+  const on = !!s.connected;
+  $('dot').className = 'dot ' + (on ? 'on' : 'bad');
+  $('conn').textContent = on ? '已连接' : '等待游戏';
+
+  const scene = SCENES[s.scene] || SCENES.exploring;
+  $('sceneLabel').textContent = `${scene.label} · ${s.region || '未知区域'}`;
+  $('sceneDesc').textContent = scene.desc;
+  $('sceneChip').textContent = scene.label;
+  $('sceneChip').className = 'chip ' + scene.cls;
+  $('region').textContent = s.region || '等待入局';
+  $('pillRegion').textContent = s.region || '未知区域';
+  $('pillVoice').textContent = s.voice ? '宿主 TTS · 开' : '宿主 TTS · 关';
+  $('pillVoice').className = 'pill' + (s.voice ? ' good' : '');
+
+  $('lastLine').textContent = s.last_line || '猫娘还没有开口。先入江湖吧。';
+  $('lastLine').classList.toggle('muted', !s.last_line);
+  const session = s.session || {};
+  $('sessionTime').textContent = fmtTime(session.seconds);
+  $('sessionDeaths').textContent = session.deaths ?? 0;
+  $('sessionVictories').textContent = session.victories ?? 0;
+  $('sessionZones').textContent = (session.zones || []).length;
+
+  renderRing('ringHp', 'hpNum', s.hp_percent);
+  renderRing('ringShachi', 'shachiNum', s.shachi_percent);
+  $('combat').textContent = s.in_combat ? '交锋中' : '未交战';
+  $('stateAge').textContent = s.state_age == null ? '—' : `${s.state_age}s`;
+  renderLoadout(s);
+
+  renderBoss(s);
+  renderQuests(s.quests || []);
+  renderBell(s.bell || {});
+  renderScan(s);
+  renderScanMini(s);
+  renderVision(s);
+  renderRadar(s.enemies || []);
+  renderEnemies(s.enemies || []);
+  renderHistory(s.boss_history || [], 'bossHistory');
+  renderHistory(s.boss_history || [], 'bossHistoryBig');
+  renderEvents(s.events || []);
+  renderMemory(s);
+  renderBond(s);
+  renderKB(s);
+  renderLLM(s);
+  applyUI(s.ui || {});
+
+  $('bridgeDir').textContent = s.bridge_dir || '—';
+  $('pathConfig').textContent = s.paths?.config || '—';
+  $('pathMemory').textContent = s.paths?.memory || '—';
+  $('pathKnowledge').textContent = s.paths?.knowledge || '—';
+  $('hostBus').textContent = s.host_bus ? '可用' : '不可用';
+  $('waiting').textContent = s.waiting_reply ? '等待宿主回复' : '空闲';
+
+  if(!isEditing()){
+    $('voiceEnabled').checked = s.voice !== false;
+    $('overlayEnabled').checked = s.overlay !== false;
+    $('proactive').checked = s.proactive !== false;
+    $('spoiler').value = s.spoiler_level ?? 1;
+    $('adviceMin').value = s.boss_advice_min ?? 1;
+    $('adviceMax').value = s.boss_advice_max ?? 3;
+    $('llmTimeout').value = s.llm?.timeout ?? 20;
+    $('llmRate').value = s.llm?.rate ?? 10;
+    $('uiTheme').value = s.ui?.theme || 'ink';
+    $('uiStyle').value = s.ui?.style || 'scroll';
+    $('themeQuick').value = s.ui?.style || 'scroll';
+    $('uiDensity').value = s.ui?.density || 'comfortable';
+    $('uiScale').value = s.ui?.scale ?? 100;
+    $('uiScaleLabel').textContent = $('uiScale').value + '%';
+    $('uiMotion').checked = s.ui?.motion !== false;
+    $('uiShowRadar').checked = s.ui?.show_radar !== false;
+    $('uiShowLlmStrip').checked = s.ui?.show_llm_strip !== false;
+    $('visionEnabled').checked = s.vision?.enabled !== false;
+    $('visionForeground').checked = s.vision?.require_foreground !== false;
+  }
+}
+
+async function refresh(){
+  try{
+    const r = await callEntry('get_dashboard_state', {});
+    render(r.data || {});
+  }catch(e){
+    $('dot').className = 'dot bad';
+    $('conn').textContent = '面板断开';
+  }
+}
+
+async function saveSettings(extra={}){
+  const payload = {
+    voice_enabled: $('voiceEnabled').checked,
+    overlay_enabled: $('overlayEnabled').checked,
+    proactive: $('proactive').checked,
+    spoiler_level: Number($('spoiler').value),
+    boss_advice_min: Number($('adviceMin').value),
+    boss_advice_max: Number($('adviceMax').value),
+    ui_theme: $('uiTheme').value,
+    ui_style: $('uiStyle').value,
+    ui_density: $('uiDensity').value,
+    ui_scale: Number($('uiScale').value),
+    ui_motion: $('uiMotion').checked,
+    ui_show_radar: $('uiShowRadar').checked,
+    ui_show_llm_strip: $('uiShowLlmStrip').checked,
+    vision_enabled: $('visionEnabled').checked,
+    vision_require_foreground: $('visionForeground').checked,
+    ...extra
+  };
+  const r = await callEntry('pbz_save_settings', payload);
+  toast(r.output || '已保存');
+  await refresh();
+}
+$('btnSave').onclick = () => saveSettings().catch(e => toast('保存失败：' + e.message));
+function previewUI(){
+  applyUI({
+    style: $('uiStyle').value,
+    theme: $('uiTheme').value,
+    density: $('uiDensity').value,
+    scale: Number($('uiScale').value),
+    motion: $('uiMotion').checked,
+    show_radar: $('uiShowRadar').checked,
+    show_llm_strip: $('uiShowLlmStrip').checked
+  });
+}
+$('uiScale').oninput = () => {
+  $('uiScaleLabel').textContent = $('uiScale').value + '%';
+  previewUI();
+};
+$('themeQuick').onchange = () => {
+  $('uiStyle').value = $('themeQuick').value;
+  previewUI();
+  callEntry('pbz_save_settings', { ui_style: $('uiStyle').value })
+    .then(() => toast('界面风格已保存'))
+    .catch(e => toast('风格保存失败：' + e.message));
+};
+$('uiStyle').onchange = previewUI;
+$('uiTheme').onchange = previewUI;
+$('uiDensity').onchange = previewUI;
+$('uiMotion').onchange = previewUI;
+$('uiShowRadar').onchange = previewUI;
+$('uiShowLlmStrip').onchange = previewUI;
+$('btnTestVoice').onclick = async () => {
+  try{ const r = await callEntry('pbz_test_voice', {}); toast(r.output || '已提交'); }
+  catch(e){ toast('语音失败：' + e.message); }
+};
+document.querySelectorAll('[data-quiet]').forEach(b => b.onclick = () => {
+  const m = Number(b.dataset.quiet);
+  saveSettings({quiet_minutes: m}).catch(e => toast('设置失败：' + e.message));
+});
+
+$('btnSaveLLM').onclick = async () => {
+  const key = $('llmKey').value.trim();
+  const payload = {
+    llm_enabled: $('llmEnabled').checked,
+    llm_provider: $('llmProvider').value,
+    llm_model: $('llmModel').value.trim(),
+    llm_base_url: $('llmBase').value.trim(),
+    llm_timeout: Number($('llmTimeout').value || 20),
+    llm_max_calls_per_minute: Number($('llmRate').value || 10)
+  };
+  if(key) payload.llm_api_key = key;
+  try{
+    const r = await callEntry('pbz_save_settings', payload);
+    $('llmKey').value = '';
+    toast(r.output || '灵犀已保存');
+    await refresh();
+  }catch(e){ toast('保存失败：' + e.message); }
+};
+$('btnTestLLM').onclick = async () => {
+  try{
+    const r = await callEntry('pbz_test_llm', {});
+    toast(r.output || '已测试');
+    if(r.data) renderLLM({...last, llm:{...(last.llm||{}), available:r.data.ok, stats:r.data.stats||{}}});
+  }catch(e){ toast('测试失败：' + e.message); }
+};
+$('btnClearKey').onclick = async () => {
+  try{
+    const r = await callEntry('pbz_save_settings', {llm_clear_key:true});
+    toast(r.output || '已清除 Key');
+    await refresh();
+  }catch(e){ toast('清除失败：' + e.message); }
+};
+
+$('btnSearch').onclick = async () => {
+  const q = $('kbQuery').value.trim();
+  if(!q && !kbType) return toast('先输入关键词或选择分类');
+  try{
+    const r = await callEntry('pbz_search_knowledge', {query:q, limit:30, type:kbType});
+    const items = (r.data && r.data.items) || [];
+    const el = $('kbResults');
+    if(!items.length){ el.innerHTML = '<div class="empty">没有找到，喵不编。</div>'; return; }
+    el.innerHTML = items.map(x => {
+      const f = x.facts || {};
+      const brief = f.tip || f.use || f.category || f.archetype || '';
+      return `<div class="kb-item"><div class="t"><span>${x.name || x.id}</span><small>${x.type || ''}</small></div><div class="d">${brief}${x.hidden_by_spoiler ? ' · 详细内容被剧透等级隐藏' : ''}</div></div>`;
+    }).join('');
+  }catch(e){ toast('检索失败：' + e.message); }
+};
+document.querySelectorAll('#kbFilters button').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('#kbFilters button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    kbType = btn.dataset.kbType || '';
+    if(kbType && !$('kbQuery').value.trim()){
+      $('btnSearch').click();
+    }
+  };
+});
+$('kbQuery').addEventListener('keydown', e => { if(e.key === 'Enter') $('btnSearch').click(); });
+$('btnReloadKB').onclick = async () => {
+  try{ const r = await callEntry('pbz_reload_knowledge', {}); toast(r.output || '已重载'); await refresh(); }
+  catch(e){ toast('重载失败：' + e.message); }
+};
+$('btnRefreshMemory').onclick = refresh;
+$('btnExportMemory').onclick = async () => {
+  try{ const r = await callEntry('pbz_export_memory', {}); toast(r.output || '已导出'); }
+  catch(e){ toast('导出失败：' + e.message); }
+};
+$('btnClearMemory').onclick = async () => {
+  if(!confirm('确定清除当前存档的陪玩记忆？')) return;
+  try{ const r = await callEntry('pbz_clear_memory', {confirm:true}); toast(r.output || '已清除'); await refresh(); }
+  catch(e){ toast('清除失败：' + e.message); }
+};
+
+render({
+  connected: false, scene: 'exploring', voice: true,
+  ui: {style: 'scroll', theme: 'ink', density: 'comfortable', scale: 100,
+       motion: true, show_radar: true, show_llm_strip: true}
+});
+refresh();
+setInterval(refresh, 2000);
+</script>
+</body>
+</html>

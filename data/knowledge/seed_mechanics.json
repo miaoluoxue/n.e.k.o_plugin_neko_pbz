@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "entities": [
+    {
+      "id": "mechanic.weapon_switch",
+      "type": "mechanic",
+      "name": "切换主武器恢复杀气",
+      "aliases": ["换武器回杀气", "ChangeWeapon"],
+      "spoiler_level": 1,
+      "confidence": 0.8,
+      "source": "catalog",
+      "facts": {
+        "category": "战斗机制",
+        "tip": "游戏文本明确提示更换武器可恢复杀气；杀气见底时可作为节奏手段。",
+        "action": "切换主武器"
+      }
+    },
+    {
+      "id": "mechanic.medicine_uses",
+      "type": "mechanic",
+      "name": "药瓶使用次数",
+      "aliases": ["药瓶", "药品次数"],
+      "spoiler_level": 1,
+      "confidence": 0.75,
+      "source": "catalog",
+      "facts": {
+        "category": "消耗品机制",
+        "tip": "药瓶不是无限使用，多个药瓶有独立使用次数；低血时先确认剩余次数。"
+      }
+    },
+    {
+      "id": "mechanic.main_secondary",
+      "type": "mechanic",
+      "name": "主武器 / 副武器",
+      "aliases": ["主副武器", "武器切换"],
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "catalog",
+      "facts": {
+        "category": "装备机制",
+        "tip": "主武器与副武器定位不同；黑伤双刃在资料中被描述为副武器定位，适合打空杀气后的追伤。"
+      }
+    },
+    {
+      "id": "mechanic.edge_roles",
+      "type": "mechanic",
+      "name": "影之武装用途分类",
+      "aliases": ["影之武装", "挂件"],
+      "spoiler_level": 1,
+      "confidence": 0.8,
+      "source": "catalog",
+      "facts": {
+        "category": "装备机制",
+        "tip": "影之武装按用途分为破障、远程、位移、控制等；看场景带，不要只看伤害。"
+      }
+    },
+    {
+      "id": "mechanic.perfect_guard",
+      "type": "mechanic",
+      "name": "完美防御 / 完美闪避",
+      "aliases": ["完美格挡", "完美闪避"],
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "catalog",
+      "facts": {
+        "category": "战斗机制",
+        "tip": "完美防御/闪避有独立时间窗口，部分饰品会提升窗口；先观察起手，不要盲目连按。"
+      }
+    },
+    {
+      "id": "mechanic.execution",
+      "type": "mechanic",
+      "name": "破防 / 处决",
+      "aliases": ["处决", "破防"],
+      "spoiler_level": 1,
+      "confidence": 0.65,
+      "source": "curated",
+      "facts": {
+        "category": "战斗机制",
+        "tip": "把敌人打进破防后优先处理高威胁目标；不要为了处决忽略旁边远程怪。"
+      }
+    },
+    {
+      "id": "mechanic.element",
+      "type": "mechanic",
+      "name": "元素与状态异常",
+      "aliases": ["异常状态", "元素伤害"],
+      "spoiler_level": 1,
+      "confidence": 0.6,
+      "source": "catalog",
+      "facts": {
+        "category": "战斗机制",
+        "tip": "燃烧、冰霜、流血、中毒等状态有对应抗性饰品/药剂；具体数值待实机核验。"
+      }
+    },
+    {
+      "id": "mechanic.bell_network",
+      "type": "mechanic",
+      "name": "铃铛网络",
+      "aliases": ["检查点网络", "传送铃铛"],
+      "spoiler_level": 1,
+      "confidence": 0.8,
+      "source": "catalog",
+      "facts": {
+        "category": "探索机制",
+        "tip": "激活铃铛后可作为检查点/传送节点；进 Boss 区前先确认最近铃铛。"
+      }
+    },
+    {
+      "id": "mechanic.loadout_slots",
+      "type": "mechanic",
+      "name": "多槽位配装",
+      "aliases": ["配装", "装备槽"],
+      "spoiler_level": 1,
+      "confidence": 0.75,
+      "source": "catalog",
+      "facts": {
+        "category": "装备机制",
+        "tip": "主/副武器、多个影之武装、多个饰品与药瓶会共同影响战斗；插件只读当前装备，不读背包。"
+      }
+    }
+  ],
+  "relations": []
+}

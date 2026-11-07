@@ -1,0 +1,366 @@
+{
+  "version": 1,
+  "note": "首批种子数据。具体 Boss 招式与阶段标记为未核验，实机确认后再转为 verified。",
+  "entities": [
+    {
+      "id": "mechanic.bell",
+      "type": "mechanic",
+      "name": "铃铛",
+      "aliases": ["存档铃铛", "检查点", "复活点"],
+      "spoiler_level": 1,
+      "confidence": 0.9,
+      "source": "runtime",
+      "facts": {
+        "category": "存档/复活",
+        "tip": "敲铃后更新检查点与复活位置；进 Boss 区前建议先确认最近的铃。"
+      }
+    },
+    {
+      "id": "mechanic.shachi",
+      "type": "mechanic",
+      "name": "杀气",
+      "aliases": ["杀气值", "ShaChi"],
+      "spoiler_level": 1,
+      "confidence": 0.9,
+      "source": "runtime",
+      "facts": {
+        "category": "战斗资源",
+        "tip": "杀气见底时不要硬拼，先拉开或改用低消耗手段。"
+      }
+    },
+    {
+      "id": "mechanic.soulcasting",
+      "type": "mechanic",
+      "name": "铸魂",
+      "aliases": ["Soul Casting", "武器铸魂"],
+      "spoiler_level": 1,
+      "confidence": 0.9,
+      "source": "datatable",
+      "facts": {
+        "category": "武器成长",
+        "tip": "铸魂会改变武器形态并解锁新能力；需要特定铸魂材料。插件不读取材料持有量。"
+      }
+    },
+    {
+      "id": "bell.generic",
+      "type": "bell",
+      "name": "存档铃铛",
+      "aliases": ["铃", "bell"],
+      "spoiler_level": 1,
+      "confidence": 0.9,
+      "source": "runtime",
+      "facts": {
+        "category": "检查点",
+        "use": "存档、复活、刷新状态",
+        "tip": "靠近未激活铃铛时先敲；死亡后会回到最近激活的铃铛。"
+      }
+    },
+    {
+      "id": "boss.ah_hua",
+      "type": "boss",
+      "name": "新娘阿花",
+      "aliases": ["阿花"],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.6,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss",
+        "phases": null,
+        "threat": "高",
+        "recommended_defense": "先观察突进与召唤，再决定格挡或拉开",
+        "tip": "具体招式与阶段仍待实机核验，未核验前不编招式名。"
+      }
+    },
+    {
+      "id": "boss.mu_xiaokui",
+      "type": "boss",
+      "name": "沐小葵",
+      "aliases": ["小葵"],
+      "region": "杀气塔",
+      "spoiler_level": 2,
+      "confidence": 0.6,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss",
+        "phases": null,
+        "threat": "高",
+        "recommended_defense": "保留退路，注意阶段变化",
+        "tip": "具体招式与阶段仍待实机核验。"
+      }
+    },
+    {
+      "id": "boss.yucong",
+      "type": "boss",
+      "name": "玉琮",
+      "aliases": [],
+      "region": "隐藏 Boss",
+      "spoiler_level": 2,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss",
+        "phases": null,
+        "threat": "高",
+        "tip": "部分前置会改变战斗阶段；未核验前只提示注意变化。"
+      }
+    },
+    {
+      "id": "boss.zhuiming",
+      "type": "boss",
+      "name": "追命",
+      "aliases": [],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss",
+        "threat": "高",
+        "tip": "关底 Boss；相关影之武装为追命锁镰。"
+      }
+    },
+    {
+      "id": "boss.peng_meng",
+      "type": "boss",
+      "name": "彭猛",
+      "aliases": ["斧老大"],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss",
+        "threat": "高",
+        "tip": "与巨凶斧相关；具体招式待实机核验。"
+      }
+    },
+    {
+      "id": "mob.archer",
+      "type": "mob",
+      "name": "远程弓手",
+      "aliases": ["弓手", "恶弓手"],
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "runtime",
+      "facts": {
+        "archetype": "ranged",
+        "threat": "中",
+        "priority": "先处理，避免被跨招式打断",
+        "tip": "交战时先确认远程单位位置。"
+      }
+    },
+    {
+      "id": "mob.melee",
+      "type": "mob",
+      "name": "近战刀兵",
+      "aliases": ["刀兵"],
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "runtime",
+      "facts": {
+        "archetype": "melee",
+        "threat": "低",
+        "priority": "可借起手做反击",
+        "tip": "不要被包围；保持一个方向的退路。"
+      }
+    },
+    {
+      "id": "mob.shield",
+      "type": "mob",
+      "name": "盾兵",
+      "aliases": ["持盾敌人"],
+      "spoiler_level": 1,
+      "confidence": 0.6,
+      "source": "runtime",
+      "facts": {
+        "archetype": "shield",
+        "threat": "中",
+        "priority": "绕后或破防后再输出",
+        "tip": "正面硬砍容易被弹开。"
+      }
+    },
+    {
+      "id": "weapon.hei_shang",
+      "type": "weapon",
+      "name": "黑伤",
+      "aliases": ["长形黑伤", "黑伤双刃"],
+      "spoiler_level": 1,
+      "confidence": 0.8,
+      "source": "catalog",
+      "facts": {
+        "category": "主武器",
+        "type": "single_blade",
+        "soulcasting": {
+          "current_form": "黑伤",
+          "next_form": "长形黑伤 / 黑伤双刃",
+          "materials": [
+            {"name": "暗魔天堡面具", "qty": 1, "source": "击败魔渊"},
+            {"name": "混沌双铁", "qty": 1, "source": "混沌残铁合成"}
+          ],
+          "new_abilities": ["形态变化与追加阶段（具体以实机为准）"]
+        },
+        "tip": "铸魂形态与材料来源来自现有数据，具体效果需实机确认。"
+      }
+    },
+    {
+      "id": "weapon.cuixin_pipa",
+      "type": "weapon",
+      "name": "催心琵琶",
+      "aliases": ["琵琶"],
+      "spoiler_level": 2,
+      "confidence": 0.8,
+      "source": "catalog",
+      "facts": {
+        "category": "远程武器",
+        "type": "ranged",
+        "soulcasting": {
+          "current_form": "催心琵琶",
+          "next_form": "幻术琵琶",
+          "materials": [
+            {"name": "弦者的琵琶部件", "qty": 0, "source": "后续流程/交给幻鬼"}
+          ],
+          "new_abilities": ["破除幻术迷雾", "操控小怪"],
+          "changes_moveset": true
+        },
+        "tip": "铸魂后的能力来自现有数据，仍建议实机确认。"
+      }
+    },
+    {
+      "id": "edge.brutal_axe",
+      "type": "phantom_edge",
+      "name": "巨凶斧",
+      "aliases": ["斧子", "破墙斧"],
+      "spoiler_level": 1,
+      "confidence": 0.85,
+      "source": "catalog",
+      "facts": {
+        "category": "影之武装",
+        "use": "破障/破墙",
+        "tip": "看到可破坏墙体时先确认是否已装备。"
+      }
+    },
+    {
+      "id": "edge.feather_bow",
+      "type": "phantom_edge",
+      "name": "羽弓",
+      "aliases": ["弓"],
+      "spoiler_level": 1,
+      "confidence": 0.8,
+      "source": "catalog",
+      "facts": {
+        "category": "影之武装",
+        "use": "远程/射落悬挂物",
+        "tip": "需要射落机关或远程消耗时使用。"
+      }
+    },
+    {
+      "id": "edge.shachi_hook",
+      "type": "phantom_edge",
+      "name": "追命锁镰",
+      "aliases": ["锁镰"],
+      "spoiler_level": 1,
+      "confidence": 0.8,
+      "source": "catalog",
+      "facts": {
+        "category": "影之武装",
+        "use": "位移/攀越/铁链",
+        "tip": "Boss 拉开距离时可作为机动手段。"
+      }
+    },
+    {
+      "id": "edge.illusion_pipa",
+      "type": "phantom_edge",
+      "name": "幻术琵琶",
+      "aliases": ["幻术"],
+      "spoiler_level": 2,
+      "confidence": 0.75,
+      "source": "catalog",
+      "facts": {
+        "category": "影之武装",
+        "use": "破除幻术迷雾/操控小怪",
+        "tip": "由催心琵琶铸魂而来。"
+      }
+    }
+  ],
+  "relations": [
+    {"src": "weapon.cuixin_pipa", "rel": "soulcasts_to", "dst": "edge.illusion_pipa"},
+    {"src": "edge.brutal_axe", "rel": "dropped_by", "dst": "boss.peng_meng"},
+    {"src": "edge.shachi_hook", "rel": "dropped_by", "dst": "boss.zhuiming"},
+    {"src": "weapon.hei_shang", "rel": "requires_material", "dst": "mechanic.soulcasting"}
+  ],
+  "tips": [
+    {
+      "boss_id": "boss.generic",
+      "text": "先确认附近铃铛已敲，别把检查点留在很远的地方。",
+      "tags": ["mechanic:bell"],
+      "spoiler_level": 1,
+      "weight": 1.4,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "先看两轮起手再决定格挡还是闪避，别急着抢刀。",
+      "tags": ["defense:observe"],
+      "spoiler_level": 1,
+      "weight": 1.2,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "杀气见底时先拉开，不要硬拼。",
+      "tags": ["resource:shachi"],
+      "spoiler_level": 1,
+      "weight": 1.3,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "尽量别把自己逼到场地边缘，留一条退路。",
+      "tags": ["arena:space"],
+      "spoiler_level": 1,
+      "weight": 1.0,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "有召唤物时先处理会打断你的那个。",
+      "tags": ["adds:priority"],
+      "spoiler_level": 1,
+      "weight": 1.1,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "低血先稳，不要为了补刀吃第二段。",
+      "tags": ["survival:low_hp"],
+      "spoiler_level": 1,
+      "weight": 1.2,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.ah_hua",
+      "text": "红绸突进后的收招是观察窗口。",
+      "tags": ["needs:mobility", "punish:after_lunge"],
+      "spoiler_level": 2,
+      "weight": 1.0,
+      "verified": false,
+      "source": "pending-probe"
+    },
+    {
+      "boss_id": "boss.mu_xiaokui",
+      "text": "阶段变化后先确认新节奏，再决定是否抢输出。",
+      "tags": ["phase:change"],
+      "spoiler_level": 2,
+      "weight": 1.0,
+      "verified": false,
+      "source": "pending-probe"
+    }
+  ]
+}

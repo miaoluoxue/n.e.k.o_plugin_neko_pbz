@@ -1,0 +1,399 @@
+{
+  "version": 1,
+  "entities": [
+    {
+      "id": "weapon.heishang_twin",
+      "type": "weapon",
+      "name": "黑伤双刃",
+      "aliases": ["双刀", "双刃"],
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "catalog",
+      "facts": {
+        "category": "主武器",
+        "type": "double_blade",
+        "role": "副手/快速连段",
+        "tip": "资料中把它描述为副武器定位；适合在打空对方杀气后快速追伤。"
+      }
+    },
+    {
+      "id": "weapon.heishang_long",
+      "type": "weapon",
+      "name": "长形黑伤",
+      "aliases": ["长黑伤"],
+      "spoiler_level": 2,
+      "confidence": 0.65,
+      "source": "catalog",
+      "facts": {
+        "category": "主武器",
+        "type": "long_blade",
+        "soulcasting": {
+          "current_form": "长形黑伤",
+          "next_form": "寒冰阶段/黑伤双刀",
+          "materials": [{"name": "炽热炎火", "qty": 1, "source": "火刀·祝原"}],
+          "new_abilities": ["追加寒冰阶段（待实机确认）"]
+        }
+      }
+    },
+    {
+      "id": "weapon.yaoju",
+      "type": "weapon",
+      "name": "妖锯",
+      "aliases": [],
+      "spoiler_level": 2,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {
+        "category": "主武器",
+        "type": "saw",
+        "note": "与玉瓒/铁鬼线索相关；具体招式与铸魂效果待核验。"
+      }
+    },
+    {
+      "id": "weapon.ziming",
+      "type": "weapon",
+      "name": "紫冥剑",
+      "aliases": [],
+      "spoiler_level": 2,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {"category": "主武器", "type": "sword", "note": "任务奖励类武器；具体招式待核验。"}
+    },
+    {
+      "id": "weapon.luanying",
+      "type": "weapon",
+      "name": "乱莺剑",
+      "aliases": [],
+      "spoiler_level": 2,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {"category": "主武器", "type": "sword", "note": "与沐小葵/组织令牌线索相关。"}
+    },
+    {
+      "id": "weapon.baiying",
+      "type": "weapon",
+      "name": "白影",
+      "aliases": [],
+      "spoiler_level": 2,
+      "confidence": 0.5,
+      "source": "catalog",
+      "facts": {"category": "主武器", "type": "sword", "note": "具体招式与适用场景待实机核验。"}
+    },
+    {
+      "id": "weapon.tiansha",
+      "type": "weapon",
+      "name": "天煞双钺",
+      "aliases": ["双钺"],
+      "spoiler_level": 2,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {"category": "主武器", "type": "dual_axe", "note": "铸魂材料与杀气塔相关；具体效果待核验。"}
+    },
+    {
+      "id": "weapon.pojun",
+      "type": "weapon",
+      "name": "破军",
+      "aliases": [],
+      "spoiler_level": 2,
+      "confidence": 0.5,
+      "source": "catalog",
+      "facts": {"category": "主武器", "type": "great_blade", "note": "具体招式与铸魂材料待核验。"}
+    },
+    {
+      "id": "weapon.cigu",
+      "type": "weapon",
+      "name": "刺骨混沌",
+      "aliases": [],
+      "spoiler_level": 2,
+      "confidence": 0.5,
+      "source": "catalog",
+      "facts": {"category": "主武器", "type": "chaos", "note": "与混沌容器类铸魂材料相关。"}
+    },
+    {
+      "id": "edge.tiger_cannon",
+      "type": "phantom_edge",
+      "name": "虎炮",
+      "aliases": ["虎炮：雷当"],
+      "spoiler_level": 1,
+      "confidence": 0.8,
+      "source": "catalog",
+      "facts": {"category": "影之武装", "use": "破墙/轰开障碍", "tip": "遇到虎炮专属石墙时使用。"}
+    },
+    {
+      "id": "edge.golden_melon",
+      "type": "phantom_edge",
+      "name": "长柄金瓜",
+      "aliases": ["金瓜"],
+      "spoiler_level": 1,
+      "confidence": 0.75,
+      "source": "catalog",
+      "facts": {"category": "影之武装", "use": "砸墙/破障", "tip": "石壁类障碍优先考虑。"}
+    },
+    {
+      "id": "edge.lion_head",
+      "type": "phantom_edge",
+      "name": "烈焰狮头",
+      "aliases": ["狮头"],
+      "spoiler_level": 1,
+      "confidence": 0.75,
+      "source": "catalog",
+      "facts": {"category": "影之武装", "use": "燃烧荆棘/清障", "tip": "遇到可燃障碍时使用。"}
+    },
+    {
+      "id": "edge.flying_knives",
+      "type": "phantom_edge",
+      "name": "妙手飞刀",
+      "aliases": ["飞刀"],
+      "spoiler_level": 1,
+      "confidence": 0.75,
+      "source": "catalog",
+      "facts": {"category": "影之武装", "use": "远程/射落悬挂物", "tip": "需要射击远处机关时使用。"}
+    },
+    {
+      "id": "edge.golden_flintlock",
+      "type": "phantom_edge",
+      "name": "黄金火铳",
+      "aliases": ["火铳"],
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "catalog",
+      "facts": {"category": "影之武装", "use": "远程/射落", "tip": "远程手段之一。"}
+    },
+    {
+      "id": "edge.one_eye_bow",
+      "type": "phantom_edge",
+      "name": "独眼弓",
+      "aliases": ["独眼"],
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "catalog",
+      "facts": {"category": "影之武装", "use": "远程", "tip": "远程类挂件之一。"}
+    },
+    {
+      "id": "edge.dragon_fork",
+      "type": "phantom_edge",
+      "name": "游龙叉",
+      "aliases": ["游龙"],
+      "spoiler_level": 1,
+      "confidence": 0.65,
+      "source": "catalog",
+      "facts": {"category": "影之武装", "use": "远程/机关", "tip": "具体适用场景待实机核验。"}
+    },
+    {
+      "id": "edge.blood_drop",
+      "type": "phantom_edge",
+      "name": "血滴子",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.65,
+      "source": "catalog",
+      "facts": {"category": "影之武装", "use": "机关/控制", "tip": "具体效果待实机核验。"}
+    },
+    {
+      "id": "edge.void_fan",
+      "type": "phantom_edge",
+      "name": "虚空华扇",
+      "aliases": ["华扇"],
+      "spoiler_level": 2,
+      "confidence": 0.6,
+      "source": "catalog",
+      "facts": {"category": "影之武装", "use": "幻术/控制", "tip": "与幻术类地形可能相关。"}
+    },
+    {
+      "id": "edge.puppet_bell",
+      "type": "phantom_edge",
+      "name": "操偶铃铛",
+      "aliases": ["操偶铃"],
+      "spoiler_level": 1,
+      "confidence": 0.65,
+      "source": "catalog",
+      "facts": {"category": "影之武装", "use": "操控/控制", "tip": "具体效果待实机核验。"}
+    },
+    {
+      "id": "accessory.divine_ring",
+      "type": "accessory",
+      "name": "神机指环",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "catalog",
+      "facts": {"category": "饰品", "effect": "格挡时杀气消耗降低（资料值 -20%）"}
+    },
+    {
+      "id": "accessory.meridian",
+      "type": "accessory",
+      "name": "浑源经脉仪",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "catalog",
+      "facts": {"category": "饰品", "effect": "完美防御/完美闪避窗口提升（资料值 +15%）"}
+    },
+    {
+      "id": "accessory.mother_charm",
+      "type": "accessory",
+      "name": "慈母护符",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {"category": "饰品", "effect": "生存/回复类倾向；具体数值待核验。"}
+    },
+    {
+      "id": "accessory.weave",
+      "type": "accessory",
+      "name": "珍玩妖织",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {"category": "饰品", "effect": "生命类饰品；具体数值待核验。"}
+    },
+    {
+      "id": "accessory.muscle_band",
+      "type": "accessory",
+      "name": "筋力绑带",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.75,
+      "source": "catalog",
+      "facts": {"category": "饰品", "effect": "对敌人伤害提升（资料值 +5%）"}
+    },
+    {
+      "id": "accessory.survival",
+      "type": "accessory",
+      "name": "绝地求生令",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.6,
+      "source": "catalog",
+      "facts": {"category": "饰品", "effect": "低血量生存类；具体触发待核验。"}
+    },
+    {
+      "id": "accessory.counter_bracer",
+      "type": "accessory",
+      "name": "反击护腕",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.6,
+      "source": "catalog",
+      "facts": {"category": "饰品", "effect": "反击类；具体触发待核验。"}
+    },
+    {
+      "id": "accessory.arrow_ward",
+      "type": "accessory",
+      "name": "避箭护符",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.65,
+      "source": "catalog",
+      "facts": {"category": "饰品", "effect": "远程伤害防护类。"}
+    },
+    {
+      "id": "accessory.nuo_mask",
+      "type": "accessory",
+      "name": "百相傩面",
+      "aliases": ["傩面"],
+      "spoiler_level": 2,
+      "confidence": 0.65,
+      "source": "catalog",
+      "facts": {"category": "饰品", "effect": "召唤类；由傩面碎片合成。"}
+    },
+    {
+      "id": "accessory.dark_cage",
+      "type": "accessory",
+      "name": "暗源小笼",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {"category": "饰品", "effect": "暗源/阴影类；具体数值待核验。"}
+    },
+    {
+      "id": "medicine.gourd",
+      "type": "medicine",
+      "name": "药葫芦",
+      "aliases": ["回复药"],
+      "spoiler_level": 1,
+      "confidence": 0.8,
+      "source": "catalog",
+      "facts": {"category": "药瓶", "use": "回复生命", "tip": "基础回复药；注意剩余使用次数。"}
+    },
+    {
+      "id": "medicine.bitter_dew",
+      "type": "medicine",
+      "name": "苦叶露",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.75,
+      "source": "catalog",
+      "facts": {"category": "药瓶", "effect": "持续减伤并回复生命（资料：15s 减伤 20%，10s 回复 40%）", "max_uses": 4}
+    },
+    {
+      "id": "medicine.boiling_wine",
+      "type": "medicine",
+      "name": "沸酒酿",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.75,
+      "source": "catalog",
+      "facts": {"category": "药瓶", "effect": "持续产生杀气并回复生命（资料值：15s 杀气/30% 生命）", "max_uses": 3}
+    },
+    {
+      "id": "medicine.guishen",
+      "type": "medicine",
+      "name": "归神汤",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.6,
+      "source": "catalog",
+      "facts": {"category": "药瓶", "use": "回复/恢复类；具体数值待核验。"}
+    },
+    {
+      "id": "medicine.ningfeng",
+      "type": "medicine",
+      "name": "凝锋丹",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {"category": "药瓶", "use": "战斗增益类；具体效果待核验。"}
+    },
+    {
+      "id": "medicine.cihua",
+      "type": "medicine",
+      "name": "慈花甘露",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {"category": "药瓶", "use": "恢复类；具体数值待核验。"}
+    },
+    {
+      "id": "medicine.bujin",
+      "type": "medicine",
+      "name": "不尽水",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {"category": "药瓶", "use": "恢复类；具体数值待核验。"}
+    },
+    {
+      "id": "medicine.green_snake",
+      "type": "medicine",
+      "name": "青蛇药剂",
+      "aliases": [],
+      "spoiler_level": 1,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {"category": "药瓶", "use": "元素抗性类；具体数值待核验。"}
+    }
+  ],
+  "relations": [
+    {"src": "weapon.heishang_twin", "rel": "related_to", "dst": "weapon.hei_shang"},
+    {"src": "weapon.cuixin_pipa", "rel": "soulcasts_to", "dst": "edge.illusion_pipa"},
+    {"src": "edge.tiger_cannon", "rel": "dropped_by", "dst": "boss.leidang"},
+    {"src": "accessory.nuo_mask", "rel": "requires_material", "dst": "mechanic.soulcasting"}
+  ]
+}

@@ -1,0 +1,253 @@
+{
+  "version": 1,
+  "entities": [
+    {
+      "id": "playbook.boss_prep",
+      "type": "playbook",
+      "name": "Boss 前准备",
+      "aliases": ["打 Boss 前", "战前准备"],
+      "spoiler_level": 1,
+      "confidence": 0.85,
+      "source": "curated",
+      "facts": {
+        "category": "玩法库",
+        "steps": ["先敲最近铃铛", "看当前主/副武器与影之武装", "确认药瓶剩余次数", "观察 Boss 第一轮起手"],
+        "tip": "铃铛、装备、药品、起手观察是最低成本的战前检查。"
+      }
+    },
+    {
+      "id": "playbook.combat_rhythm",
+      "type": "playbook",
+      "name": "战斗节奏",
+      "aliases": ["战斗基础", "交战争取"],
+      "spoiler_level": 1,
+      "confidence": 0.8,
+      "source": "curated",
+      "facts": {
+        "category": "玩法库",
+        "steps": ["先观察两轮起手", "不要在杀气见底时硬拼", "优先处理远程/召唤/自爆", "保留一个方向的退路"],
+        "tip": "活着看到更多招式，比急着抢一刀更重要。"
+      }
+    },
+    {
+      "id": "playbook.exploration",
+      "type": "playbook",
+      "name": "探索与检查点",
+      "aliases": ["探索", "跑图"],
+      "spoiler_level": 1,
+      "confidence": 0.8,
+      "source": "curated",
+      "facts": {
+        "category": "玩法库",
+        "steps": ["进新区域先找铃铛", "看到岔路记地形/机关", "可破坏物留意是否对应影之武装", "Boss 门前回头确认铃铛"],
+        "tip": "探索时先建立退路，不急于把每条岔路一次走完。"
+      }
+    },
+    {
+      "id": "playbook.soulcasting",
+      "type": "playbook",
+      "name": "铸魂准备",
+      "aliases": ["武器铸魂", "铸魂材料"],
+      "spoiler_level": 1,
+      "confidence": 0.8,
+      "source": "curated",
+      "facts": {
+        "category": "玩法库",
+        "steps": ["确认目标武器形态", "查询所需铸魂材料来源", "不要只看材料名字，注意前置 Boss/任务", "铸魂后重新看招式与适用场景"],
+        "tip": "插件不读材料持有量；只告诉你需要什么、去哪找。"
+      }
+    }
+  ],
+  "relations": [],
+  "tips": [
+    {
+      "boss_id": "boss.generic",
+      "text": "先确认附近铃铛已敲，别把检查点留在很远的地方。",
+      "tags": ["mechanic:bell"],
+      "spoiler_level": 1,
+      "weight": 1.4,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "先看两轮起手再决定格挡还是闪避，别急着抢刀。",
+      "tags": ["defense:observe"],
+      "spoiler_level": 1,
+      "weight": 1.2,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "杀气见底时先拉开，或者切换主武器恢复节奏。",
+      "tags": ["resource:shachi", "mechanic:weapon_switch"],
+      "spoiler_level": 1,
+      "weight": 1.4,
+      "verified": true,
+      "source": "catalog"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "低血时先确认药瓶剩余次数，不要以为药是无限的。",
+      "tags": ["survival:low_hp", "mechanic:medicine"],
+      "spoiler_level": 1,
+      "weight": 1.3,
+      "verified": true,
+      "source": "catalog"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "远程怪和自爆单位优先处理，别让它们打断你的近战节奏。",
+      "tags": ["adds:priority", "archetype:ranged"],
+      "spoiler_level": 1,
+      "weight": 1.2,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "盾兵不要正面硬砍，绕后或破防后再输出。",
+      "tags": ["archetype:shield"],
+      "spoiler_level": 1,
+      "weight": 1.1,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "群怪时保持一个方向的退路，不要让自己被围在中间。",
+      "tags": ["archetype:horde", "arena:space"],
+      "spoiler_level": 1,
+      "weight": 1.1,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "有召唤物时先处理会打断你或给 Boss 增益的那个。",
+      "tags": ["archetype:summon"],
+      "spoiler_level": 1,
+      "weight": 1.2,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "尽量别把自己逼到场地边缘，留一条退路。",
+      "tags": ["arena:space"],
+      "spoiler_level": 1,
+      "weight": 1.0,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "低血先稳，不要为了补刀吃第二段。",
+      "tags": ["survival:low_hp"],
+      "spoiler_level": 1,
+      "weight": 1.2,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "扫描范围没发现敌人，不代表前方绝对安全。",
+      "tags": ["scan:honesty"],
+      "spoiler_level": 1,
+      "weight": 0.8,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "换阶段先观察新节奏，不要沿用上一阶段的抢刀习惯。",
+      "tags": ["phase:change"],
+      "spoiler_level": 1,
+      "weight": 1.1,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.ah_hua",
+      "text": "红绸突进后的收招是观察窗口。",
+      "tags": ["needs:mobility", "punish:after_lunge"],
+      "spoiler_level": 2,
+      "weight": 1.0,
+      "verified": false,
+      "source": "pending-probe"
+    },
+    {
+      "boss_id": "boss.cangang",
+      "text": "先拆开残钢与同伴的合围，再处理残钢。",
+      "tags": ["adds:priority"],
+      "spoiler_level": 2,
+      "weight": 1.0,
+      "verified": false,
+      "source": "pending-probe"
+    },
+    {
+      "boss_id": "boss.mu_xiaokui",
+      "text": "阶段变化后先确认新节奏，再决定是否抢输出。",
+      "tags": ["phase:change"],
+      "spoiler_level": 2,
+      "weight": 1.0,
+      "verified": false,
+      "source": "pending-probe"
+    },
+    {
+      "boss_id": "boss.leidang",
+      "text": "先确认场地障碍和虎炮相关通路，再进入正面战斗。",
+      "tags": ["arena:hazard"],
+      "spoiler_level": 2,
+      "weight": 1.0,
+      "verified": false,
+      "source": "pending-probe"
+    },
+    {
+      "boss_id": "boss.yuzan",
+      "text": "优先留意远程/幻术干扰，别只盯本体。",
+      "tags": ["archetype:ranged"],
+      "spoiler_level": 2,
+      "weight": 1.0,
+      "verified": false,
+      "source": "pending-probe"
+    },
+    {
+      "boss_id": "boss.tie_gui",
+      "text": "精英切磋先观察变招，不要按普通兵节奏硬换。",
+      "tags": ["defense:observe"],
+      "spoiler_level": 2,
+      "weight": 1.0,
+      "verified": false,
+      "source": "pending-probe"
+    },
+    {
+      "boss_id": "boss.guichai",
+      "text": "平台边缘作战先确认退路，避免被逼落。",
+      "tags": ["arena:ledges"],
+      "spoiler_level": 2,
+      "weight": 1.0,
+      "verified": false,
+      "source": "pending-probe"
+    },
+    {
+      "boss_id": "boss.menghua",
+      "text": "多阶段 Boss 先确认阶段转换提示，再交爆发。",
+      "tags": ["phase:change"],
+      "spoiler_level": 2,
+      "weight": 1.0,
+      "verified": false,
+      "source": "pending-probe"
+    },
+    {
+      "boss_id": "boss.sanmian_muo",
+      "text": "多面单位优先确认当前面/当前阶段，再决定集火。",
+      "tags": ["phase:identity"],
+      "spoiler_level": 2,
+      "weight": 1.0,
+      "verified": false,
+      "source": "pending-probe"
+    }
+  ]
+}
