@@ -1,80 +1,111 @@
-# 影之刃零 · 猫娘陪玩（neko_pbz）
+# 影之刃零 · 猫娘陪玩
 
-N.E.K.O 插件 + UE5 游戏内 Mod。让宿主当前猫娘陪主人玩《Phantom Blade Zero / 影之刃零》：
+> 让宿主猫娘陪你闯《Phantom Blade Zero / 影之刃零》。
 
-- 读局面：生命、杀气、战斗状态、当前武器、影之武装、饰品；
-- 多槽位随身：主/副武器、多个影之武装、多个饰品、药瓶/快捷道具；
-- 读世界：区域、Boss、前方敌人、铃铛、任务；
-- 跨会话记忆：Boss 尝试/死亡/首杀、装备、偏好、约定；
-- 知识库：Boss、任务、探索路线、铃铛、收集物、NPC、物品、装备与铸魂；
-- 画面识别：游戏内 F11 截图，交给宿主视觉模型；`pbz_look` 工具按需看画面；
-- Boss 前从已验证建议池随机 1~3 条；
-- 独立 LLM（OpenAI 兼容 / OpenAI / Anthropic / Gemini），只做记忆摘要与知识整理；
-- 台词/情绪/TTS 全部由宿主当前猫人设负责，游戏内字幕与语音使用同一段最终回复。
+N.E.K.O 插件 · 游戏状态感知 · 江湖知识库 · 跨会话记忆 · 影帐面板
 
-## 面板
+## 这是什么
 
-面板按《影之刃零》重做为“影帐”战报台，不是小游戏面板的复刻：
+`neko_pbz` 把《影之刃零》的当前局面、任务推进、装备状态和游戏知识交给宿主里的猫娘，
+让她能在探索、战斗、死亡、卡关和日常闲聊中给出贴合场面的回应。
 
-- **战局**：区域/场景、猫娘最近一句、气血/杀气环、随身装备、Boss、前向雷达；
-- **侦察**：独立罗盘页，Boss、小怪、方位、距离、铃铛与手动刷新；
-- **交锋**：Boss 交手记录、事件流；
-- **忆卷**：跨会话记忆、约定、本地统计；
-- **百晓**：分类覆盖统计，可按 Boss/任务/路线/收集物/NPC/物品/装备筛选并重载种子；
-- **灵犀**：独立 LLM 配置、测试连接、Token 账；
-- **调息**：TTS/字幕/主动说话/剧透等级/Boss 建议条数/静默。
+猫娘使用宿主当前人设说话：称呼、语气、口癖、主动程度和 TTS 都由宿主配置决定。
+插件负责事实与记忆，不替代人设，也不把固定台词塞进聊天窗。
 
-「调息」提供四套**结构风格**：水墨卷轴 / 戏台花窗 / 江湖战报 / 青绿山水；
-每套风格可叠加墨夜/宣纸/赤影/青锋辅助配色。
-舒适/紧凑密度、90%~115% 缩放、
-减少动效、隐藏雷达、隐藏灵犀摘要与忆卷导出。
+## 核心能力
 
-面板底部居中显示「影之刃零 · PHANTOM BLADE ZERO × N.E.K.O」。
-侧栏标题固定为「影帐 / PBZ × N.E.K.O / 江湖陪玩」；战局有一条常驻侦察带，
-切换风格后仍可看到敌情、Boss 与铃铛摘要。
+- **实时局面**：读取区域、生命、杀气、战斗状态、前方敌人、Boss、铃铛和当前任务。
+- **当前装备**：读取主/副武器、影之武装、饰品和药瓶快捷栏，不读取背包持有量。
+- **战前情报**：根据 Boss、区域和当前装备，从已验证内容中随机给出 1~3 条提示。
+- **任务陪跑**：查询任务下一步、目标区域、前置条件、失败提醒和奖励。
+- **探索知识**：检索铃铛、收集物、NPC、路线、物品获取位置、Boss 与首领组。
+- **跨会话记忆**：记录 Boss 尝试、死亡、最佳进度、偏好、约定和共同经历。
+- **宿主语音**：通过宿主生成最终回复与 TTS，再把同一段文字写入游戏内字幕。
+- **视觉兜底**：F11 截取游戏窗口，交给宿主视觉模型判断画面，不持续录屏。
+- **独立灵犀**：可配置独立 LLM；未配置时自动回退宿主 LLM，失败不阻塞游戏。
 
-## 明确边界
+## 快速开始
 
-- 不读取背包、仓库、材料数量；
-- 不修改游戏存档、数值、输入；
-- 不修改宿主代码；
-- 只新增独立 Mod 目录与插件目录。
+1. 在 N.E.K.O 插件管理中导入并启用 `neko_pbz`。
+2. 运行插件部署脚本，安装游戏侧 Mod：
 
-### 运行独立性
-
-- 不 import 任何其他插件；
-- 独立 LLM 客户端已 vendor 到本插件 `adapters/`，运行时不需要 `neko_arcade`；
-- 游戏 Mod 只 require `ue` / `puerts` / 本地文件；游戏自带 `Library/TsHelper`
-  只作为可选加速，缺失时有 UWorld/UObject 原生回退；
-- 不依赖 `PBZQuestGuide`、`pbz-map-helper` 或其他社区 Mod。
-
-## 目录
-
-```text
-neko_pbz/
-├─ core/       桥接、事件、记忆、知识库、宿主语音
-├─ entries/    生命周期、面板、LLM 工具
-├─ static/     插件面板
-├─ data/       配置与知识库种子
-├─ mod/
-│  ├─ pbz-neko-companion/   PuerTS JS：只读状态 + 字幕
-│  └─ lua/PBZNekoCompanion/ UE4SS Lua：读 reply.txt + F10
-├─ scripts/
-│  ├─ deploy.ps1                  一键部署
-│  └─ import_pbz_game_data.js     从本机 PBZ 数据模块刷新知识种子
-└─ tests/                  单元测试
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\deploy.ps1
 ```
 
-## 持久化数据
+3. 启动《影之刃零》，确认 `PBZModLoader` 与 `PBZNekoCompanion` 已加载。
+4. 打开“影帐”面板，确认连接状态与游戏状态正常更新。
+5. 在 N.E.K.O 聊天里直接向猫娘提问或让她陪玩。
 
-所有可写配置与记忆都在插件自己的 `data/`：
+## 可以这样问
+
+| 场景 | 示例 |
+|---|---|
+| 查看状态 | “我现在多少血、杀气还剩多少？” |
+| 前方侦察 | “前面有什么怪？” |
+| Boss 情报 | “新娘阿花怎么打？” |
+| 任务提示 | “白山秘闻下一步去哪？” |
+| 物品位置 | “红妆鬼斩在哪拿？” |
+| 探索收集 | “斧老大关押处附近有什么？” |
+| 战斗复盘 | “我刚才为什么没打过？” |
+| 跨会话记忆 | “上次卡在哪个 Boss？” |
+| 画面确认 | “看看我现在面对的是什么。” |
+| 安静陪伴 | “先别主动说话，有事再提醒我。” |
+
+## 影帐面板
+
+面板采用水墨、朱砂、戏曲花窗与青绿山水组合的武侠视觉，分七个区域：
+
+- **战局**：区域、生命、杀气、战斗状态、当前装备、Boss 与最近一句。
+- **侦察**：前向罗盘、敌人方位与距离、Boss 情报、铃铛和画面侦察。
+- **交锋**：Boss 尝试次数、死亡次数、最佳进度和事件流。
+- **忆卷**：跨会话记忆、约定、偏好、统计与导出。
+- **百晓**：Boss、任务、路线、收集物、NPC、物品、装备和玩法库检索。
+- **灵犀**：独立 LLM 配置、连接测试、调用次数和 Token 统计。
+- **调息**：TTS、字幕、主动说话、剧透等级、建议条数、静默和界面风格。
+
+面板提供水墨卷轴、戏台花窗、江湖战报、青绿山水四种结构风格，
+可叠加墨夜、宣纸、赤影、青锋辅助配色，并支持密度、缩放和减少动效。
+
+侦察数据在前台且面板可见时每 1.5 秒刷新，也可以手动重新扫描。
+
+## 游戏内热键
+
+| 热键 | 功能 |
+|---|---|
+| `F10` | 显示或隐藏猫娘字幕 |
+| `F11` | 截取当前游戏画面并交给宿主视觉模型 |
+
+## 知识库
+
+知识库由 JSON 种子导入 SQLite，入口、检索、筛选和 LLM 工具均读取同一份数据。
+当前包含 1446 个去重实体，覆盖：
+
+- 61 个 Boss 与首领组；
+- 72 条任务及分步目标；
+- 87 条探索路线；
+- 534 个收集物；
+- 171 个铃铛；
+- 279 个道具；
+- 66 个饰品、17 个药瓶、27 把主武器、25 个影之武装；
+- 15 个 NPC、13 个区域、玩法库与战斗机制。
+
+每种实体保留来源、剧透等级、置信度和可核验事实。玩家纠正保存在
+`data/knowledge/corrections/`，种子升级后会重新应用。
+
+知识数据位于 `data/knowledge/`，来源说明见
+[sources.json](data/knowledge/sources.json)。
+
+## 数据与隐私
+
+插件数据统一保存在自己的 `data/`：
 
 ```text
 data/
 ├─ config/
-│  ├─ general.json       陪伴/桥接/剧透/建议条数
-│  ├─ llm.json           独立 LLM（Key 仅本机）
-│  └─ ui.json            主题/密度/缩放/动效
+│  ├─ general.json
+│  ├─ llm.json
+│  └─ ui.json
 ├─ memory/
 │  ├─ _global/profile.json
 │  ├─ <存档>/
@@ -86,120 +117,99 @@ data/
 │  │  └─ sessions/*.json
 │  └─ exports/*.json
 └─ knowledge/
-   ├─ seed.json              基础条目
-   ├─ seed_bosses.json       Boss/小怪/铃铛
-   ├─ seed_equipment.json    武器/影之武装/饰品/药瓶
-   ├─ seed_mechanics.json    杀气/切换武器/药瓶/破防等机制
-   ├─ seed_tips.json         玩法库 + 已验证 Boss 建议
-   ├─ seed_world.json        区域与探索玩法
-   ├─ seed_game_catalog.json 物品名称/分类/紧凑获取位置
-   ├─ seed_game_bosses.json  首领点位、首领组与短攻略
-   ├─ seed_game_quests.json  任务步骤、目标点、前置与奖励
-   ├─ seed_game_guide.json   路线、铃铛、收集物与挑战
-   ├─ seed_game_npcs.json    NPC 位置、用途与对话节点
-   ├─ seed_game_regions.json 区域章节与收集覆盖
-   ├─ sources.json           来源、日期、置信度和导入边界
+   ├─ seed*.json
    ├─ pbz_knowledge.db
    └─ corrections/*.json
 ```
 
-旧版单文件 SQLite 记忆会自动迁移到目录结构，原 DB 改名为 `.db.migrated` 保留。
+- API Key 只写入本机 `data/config/llm.json`，不会回传到前端。
+- 截图只来自《影之刃零》窗口，不截桌面，不做持续录屏。
+- 不读取背包、仓库和材料数量。
+- 不修改游戏存档、数值或输入。
 
-当前知识库包含 1446 个去重实体：61 Boss、72 任务、87 路线、534 收集物、
-171 铃铛、15 NPC、279 道具、27 主武器、25 影之武装、66 饰品、17 药瓶、
-12 机制、8 玩法库条目、13 区域、8 类小怪与 51 挑战/玩法卡片；
-19 条已验证通用建议，9 条 Boss 专属建议等待实机核验。
+## 配置
 
-知识种子从本机安装目录中的 PBZ 物品目录和任务/地图数据模块离线整理，
-只保留名称、分类、坐标、步骤、短提醒等结构化事实，不复制脚本、二进制资源或长攻略全文。
-来源与置信度写入 `data/knowledge/sources.json`；具体效果、数值和战斗阶段仍需实机核验。
+### 基础配置
 
-刷新数据：
+`data/config/general.json` 保存桥接目录、轮询间隔、主动说话、建议条数、
+剧透等级、静默时间、TTS 与字幕开关。
+
+### 独立 LLM
+
+“灵犀”支持 OpenAI 兼容、OpenAI、Anthropic 与 Gemini 接口。
+配置 Provider、Model、API Key、Base URL、超时和每分钟调用上限。
+
+调用优先级：
+
+1. 已启用独立 LLM 且配置完整；
+2. 回退宿主主体 LLM；
+3. 两者均不可用时使用本地规则生成记忆摘要。
+
+### 界面
+
+`data/config/ui.json` 保存结构风格、辅助配色、密度、缩放、动效、
+雷达与灵犀摘要开关。
+
+## 安装文件
+
+部署脚本会更新：
+
+1. 两个 N.E.K.O 活动插件目录；
+2. `PBZModLoader` 的 `pbz-neko-companion`；
+3. UE4SS 的 `PBZNekoCompanion`；
+4. `ProjectPBZ\Saved\NekoBridge` 桥接目录；
+5. `generated-config.js` 与 `mods.txt` 中的启用项。
+
+脚本只更新本插件自己的文件，不修改宿主源码、游戏 Pak 或存档。
+
+## 排障
+
+### 面板显示未连接
+
+确认桥接目录存在以下文件并持续更新时间：
+
+```text
+ProjectPBZ\Saved\NekoBridge\state.json
+ProjectPBZ\Saved\NekoBridge\heartbeat.json
+```
+
+### 有状态但没有语音
+
+检查宿主 `push_message` 是否可用、TTS 是否启用，以及当前是否处于静默时间。
+
+### 游戏内没有字幕
+
+确认 UE4SS 的 `PBZNekoCompanion` 已启用，且桥接目录可写。
+
+### 读不到生命、敌人或装备
+
+打开面板“侦察”页查看能力状态，并运行：
+
+```powershell
+python .\scripts\probe_report.py
+```
+
+无法确认的字段保持为空，插件不会猜测，也不会用背包数据补齐。
+
+### 画面侦察失败
+
+确认游戏处于前台、窗口未最小化、画面未全黑，并检查宿主是否支持视觉模型。
+
+## 开发与测试
+
+```powershell
+ruff check .
+python -m pytest -q
+node --check .\scripts\import_pbz_game_data.js
+node --check .\mod\pbz-neko-companion\main.js
+```
+
+知识数据需要随游戏版本更新时：
 
 ```powershell
 node .\scripts\import_pbz_game_data.js
 ```
 
-脚本读取安装目录后只写插件 `data/knowledge/`，运行时不依赖 Node、PBZQuestGuide
-或 pbz-map-helper。
+导入器只生成 `data/knowledge/` 下的结构化 JSON，不参与插件运行时。
 
-## 部署
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\deploy.ps1
-```
-
-脚本会：
-
-1. 复制插件到两个活插件目录；
-2. 复制 JS Mod 到 `PBZModLoader\generated-mods\pbz-neko-companion`；
-3. 更新 `generated-config.js`（先备份 `.bak.neko`）；
-4. 复制 Lua Mod 到 UE4SS，并在 `mods.txt` 注册；
-5. 创建 `ProjectPBZ\Saved\NekoBridge`。
-
-重启游戏与插件后，游戏内 `F10` 显示/隐藏字幕。
-
-## TTS
-
-- 插件通过 `push_message(..., ai_behavior="respond")` 把事实交给宿主；
-- 宿主用当前猫娘人设生成回复并 TTS；
-- 插件从 `ctx.bus.conversations` 取最终 AI 文本，写入 `reply.json` / `reply.txt`；
-- 游戏内字幕显示同一段文本。
-
-`read` 只注入上下文，不触发语音；`blind` 只用于系统提示。
-
-## 画面识别
-
-- 只截《影之刃零》窗口，不截桌面；
-- 游戏内 **F11** 触发一次视觉侦察（游戏在前台）；
-- 截图通过宿主 `push_message` 的 image part 交给宿主视觉模型；
-- `pbz_look` LLM 工具返回一帧截图 + `vision_prompt`，由宿主视觉模型分析；
-- 本插件不自建视觉模型，也不持续录屏；默认仅在手动触发时截图。
-
-## 独立 LLM
-
-复用了 `neko_arcade` 已验证的 LLM 客户端（OpenAI 兼容 / OpenAI / Anthropic / Gemini），
-不重复造轮子。它只用于：
-
-- 会话结束时的记忆摘要；
-- 后续知识整理/查询辅助。
-
-猫娘的最终台词、情绪与 TTS 仍走宿主 LLM，插件不会用独立 LLM 抢宿主的人设表达。
-
-**调用优先级**：
-
-1. 已启用独立 LLM 且填了 Provider + Model → 用独立 LLM；
-2. 未配置/未启用 → 自动回退宿主主体 LLM（`__call_llm` / `call_llm`）；
-3. 两者都不可用 → 记忆摘要使用本地规则，不阻塞游戏。
-
-面板「灵犀」可以配置 Provider、Model、API Key、Base URL、超时、每分钟调用上限，
-并查看调用次数与 token 统计。API Key 只保存在插件自己的 `data/config/llm.json`，
-不会回传给前端。
-
-## P0 核验
-
-首次进游戏后，把以下文件发回来或直接看面板：
-
-- `ProjectPBZ\Saved\NekoBridge\state.json`
-- `ProjectPBZ\Saved\NekoBridge\heartbeat.json`
-
-重点确认：
-
-- `capabilities.vitals` 是否读到生命/杀气；
-- `capabilities.enemy_classes` 是否发现敌人/Boss 类；
-- `player.equipment` 是否读到当前武器/影之武装/饰品；
-- `bell` 是否读到附近铃铛；
-- `quests` 是否有当前任务。
-
-读不到的字段会保持 `null`，不会猜测，也不会回退到背包。
-
-## 测试
-
-```powershell
-python -m pytest -q
-node --check mod\pbz-neko-companion\main.js
-```
-
-## 文档
-
-完整设计讨论稿：[docs/DESIGN-影之刃零陪玩插件.md](docs/DESIGN-影之刃零陪玩插件.md)
+完整产品说明见 [docs/guide.md](docs/guide.md)。

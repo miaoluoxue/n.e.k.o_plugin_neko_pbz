@@ -16,11 +16,11 @@
 - 插件：桥接、事件差分、跨会话 SQLite 记忆、知识库、Boss 1~3 条随机建议、面板、LLM 工具；
 - 游戏侧：JS 只读状态 + UMG 字幕，UE4SS Lua 读 `reply.txt` 并驱动字幕（F10 开关）；
 - TTS：插件只发 `respond`，宿主生成/播报，插件从 `ctx.bus.conversations` 取最终文本回写字幕；
-- 独立 LLM：复用 `neko_arcade` 的客户端，负责会话记忆摘要与知识整理；最终台词仍归宿主；
-- 独立性：LLM 客户端已 vendor 到本插件，运行时不 import 其他插件；游戏 Mod 不依赖
-  `PBZQuestGuide` / `pbz-map-helper`，`Library/TsHelper` 仅可选并有原生回退；
+- 独立 LLM：内置 OpenAI 兼容、OpenAI、Anthropic 与 Gemini 客户端，负责会话记忆摘要与知识整理；
+  最终台词仍归宿主；
+- 独立性：LLM 客户端随插件分发，运行时不依赖外部插件；游戏 Mod 自带原生回退；
 - LLM 优先级：独立 LLM（已配置）→ 宿主主体 LLM（未配置时自动回退）→ 本地规则；
-- 面板：按《影之刃零》重做为“影帐”战报台（战局/交锋/忆卷/百晓/灵犀/调息），不是照搬小游戏面板；
+- 面板：围绕《影之刃零》设计“影帐”战报台（战局/交锋/忆卷/百晓/灵犀/调息）；
 - 部署：`scripts/deploy.ps1` 已同步到两个活插件目录与游戏 Mod 目录。
 - 持久化：配置拆为 `data/config/{general,llm,ui}.json`；记忆按存档分目录，
   Boss/会话/事实/偏好/约定分别落盘；旧 SQLite 自动迁移；知识种子复制到持久 data。
@@ -29,7 +29,7 @@
 - 知识库：拆为 Boss/任务/路线/收集物/NPC/物品/装备、机制、玩法库与区域种子；
   当前 1446 个去重实体，包含 61 Boss、72 任务、843 条路线/铃铛/收集/挑战记录、
   19 条已验证建议、9 条待实机核验；百晓按类型筛选并显示覆盖统计。
-- 视觉：复用宿主视觉模型；F11 截取 PBZ 窗口，`pbz_look` 工具返回 image part；
+- 视觉：使用宿主提供的视觉能力；F11 截取 PBZ 窗口，`pbz_look` 工具返回 image part；
   不持续录屏、不截桌面、不自建视觉模型。
 - 界面：水墨卷轴/戏台花窗/江湖战报/青绿山水四套结构风格 × 四套辅助配色，
   舒适/紧凑密度、90%~115% 缩放、减少动效、
@@ -47,8 +47,7 @@
 能做，而且这个游戏比大多数单机游戏更适合做陪玩：
 
 - 游戏里已经装了 **UE4SS（Lua + 原生 Bridge）** 和 **PuerTS JavaScript 运行时 + PBZModLoader**；
-- 已有社区 Mod 证明可以读任务、背包、地图、铃铛、战斗状态，并往原生 HUD 上叠加 UMG 控件；
-- 我们已有的 `neko_terraria` 插件已经跑通了「感知 → 场景判断 → 情绪 → 主动说话 → 宿主 LLM/人设 → 陪玩 UI」整条链路。
+- 运行时具备读取任务、地图、铃铛与战斗状态，以及在原生 HUD 上叠加 UMG 控件的能力。
 
 所以第一版不是"能不能做"，而是"哪些信息稳定可读、哪些必须靠画面识别、话术怎么不烦人"。
 
@@ -104,12 +103,10 @@
 | 引擎 | Unreal Engine 5 | `Engine\Config`、`Content\Paks\*.utoc/.ucas` |
 | Steam AppID | 4115450 | `steamapps\appmanifest_4115450.acf` |
 | 脚本 Mod | PuerTS（JS/TS）+ 自定义 `PBZModLoader` | `ProjectPBZ\Content\JavaScript\PBZModLoader` |
-| 原生 Mod | UE4SS（Lua + C++ Bridge） | `platform\steam\ue4ss\UE4SS.dll`、`Mods\PBZQuestGuide\Native\Bridge.dll` |
+| 原生 Mod | UE4SS（Lua + C++ Bridge） | `platform\steam\ue4ss\UE4SS.dll` |
 | 热重载 | 支持，`mod.stop()` 后可重载 | `PBZModLoader\manager.js` |
 
-### 2.2 现有 Mod 已经证明的能力
-
-#### `PBZQuestGuide`（任务攻略 Mod）
+### 2.2 已验证的游戏接口
 
 - 读取任务：`PBZBlueprintFunctionLibrary.GetPBZNarrativeComp(context)` → `QuestList`
   - `quest.IsQuestComplete()`、`quest.QuestCompletion`（`EQuestCompletion`）
@@ -120,8 +117,6 @@
 - 写文件：`UE.EasyCsv.SaveStringToFile(...)`（可写诊断/桥接 JSON）
 - 叠加 HUD：`hud.WidgetTree.RootWidget` → 找 `CanvasPanel` / `Overlay` → `UE.NewObject(UE.Border/TextBlock)` → `AddChildToCanvas` → 设置锚点/位置/大小/ZOrder
 - 热键：UE4SS Lua `RegisterKeyBind(Key.F8, ...)`、`LoopAsync(500, ...)`
-
-#### `pbz-map-helper`（地图增强 Mod）
 
 - 取玩家角色：`UE.PBZBlueprintFunctionLibrary.GetPBZLocalCharacter(context)`
 - 取位置/朝向：`K2_GetActorLocation()`、`GetPlayerCameraManager(...).GetCameraRotation()`
@@ -969,7 +964,7 @@ data/memory/pbz_memory.db
 - 样式：半透明深色圆角底 + 白字 + 轻微描边；`HitTestInvisible`，不挡操作。
 - 停留：短句 4s，长句 6s，可配置。
 - 内容：只显示猫娘台词，不显示内部事件/JSON。
-- 实现：复用 `QuestGuideHud.js` 的 UMG 叠加方式（CanvasPanel + Border + TextBlock + ZOrder）。
+- 实现：通过 UMG WidgetTree 叠加 CanvasPanel、Border、TextBlock，并设置 ZOrder 与命中穿透。
 
 ### 9.2 状态小卡（可选，第二版）
 
@@ -980,7 +975,7 @@ data/memory/pbz_memory.db
 
 | 键 | 功能 | 备注 |
 |---|---|---|
-| F10 | 显示/隐藏猫娘字幕 | 避开 QuestGuide 的 F6–F9 |
+| F10 | 显示/隐藏猫娘字幕 | 使用独立热键，不与任务菜单快捷键冲突 |
 | F11 | "前面有什么"即时扫描 | 仅当聊天不方便时用 |
 | F12 | 暂停/恢复主动说话 | 不停止被动问答 |
 
@@ -1138,7 +1133,7 @@ data/memory/pbz_memory.db
 
 - 游戏补丁可能重命名类/字段 → 需要每次版本更新跑一次 P0 探针。
 - UE4SS 本身可能与游戏更新不同步 → 保留纯视觉降级模式（只靠截图 + 键位）。
-- 与 `PBZQuestGuide` / `pbz-map-helper` 共存：不修改它们的文件，不抢 F6–F9 热键。
+- 与用户安装的其他 Mod 共存：使用独立文件名、独立热键和独立桥接目录。
 
 ---
 
@@ -1215,7 +1210,7 @@ data/memory/pbz_memory.db
 - [ ] 记忆面板：查看/删除/导出
 - [ ] 长期记忆（死亡次数、卡关点、玩家习惯、约定）
 - [ ] 多语言
-- [ ] 与 QuestGuide 地图数据联动（需原作者许可）
+- [ ] 与外部地图标注工具联动（可选）
 
 ---
 
@@ -1229,7 +1224,7 @@ data/memory/pbz_memory.db
 | 剧透 | 破坏体验 | 默认 spoiler=1，按任务进度过滤 |
 | 刷屏 | 玩家烦 | 优先级 + 冷却 + 语义去重 + 静默 |
 | 与现有 Mod 冲突 | 游戏崩溃 | 不改他人文件；独立 Mod id；热键避让 |
-| 中文 UMG 字体 | 字幕乱码 | 复用游戏自带字体/`QuestGuideNative.applyFont` 方案 |
+| 中文 UMG 字体 | 字幕乱码 | 使用游戏自带中文字体并显式应用到 UMG 文本 |
 | 独占全屏遮挡 | 外部悬浮窗不可见 | 第一版只用游戏内 UMG；Live2D 用无边框窗口 |
 
 ---
@@ -1250,8 +1245,8 @@ data/memory/pbz_memory.db
 | TTS | 使用宿主；只对猫娘对话回复 `respond`，插件不注入音频 |
 | 面板 | 必须有，作为状态/配置/记忆入口 |
 | 目录 | 允许新增独立 Mod 与插件开发目录；**不改宿主代码** |
-| 独立 LLM | 复用 neko_arcade 客户端；Provider/Model/Key/Base URL/超时/限流可配；只做记忆整理 |
-| 面板设计 | 影之刃零专属“影帐”视觉与信息架构，不照抄其他插件 |
+| 独立 LLM | 内置多 Provider 客户端；Provider/Model/Key/Base URL/超时/限流可配；只做记忆整理 |
+| 面板设计 | 使用《影之刃零》专属“影帐”视觉与信息架构 |
 
 ### 仍需确认
 
@@ -1303,15 +1298,12 @@ data/memory/pbz_memory.db
 
 ---
 
-## 19. 附：与现有资产的关系
+## 19. 运行兼容性
 
-| 现有资产 | 复用方式 |
-|---|---|
-| `neko_terraria` | 复用插件骨架、生命周期、LLM 注入、人设加载、视觉管线、面板模式、冷却/情绪思路 |
-| `neko_arcade` | 复用"游戏只给数据、本体统一渲染/台词"的契约思想 |
-| `PBZQuestGuide` | 运行时不依赖；离线导入任务/首领/收集的紧凑事实，不复制脚本或长攻略全文 |
-| `pbz-map-helper` | 运行时不依赖；离线导入物品目录与获取短提示，不修改其文件 |
-| `PBZModLoader` | 作为宿主加载我们的独立 Mod |
+- 游戏侧 Mod 由 `PBZModLoader` 与 UE4SS 加载；
+- Python 插件、LLM 客户端、知识数据与静态面板均随插件分发；
+- 桥接退化时保留结构化状态、聊天与本地记忆，不阻塞游戏；
+- 游戏更新后通过探针确认类名、属性与桥接字段。
 
 ---
 

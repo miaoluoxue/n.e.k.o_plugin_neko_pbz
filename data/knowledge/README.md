@@ -28,9 +28,8 @@ node ..\..\scripts\import_pbz_game_data.js
 node ..\..\scripts\import_pbz_game_data.js --game "D:\Games\PBZ"
 ```
 
-导入器只读取本机安装目录并生成上述结构化 JSON；插件运行时不需要 Node，
-也不依赖 `PBZQuestGuide` 或 `pbz-map-helper`。只保留紧凑事实，不复制安装包脚本、
-二进制资源或攻略全文。
+导入器只读取本机安装目录并生成上述结构化 JSON；插件运行时不需要 Node。
+只保留紧凑事实，不复制安装包脚本、二进制资源或攻略全文。
 
 ## 实体格式
 
