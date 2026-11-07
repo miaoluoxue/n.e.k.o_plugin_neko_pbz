@@ -75,6 +75,7 @@ def test_all_seed_categories_load_and_filter(tmp_path):
     assert coverage["accessory"] >= 8
     assert coverage["medicine"] >= 6
     assert coverage["playbook"] >= 3
+    assert coverage["region"] >= 6
     bosses = kb.search("", type="boss", limit=50, spoiler_level=2)
     assert len(bosses) >= 8
     meds = kb.search("", type="medicine", limit=50, spoiler_level=2)

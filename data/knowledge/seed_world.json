@@ -1,0 +1,189 @@
+{
+  "version": 1,
+  "entities": [
+    {
+      "id": "region.valley",
+      "type": "region",
+      "name": "悲泣溪谷",
+      "aliases": ["溪谷"],
+      "spoiler_level": 1,
+      "confidence": 0.75,
+      "source": "catalog",
+      "facts": {"category": "区域", "traversal": "溪流、吊桥、山洞与高差地形", "tip": "先找检查点铃铛，再探索岔路与可破坏物。"}
+    },
+    {
+      "id": "region.blood_forest",
+      "type": "region",
+      "name": "血色森林",
+      "aliases": ["血色森林"],
+      "spoiler_level": 1,
+      "confidence": 0.65,
+      "source": "catalog",
+      "facts": {"category": "区域", "traversal": "林地、坑道与营地", "tip": "林地视线差，先确认远程怪与伏击点。"}
+    },
+    {
+      "id": "region.pangzhen",
+      "type": "region",
+      "name": "庞镇",
+      "aliases": ["庞镇"],
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "catalog",
+      "facts": {"category": "区域", "traversal": "城镇街巷、市集与水路", "tip": "城镇适合整理装备、药品与任务；留意屋顶和窄巷。"}
+    },
+    {
+      "id": "region.mirror_forest",
+      "type": "region",
+      "name": "镜林",
+      "aliases": ["镜林"],
+      "spoiler_level": 1,
+      "confidence": 0.6,
+      "source": "catalog",
+      "facts": {"category": "区域", "traversal": "迷雾、林地与机关", "tip": "幻术类地形可能需要特定影之武装或先找机关。"}
+    },
+    {
+      "id": "region.shaqi_tower",
+      "type": "region",
+      "name": "杀气塔",
+      "aliases": ["溪谷杀气塔", "庞镇杀气塔"],
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "catalog",
+      "facts": {"category": "区域", "traversal": "多层塔、电梯、平台与炉子", "tip": "层数多，先确认铃铛和上下层通路再深入。"}
+    },
+    {
+      "id": "region.meigu_lake",
+      "type": "region",
+      "name": "梅谷湖",
+      "aliases": ["梅谷", "梅谷湖"],
+      "spoiler_level": 1,
+      "confidence": 0.6,
+      "source": "catalog",
+      "facts": {"category": "区域", "traversal": "湖面、船坞与岛屿", "tip": "水上行船与岸边铃铛需要分开确认。"}
+    },
+    {
+      "id": "region.duanhun",
+      "type": "region",
+      "name": "断魂山",
+      "aliases": ["断魂山", "断魂崖"],
+      "spoiler_level": 1,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {"category": "区域", "traversal": "山道、冰窟与悬崖", "tip": "高低差明显，先确认退路和落点再跳跃。"}
+    },
+    {
+      "id": "region.ximeng",
+      "type": "region",
+      "name": "戏梦山庄",
+      "aliases": ["戏梦山庄"],
+      "spoiler_level": 1,
+      "confidence": 0.55,
+      "source": "catalog",
+      "facts": {"category": "区域", "traversal": "山庄、戏园与后山", "tip": "建筑与庭院交错，探索时留意机关和隐藏入口。"}
+    },
+    {
+      "id": "playbook.region_clear",
+      "type": "playbook",
+      "name": "区域探索顺序",
+      "aliases": ["跑图顺序", "探索路线"],
+      "spoiler_level": 1,
+      "confidence": 0.8,
+      "source": "curated",
+      "facts": {
+        "category": "玩法库",
+        "steps": ["进区域先找铃铛", "确认可破坏物/攀爬点", "清高威胁远程与召唤物", "最后再处理宝箱与支路"],
+        "tip": "先建立检查点和退路，探索收益更稳。"
+      }
+    },
+    {
+      "id": "playbook.status_effects",
+      "type": "playbook",
+      "name": "异常状态应对",
+      "aliases": ["中毒", "流血", "燃烧", "冰霜"],
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "curated",
+      "facts": {
+        "category": "玩法库",
+        "steps": ["先确认异常类型", "拉开距离避免继续叠层", "有对应药剂/抗性饰品就用", "不要在异常未处理时硬开 Boss"],
+        "tip": "异常状态靠抗性与距离管理，不靠硬扛。"
+      }
+    },
+    {
+      "id": "playbook.resource",
+      "type": "playbook",
+      "name": "杀气与药品管理",
+      "aliases": ["资源管理", "杀气管理"],
+      "spoiler_level": 1,
+      "confidence": 0.8,
+      "source": "curated",
+      "facts": {
+        "category": "玩法库",
+        "steps": ["杀气见底先拉开或切换主武器", "药瓶先看剩余次数", "不要把最后一瓶药留到无法脱离时", "Boss 前补满资源"],
+        "tip": "资源管理是陪玩提醒的高频场景。"
+      }
+    },
+    {
+      "id": "playbook.quest_tracking",
+      "type": "playbook",
+      "name": "任务追踪",
+      "aliases": ["任务", "目标追踪"],
+      "spoiler_level": 1,
+      "confidence": 0.75,
+      "source": "curated",
+      "facts": {
+        "category": "玩法库",
+        "steps": ["看清当前目标", "先做同区域目标", "离开区域前确认是否漏掉支路", "交付/奖励后更新记忆"],
+        "tip": "插件只提示当前目标，不把未到的剧情提前说出来。"
+      }
+    }
+  ],
+  "relations": [],
+  "tips": [
+    {
+      "boss_id": "boss.generic",
+      "text": "进新区域先找铃铛，再决定往哪条岔路走。",
+      "tags": ["exploration:bell"],
+      "spoiler_level": 1,
+      "weight": 1.2,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "Boss 前先看药瓶剩余次数，不要打到一半才发现没药。",
+      "tags": ["boss_prep:medicine"],
+      "spoiler_level": 1,
+      "weight": 1.2,
+      "verified": true,
+      "source": "catalog"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "没有退路时不要把爆发和药全交掉。",
+      "tags": ["survival:space"],
+      "spoiler_level": 1,
+      "weight": 1.0,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "画面看不清敌人动作时先拉开，等下一轮起手。",
+      "tags": ["defense:observe"],
+      "spoiler_level": 1,
+      "weight": 1.1,
+      "verified": true,
+      "source": "curated"
+    },
+    {
+      "boss_id": "boss.generic",
+      "text": "多阶段 Boss 先观察新动作，再决定是否继续抢输出。",
+      "tags": ["phase:change"],
+      "spoiler_level": 1,
+      "weight": 1.1,
+      "verified": true,
+      "source": "curated"
+    }
+  ]
+}

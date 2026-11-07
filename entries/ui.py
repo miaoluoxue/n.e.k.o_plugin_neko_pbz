@@ -35,6 +35,21 @@ class UiMixin:
         return Ok({"output": "ok", "data": data})
 
     @plugin_entry(
+        id="pbz_i18n",
+        name="获取国际化文案",
+        description="返回插件 i18n locale bundles，供面板按浏览器语言本地化。",
+        input_schema={"type": "object", "properties": {}},
+        metadata={"agent_hidden": True},
+    )
+    async def act_i18n(self, **_: Any) -> Any:
+        i18n = getattr(self, "i18n", None)
+        messages = getattr(i18n, "messages", {}) if i18n is not None else {}
+        default_locale = getattr(i18n, "default_locale", "zh-CN") if i18n else "zh-CN"
+        return Ok({"output": "ok",
+                   "data": {"default_locale": default_locale,
+                            "messages": messages or {}}})
+
+    @plugin_entry(
         id="pbz_save_settings",
         name="保存陪玩设置",
         description="保存语音、字幕、剧透等级、主动说话、桥接目录等设置。",

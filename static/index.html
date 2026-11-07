@@ -1007,13 +1007,13 @@ body[data-style="landscape"] .brand-footer::before{
       </div>
     </div>
     <nav class="nav">
-      <button class="active" data-view="battle"><span class="ico">⚔</span><span>战局</span></button>
-      <button data-view="scan"><span class="ico">侦</span><span>侦察</span></button>
-      <button data-view="duel"><span class="ico">◎</span><span>交锋</span></button>
-      <button data-view="memory"><span class="ico">卷</span><span>忆卷</span></button>
-      <button data-view="knowledge"><span class="ico">籍</span><span>百晓</span></button>
-      <button data-view="llm"><span class="ico">灵</span><span>灵犀</span></button>
-      <button data-view="settings"><span class="ico">调</span><span>调息</span></button>
+      <button class="active" data-view="battle"><span class="ico">⚔</span><span data-i18n="nav.battle">战局</span></button>
+      <button data-view="scan"><span class="ico">侦</span><span data-i18n="nav.scan">侦察</span></button>
+      <button data-view="duel"><span class="ico">◎</span><span data-i18n="nav.duel">交锋</span></button>
+      <button data-view="memory"><span class="ico">卷</span><span data-i18n="nav.memory">忆卷</span></button>
+      <button data-view="knowledge"><span class="ico">籍</span><span data-i18n="nav.knowledge">百晓</span></button>
+      <button data-view="llm"><span class="ico">灵</span><span data-i18n="nav.llm">灵犀</span></button>
+      <button data-view="settings"><span class="ico">调</span><span data-i18n="nav.settings">调息</span></button>
     </nav>
     <div class="rail-foot"><span id="dot" class="dot"></span><span id="conn">未连接</span></div>
   </aside>
@@ -1123,7 +1123,7 @@ body[data-style="landscape"] .brand-footer::before{
 
       <div class="grid g-3" style="margin-top:12px">
         <article class="card">
-          <h3>随身 <span class="sub">仅当前装备</span></h3>
+          <h3><span data-i18n="equipment.title">随身</span> <span class="sub">仅当前装备</span></h3>
           <div class="loadout-groups">
             <div class="lgroup"><h4>主武器 <small>主 / 副</small></h4><div id="mainWeaponList" class="slot-grid"></div></div>
             <div class="lgroup"><h4>影之武装 <small>多槽</small></h4><div id="edgeSlotList" class="slot-grid"></div></div>
@@ -1166,14 +1166,14 @@ body[data-style="landscape"] .brand-footer::before{
       <div class="scan-head">
         <div>
           <div class="eyebrow">RECON · 影罗盘</div>
-          <h2>侦察前方</h2>
+          <h2 data-i18n="scan.title">侦察前方</h2>
           <p class="muted">Boss、小怪、方位、距离与最近铃铛。扫描结果来自游戏内只读接口。</p>
         </div>
-        <button class="primary" id="btnScan">重新扫描</button>
+        <button class="primary" id="btnScan" data-i18n="scan.rescan">重新扫描</button>
       </div>
       <div class="scan-layout">
         <article class="card scan-compass-card">
-          <h3>前向罗盘 <span id="scanStatus" class="sub">等待游戏</span></h3>
+          <h3><span data-i18n="scan.compass">前向罗盘</span> <span id="scanStatus" class="sub">等待游戏</span></h3>
           <div class="scan-compass">
             <div class="scan-ring r1"></div><div class="scan-ring r2"></div><div class="scan-ring r3"></div>
             <div class="scan-axis v"></div><div class="scan-axis h"></div>
@@ -1185,23 +1185,23 @@ body[data-style="landscape"] .brand-footer::before{
           <div class="scan-legend"><span class="chip red">赤点 · 敌人</span><span class="chip gold">金点 · Boss</span><span class="chip">灰圈 · 45m</span></div>
         </article>
         <article class="card">
-          <h3>敌情 <span id="scanCount" class="sub">0 个目标</span></h3>
+          <h3><span data-i18n="scan.enemies">敌情</span> <span id="scanCount" class="sub">0 个目标</span></h3>
           <div id="scanEnemyList" class="scan-list"><div class="empty">扫描范围安静</div></div>
         </article>
         <article class="card">
-          <h3>Boss 侦察 <span class="sub">百晓</span></h3>
+          <h3><span data-i18n="scan.boss">Boss 侦察</span> <span class="sub">百晓</span></h3>
           <div id="scanBossName" class="scan-boss-name">暂无 Boss</div>
           <div class="boss-hp" style="margin:10px 0"><i id="scanBossHp" style="width:0"></i></div>
           <div class="boss-meta"><span id="scanBossPhase" class="chip">阶段 ?</span><span id="scanBossHpText" class="chip">--%</span></div>
           <div id="scanBossIntel" class="boss-intel" style="display:none"></div>
         </article>
         <article class="card">
-          <h3>铃铛侦察 <span class="sub">检查点</span></h3>
+          <h3><span data-i18n="scan.bell">铃铛侦察</span> <span class="sub">检查点</span></h3>
           <div id="scanBell" class="scan-bell"><div class="scan-bell-icon">铃</div><div><b>尚未靠近铃铛</b><div class="muted small">靠近未激活铃铛时会在这里提示</div></div></div>
           <div id="scanBellIds" class="chips"></div>
         </article>
         <article class="card vision-card">
-          <h3>视觉侦察 <span id="visionStatus" class="sub">宿主视觉模型</span></h3>
+          <h3><span data-i18n="scan.vision">视觉侦察</span> <span id="visionStatus" class="sub">宿主视觉模型</span></h3>
           <p class="muted small" style="margin:0 0 10px">结构化数据看不到时，截取当前游戏窗口交给宿主视觉模型。游戏内按 F11 触发；面板按钮需要游戏在前台。只截游戏窗口，不截桌面。</p>
           <div class="actions">
             <button class="primary" id="btnVision">看当前画面</button>
@@ -1268,6 +1268,7 @@ body[data-style="landscape"] .brand-footer::before{
           <button data-kb-type="medicine">药瓶</button>
           <button data-kb-type="mechanic">机制</button>
           <button data-kb-type="playbook">玩法库</button>
+          <button data-kb-type="region">区域</button>
           <button data-kb-type="bell">铃铛</button>
         </div>
         <div class="searchbar">
@@ -1402,6 +1403,7 @@ const RUNS_URL = '/runs';
 const TIMEOUT = 30000;
 let last = {};
 let kbType = '';
+let I18N_MESSAGES = {};
 
 const SCENES = {
   exploring: {label:'探索', desc:'听风辨路，猫娘陪你看江湖。', cls:'gold'},
@@ -1589,7 +1591,7 @@ function renderKB(s){
   $('kbPending').textContent = k.unverified_tips ?? 0;
   const labels = {boss:'Boss', mob:'小怪', bell:'铃铛', weapon:'主武器',
                   phantom_edge:'影之武装', accessory:'饰品', medicine:'药瓶',
-                  mechanic:'机制', playbook:'玩法库'};
+                  mechanic:'机制', playbook:'玩法库', region:'区域'};
   const coverage = k.coverage || {};
   $('kbCoverage').innerHTML = Object.keys(labels)
     .map(type => `<span class="chip">${labels[type]} ${coverage[type] ?? 0}</span>`)
@@ -1678,7 +1680,8 @@ function renderScan(s){
   const enemies = s.enemies || [];
   const boss = s.boss || null;
   $('scanStatus').textContent = s.connected
-    ? `实时 · ${s.state_age == null ? '—' : s.state_age + 's'}` : '等待游戏';
+    ? `自动刷新 1.5s · 延迟 ${s.state_age == null ? '—' : s.state_age + 's'}`
+    : '等待游戏';
   const blips = $('scanBlips'); blips.innerHTML = '';
   const dirs = {front:0, front_right:45, right:90, right_back:135, behind:180,
                 left_back:225, left:270, front_left:315};
@@ -1890,6 +1893,20 @@ async function refresh(){
     $('conn').textContent = '面板断开';
   }
 }
+async function loadI18n(){
+  try{
+    const r = await callEntry('pbz_i18n', {});
+    I18N_MESSAGES = (r.data && r.data.messages) || {};
+    const locale = (navigator.language || 'zh-CN').replace('_','-');
+    const candidates = [locale, locale.split('-')[0], 'zh-CN', 'en'];
+    const bundle = candidates.map(x => I18N_MESSAGES[x]).find(x => x) || {};
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      if(bundle[key]) el.textContent = bundle[key];
+    });
+    document.documentElement.lang = locale;
+  }catch(_){ /* 静态预览/旧宿主保持中文回退 */ }
+}
 
 async function saveSettings(extra={}){
   const payload = {
@@ -2032,7 +2049,10 @@ render({
        motion: true, show_radar: true, show_llm_strip: true}
 });
 refresh();
-setInterval(refresh, 2000);
+loadI18n();
+setInterval(() => {
+  if(document.visibilityState === 'visible') refresh();
+}, 1500);
 </script>
 </body>
 </html>
