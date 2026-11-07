@@ -69,14 +69,38 @@ def test_all_seed_categories_load_and_filter(tmp_path):
     for path in sorted(SEED_DIR.glob("seed*.json")):
         kb.load_seed(path)
     coverage = kb.coverage()
-    assert coverage["boss"] >= 8
+    assert coverage["boss"] >= 30
+    assert coverage["quest"] >= 60
+    assert coverage["route"] >= 80
+    assert coverage["collectible"] >= 500
+    assert coverage["npc"] >= 10
+    assert coverage["item"] >= 250
     assert coverage["weapon"] >= 10
     assert coverage["phantom_edge"] >= 10
     assert coverage["accessory"] >= 8
     assert coverage["medicine"] >= 6
     assert coverage["playbook"] >= 3
     assert coverage["region"] >= 6
-    bosses = kb.search("", type="boss", limit=50, spoiler_level=2)
-    assert len(bosses) >= 8
+    bosses = kb.search("", type="boss", limit=80, spoiler_level=2)
+    assert len(bosses) >= 30
     meds = kb.search("", type="medicine", limit=50, spoiler_level=2)
     assert any(x["name"] == "苦叶露" for x in meds)
+    quest = kb.search("白山秘闻", type="quest", limit=5, spoiler_level=2)
+    assert quest and quest[0]["facts"]["steps"]
+    item = kb.search("红妆鬼斩", type="weapon", limit=5, spoiler_level=2)
+    assert item and item[0]["facts"].get("acquisition_hints")
+
+
+def test_player_corrections_survive_seed_refresh(tmp_path):
+    corrections = tmp_path / "corrections"
+    kb = KnowledgeStore(tmp_path / "correct.db", SEED, corrections_dir=corrections)
+    kb.remember_correction("boss.ah_hua", "summary", "玩家核对后的首领信息")
+    kb.close()
+
+    refreshed = KnowledgeStore(tmp_path / "correct.db", SEED, corrections_dir=corrections)
+    refreshed.load_seed(SEED)
+    assert refreshed.apply_corrections() >= 1
+    assert refreshed.get("boss.ah_hua", spoiler_level=2)["facts"]["summary"] == (
+        "玩家核对后的首领信息"
+    )
+    refreshed.close()

@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "imported_at": "2026-11-07T18:22:49.207Z",
+  "game_root_hint": "<PBZ installation>",
+  "sources": [
+    {
+      "name": "PBZModLoader pbz-map-helper item catalog",
+      "kind": "installed_mod_data",
+      "gives": "物品键、名称、分类",
+      "confidence": 0.9
+    },
+    {
+      "name": "UE4SSQuestGuide QuestGuideBossData 0.6.7",
+      "kind": "installed_mod_data",
+      "gives": "29 个首领战区域、地图、世界与奖励条件",
+      "confidence": 0.82
+    },
+    {
+      "name": "UE4SSQuestGuide QuestGuideCatalog",
+      "kind": "installed_mod_data",
+      "gives": "66 条任务、216 个步骤、357 个目标点、区域检查表",
+      "confidence": 0.76
+    },
+    {
+      "name": "UE4SSQuestGuide chapters 1-9",
+      "kind": "installed_mod_data",
+      "gives": "1054 个探索卡片、铃铛/收集物/首领地点的紧凑攻略事实",
+      "confidence": 0.72
+    },
+    {
+      "name": "UE4SSQuestGuide NPC roster",
+      "kind": "installed_mod_data",
+      "gives": "溪谷 NPC 位置、用途与对话节点",
+      "confidence": 0.7
+    }
+  ],
+  "policy": "只保留结构化事实与短说明；不把安装包脚本、长攻略全文或二进制资源复制进插件。"
+}

@@ -71,7 +71,7 @@ class ToolMixin:
 
     @llm_tool(
         name="pbz_boss_info",
-        description="查询 Boss 知识：阶段、危险动作、应对方向、场地机制与本地历史。用于战前提示或复盘。",
+        description="查询 Boss 知识：所在区域、首领组、攻略短记、危险动作、应对方向与本地历史。用于战前提示或复盘。",
         parameters={
             "type": "object",
             "properties": {"name": {"type": "string", "description": "Boss 名称；留空用当前 Boss"}},
@@ -93,7 +93,8 @@ class ToolMixin:
         if entity:
             facts = entity.get("facts") or {}
             bits.append(f"{entity.get('name')}（{entity.get('type')}）")
-            for k in ("phases", "threat", "recommended_defense", "arena", "tip"):
+            for k in ("summary", "map_world_label", "boss_group", "phases",
+                      "threat", "recommended_defense", "arena", "guide_note", "tip"):
                 if facts.get(k):
                     bits.append(f"{k}: {facts[k]}")
             if entity.get("hidden_by_spoiler"):
@@ -134,13 +135,13 @@ class ToolMixin:
 
     @llm_tool(
         name="pbz_kb_search",
-        description="搜索《影之刃零》知识库：Boss、小怪、武器、影之武装、饰品、铃铛、铸魂、机制。",
+        description="搜索《影之刃零》知识库：Boss、任务、路线、收集物、NPC、物品、小怪、武器、影之武装、饰品、铃铛、铸魂、机制。",
         parameters={
             "type": "object",
             "properties": {
                 "query": {"type": "string"},
                 "limit": {"type": "integer"},
-                "type": {"type": "string", "description": "boss/mob/weapon/phantom_edge/accessory/medicine/mechanic/playbook/bell"},
+                "type": {"type": "string", "description": "boss/quest/route/collectible/npc/item/mob/weapon/phantom_edge/accessory/medicine/mechanic/playbook/region/bell/guide"},
             },
             "required": ["query"],
         },
@@ -159,9 +160,69 @@ class ToolMixin:
         out = []
         for r in rows:
             facts = r.get("facts") or {}
-            brief = facts.get("tip") or facts.get("use") or facts.get("category") or ""
+            hints = facts.get("acquisition_hints") or []
+            brief = (facts.get("summary") or facts.get("guide_note")
+                     or (hints[0] if hints else "")
+                     or facts.get("tip") or facts.get("use")
+                     or facts.get("category") or "")
             out.append(f"{r.get('name')}（{r.get('type')}）{brief}")
         return Ok({"output": "；".join(out)})
+
+    @llm_tool(
+        name="pbz_quest_info",
+        description="查询任务的分步目标、区域、前置、失败提醒与奖励。留空时读取当前任务；也可传任务名。",
+        parameters={
+            "type": "object",
+            "properties": {"name": {"type": "string", "description": "任务名称；留空用当前任务"}},
+        },
+    )
+    async def tool_pbz_quest_info(self, name: str = "", **_: Any) -> Any:
+        if not self.service:
+            return Ok({"output": "知识库未启动。"})
+        names = []
+        if name.strip():
+            names.append(name.strip())
+        else:
+            for quest in self._state().get("quests") or []:
+                if not isinstance(quest, dict):
+                    continue
+                label = str(quest.get("name") or quest.get("id") or "").strip()
+                if label:
+                    names.append(label)
+        if not names:
+            return Ok({"output": "现在没读到当前任务；告诉喵任务名也可以查。"})
+        level = int(self.service.cfg.get("spoiler_level", 1))
+        chunks = []
+        for label in names[:3]:
+            entity = self.service.knowledge.get(label, spoiler_level=level)
+            if not entity or entity.get("type") != "quest":
+                rows = self.service.knowledge.search(
+                    label, limit=1, spoiler_level=level, type="quest")
+                entity = rows[0] if rows else None
+            if not entity or entity.get("hidden_by_spoiler"):
+                continue
+            facts = entity.get("facts") or {}
+            lines = [str(entity.get("name") or label)]
+            if facts.get("summary"):
+                lines.append(str(facts["summary"]))
+            for index, step in enumerate(facts.get("steps") or [], 1):
+                if not isinstance(step, dict):
+                    continue
+                text = step.get("instruction") or step.get("title") or ""
+                if text:
+                    lines.append(f"{index}. {text}")
+                if index >= 8:
+                    break
+            notes = facts.get("guide_notes") or []
+            if notes:
+                lines.append("提醒：" + str(notes[-1]))
+            rewards = facts.get("rewards") or []
+            if rewards:
+                lines.append("奖励：" + "、".join(str(x) for x in rewards[:8]))
+            chunks.append("\n".join(lines))
+        if not chunks:
+            return Ok({"output": f"任务库里没有「{'、'.join(names[:3])}」的可靠记录，喵不编。"})
+        return Ok({"output": "\n\n".join(chunks)})
 
     @llm_tool(
         name="pbz_playbook",

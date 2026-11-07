@@ -1,0 +1,310 @@
+{
+  "version": 1,
+  "source": "PBZ quest-guide world and coverage metadata",
+  "entities": [
+    {
+      "id": "region.blood_forest",
+      "type": "region",
+      "name": "血色森林",
+      "aliases": [
+        "血色森林"
+      ],
+      "spoiler_level": 1,
+      "confidence": 0.72,
+      "source": "catalog",
+      "facts": {
+        "category": "区域",
+        "traversal": "林地、坑道与营地",
+        "tip": "林地视线差，先确认远程怪与伏击点。",
+        "world_id": "FuJiZhiLin",
+        "chapter_names": [
+          "第二章"
+        ],
+        "guide_card_count": 129,
+        "reference_total": 129,
+        "content_breakdown": {
+          "铃铛": 19,
+          "武器/影之武装": 6,
+          "饰品/药瓶": 16,
+          "挑战": 2,
+          "杀气琥珀": 6,
+          "黑石碎片": 6,
+          "记忆之花": 18,
+          "妙手宝藏": 3,
+          "支线": 10,
+          "铸魂材料": 5,
+          "书籍": 18
+        },
+        "source_refs": [
+          "questguide_chapters"
+        ]
+      }
+    },
+    {
+      "id": "region.DengDingShanDao",
+      "type": "region",
+      "name": "枷笼山",
+      "aliases": [],
+      "region": "",
+      "spoiler_level": 1,
+      "confidence": 0.72,
+      "source": "questguide_chapters",
+      "facts": {
+        "category": "区域",
+        "world_id": "DengDingShanDao",
+        "chapter_names": [
+          "第七章"
+        ],
+        "guide_card_count": 118,
+        "reference_total": null,
+        "content_breakdown": {},
+        "source_refs": [
+          "questguide_chapters"
+        ]
+      }
+    },
+    {
+      "id": "region.duanhun",
+      "type": "region",
+      "name": "断魂山",
+      "aliases": [
+        "断魂山",
+        "断魂崖"
+      ],
+      "spoiler_level": 1,
+      "confidence": 0.72,
+      "source": "catalog",
+      "facts": {
+        "category": "区域",
+        "traversal": "山道、冰窟与悬崖",
+        "tip": "高低差明显，先确认退路和落点再跳跃。",
+        "world_id": "DuanHunYa",
+        "chapter_names": [
+          "第九章"
+        ],
+        "guide_card_count": 39,
+        "reference_total": null,
+        "content_breakdown": {},
+        "source_refs": [
+          "questguide_chapters"
+        ]
+      }
+    },
+    {
+      "id": "region.HouJie",
+      "type": "region",
+      "name": "后街",
+      "aliases": [],
+      "region": "",
+      "spoiler_level": 1,
+      "confidence": 0.72,
+      "source": "questguide_chapters",
+      "facts": {
+        "category": "区域",
+        "world_id": "HouJie",
+        "chapter_names": [],
+        "guide_card_count": 0,
+        "reference_total": null,
+        "content_breakdown": {},
+        "source_refs": [
+          "questguide_chapters"
+        ]
+      }
+    },
+    {
+      "id": "region.LuJiaCun",
+      "type": "region",
+      "name": "陆家村",
+      "aliases": [],
+      "region": "",
+      "spoiler_level": 1,
+      "confidence": 0.72,
+      "source": "questguide_chapters",
+      "facts": {
+        "category": "区域",
+        "world_id": "LuJiaCun",
+        "chapter_names": [
+          "第三章"
+        ],
+        "guide_card_count": 133,
+        "reference_total": 133,
+        "content_breakdown": {
+          "铃铛": 23,
+          "武器/影之武装": 7,
+          "饰品/药瓶": 10,
+          "挑战": 1,
+          "杀气琥珀": 4,
+          "黑石碎片": 4,
+          "记忆之花": 16,
+          "妙手宝藏": 3,
+          "支线": 7,
+          "铸魂材料": 4,
+          "书籍": 29
+        },
+        "source_refs": [
+          "questguide_chapters"
+        ]
+      }
+    },
+    {
+      "id": "region.meigu_lake",
+      "type": "region",
+      "name": "梅谷湖",
+      "aliases": [
+        "梅谷",
+        "梅谷湖"
+      ],
+      "spoiler_level": 1,
+      "confidence": 0.72,
+      "source": "catalog",
+      "facts": {
+        "category": "区域",
+        "traversal": "湖面、船坞与岛屿",
+        "tip": "水上行船与岸边铃铛需要分开确认。",
+        "world_id": "MeiGuHu",
+        "chapter_names": [
+          "第六章"
+        ],
+        "guide_card_count": 119,
+        "reference_total": null,
+        "content_breakdown": {},
+        "source_refs": [
+          "questguide_chapters"
+        ]
+      }
+    },
+    {
+      "id": "region.MeiGu_YiJi",
+      "type": "region",
+      "name": "幻术师遗迹",
+      "aliases": [],
+      "region": "",
+      "spoiler_level": 1,
+      "confidence": 0.72,
+      "source": "questguide_chapters",
+      "facts": {
+        "category": "区域",
+        "world_id": "MeiGu_YiJi",
+        "chapter_names": [],
+        "guide_card_count": 0,
+        "reference_total": null,
+        "content_breakdown": {},
+        "source_refs": [
+          "questguide_chapters"
+        ]
+      }
+    },
+    {
+      "id": "region.pangzhen",
+      "type": "region",
+      "name": "庞镇",
+      "aliases": [
+        "庞镇"
+      ],
+      "spoiler_level": 1,
+      "confidence": 0.72,
+      "source": "catalog",
+      "facts": {
+        "category": "区域",
+        "traversal": "城镇街巷、市集与水路",
+        "tip": "城镇适合整理装备、药品与任务；留意屋顶和窄巷。",
+        "world_id": "PangZhen",
+        "chapter_names": [
+          "第四章"
+        ],
+        "guide_card_count": 183,
+        "reference_total": null,
+        "content_breakdown": {},
+        "source_refs": [
+          "questguide_chapters"
+        ]
+      }
+    },
+    {
+      "id": "region.valley",
+      "type": "region",
+      "name": "悲泣溪谷",
+      "aliases": [
+        "溪谷"
+      ],
+      "spoiler_level": 1,
+      "confidence": 0.75,
+      "source": "catalog",
+      "facts": {
+        "category": "区域",
+        "traversal": "溪流、吊桥、山洞与高差地形",
+        "tip": "先找检查点铃铛，再探索岔路与可破坏物。",
+        "world_id": "XiGu",
+        "chapter_names": [
+          "悲泣溪谷"
+        ],
+        "guide_card_count": 133,
+        "reference_total": 133,
+        "content_breakdown": {
+          "铃铛": 23,
+          "武器/影之武装": 7,
+          "饰品/药瓶": 12,
+          "挑战": 1,
+          "杀气琥珀": 4,
+          "黑石碎片": 4,
+          "记忆之花": 1,
+          "支线": 11,
+          "书籍": 45
+        },
+        "source_refs": [
+          "questguide_chapters"
+        ]
+      }
+    },
+    {
+      "id": "region.ximeng",
+      "type": "region",
+      "name": "戏梦山庄",
+      "aliases": [
+        "戏梦山庄"
+      ],
+      "spoiler_level": 1,
+      "confidence": 0.72,
+      "source": "catalog",
+      "facts": {
+        "category": "区域",
+        "traversal": "山庄、戏园与后山",
+        "tip": "建筑与庭院交错，探索时留意机关和隐藏入口。",
+        "world_id": "XiMeng",
+        "chapter_names": [
+          "第八章"
+        ],
+        "guide_card_count": 80,
+        "reference_total": null,
+        "content_breakdown": {},
+        "source_refs": [
+          "questguide_chapters"
+        ]
+      }
+    },
+    {
+      "id": "region.ZhengDaoDaYing",
+      "type": "region",
+      "name": "正道大营",
+      "aliases": [],
+      "region": "",
+      "spoiler_level": 1,
+      "confidence": 0.72,
+      "source": "questguide_chapters",
+      "facts": {
+        "category": "区域",
+        "world_id": "ZhengDaoDaYing",
+        "chapter_names": [
+          "第五章"
+        ],
+        "guide_card_count": 120,
+        "reference_total": null,
+        "content_breakdown": {},
+        "source_refs": [
+          "questguide_chapters"
+        ]
+      }
+    }
+  ],
+  "relations": []
+}

@@ -58,6 +58,7 @@ class PbzService:
             corrections_dir=knowledge_dir / "corrections")
         for seed_file in persist_seeds:
             self.knowledge.load_seed(seed_file)
+        self.knowledge.apply_corrections()
         self.speech = HostSpeech(
             plugin, voice_enabled=bool(self.cfg.get("voice_enabled", True)))
         self.engine = EventEngine()

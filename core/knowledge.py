@@ -130,6 +130,42 @@ class KnowledgeStore:
             self.db.commit()
         return count
 
+    def apply_corrections(self) -> int:
+        """Reapply player corrections after versioned seeds have been refreshed."""
+        if not self.corrections_dir or not self.corrections_dir.exists():
+            return 0
+        applied = 0
+        with self._lock:
+            for path in sorted(self.corrections_dir.glob("*.json")):
+                try:
+                    items = json.loads(path.read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    continue
+                if not isinstance(items, list):
+                    continue
+                for item in items:
+                    if not isinstance(item, dict):
+                        continue
+                    entity_id = str(item.get("entity_id") or "").strip()
+                    field = str(item.get("field") or "").strip()
+                    if not entity_id or not field or "value" not in item:
+                        continue
+                    entity = self.get(entity_id, spoiler_level=99)
+                    if not entity:
+                        continue
+                    facts = dict(entity.get("facts") or {})
+                    facts[field] = item["value"]
+                    self.db.execute(
+                        """UPDATE entities SET facts_json=?, confidence=1, source=?, updated_at=?
+                           WHERE id=?""",
+                        (json.dumps(facts, ensure_ascii=False),
+                         str(item.get("source") or "player"), time.time(),
+                         entity.get("id") or entity_id),
+                    )
+                    applied += 1
+            self.db.commit()
+        return applied
+
     # ── 查询 ─────────────────────────────
     @staticmethod
     def _row(row: sqlite3.Row) -> Dict[str, Any]:

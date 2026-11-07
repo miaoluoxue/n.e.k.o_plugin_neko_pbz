@@ -1250,7 +1250,7 @@ body[data-style="landscape"] .brand-footer::before{
     <!-- 百晓 -->
     <section id="view-knowledge" class="view">
       <article class="card">
-        <h3>百晓 <span class="sub">Boss / 小怪 / 武器 / 影之武装 / 铃铛 / 铸魂</span></h3>
+        <h3><span data-i18n="knowledge.title">百晓</span> <span class="sub">Boss / 任务 / 路线 / 收集 / 装备</span></h3>
         <div id="kbStats" class="kb-stats">
           <div class="kb-stat"><span class="muted">实体</span><b id="kbEntities">0</b></div>
           <div class="kb-stat"><span class="muted">关系</span><b id="kbRelations">0</b></div>
@@ -1259,17 +1259,23 @@ body[data-style="landscape"] .brand-footer::before{
         </div>
         <div id="kbCoverage" class="chips" style="margin-top:12px"></div>
         <div id="kbFilters" class="kb-filters">
-          <button class="active" data-kb-type="">全部</button>
-          <button data-kb-type="boss">Boss</button>
-          <button data-kb-type="mob">小怪</button>
-          <button data-kb-type="weapon">主武器</button>
-          <button data-kb-type="phantom_edge">影之武装</button>
-          <button data-kb-type="accessory">饰品</button>
-          <button data-kb-type="medicine">药瓶</button>
-          <button data-kb-type="mechanic">机制</button>
-          <button data-kb-type="playbook">玩法库</button>
-          <button data-kb-type="region">区域</button>
-          <button data-kb-type="bell">铃铛</button>
+          <button class="active" data-kb-type="" data-i18n="knowledge.all">全部</button>
+          <button data-kb-type="boss" data-i18n="knowledge.boss">Boss</button>
+          <button data-kb-type="quest" data-i18n="knowledge.quest">任务</button>
+          <button data-kb-type="route" data-i18n="knowledge.route">路线</button>
+          <button data-kb-type="collectible" data-i18n="knowledge.collectible">收集物</button>
+          <button data-kb-type="npc" data-i18n="knowledge.npc">NPC</button>
+          <button data-kb-type="mob" data-i18n="knowledge.mob">小怪</button>
+          <button data-kb-type="weapon" data-i18n="knowledge.weapon">主武器</button>
+          <button data-kb-type="phantom_edge" data-i18n="knowledge.edge">影之武装</button>
+          <button data-kb-type="accessory" data-i18n="knowledge.accessory">饰品</button>
+          <button data-kb-type="medicine" data-i18n="knowledge.medicine">药瓶</button>
+          <button data-kb-type="item" data-i18n="knowledge.item">道具</button>
+          <button data-kb-type="mechanic" data-i18n="knowledge.mechanic">机制</button>
+          <button data-kb-type="playbook" data-i18n="knowledge.playbook">玩法库</button>
+          <button data-kb-type="region" data-i18n="knowledge.region">区域</button>
+          <button data-kb-type="bell" data-i18n="knowledge.bell">铃铛</button>
+          <button data-kb-type="guide" data-i18n="knowledge.guide">挑战</button>
         </div>
         <div class="searchbar">
           <input id="kbQuery" placeholder="输入 Boss、小怪、武器、影之武装、铃铛、铸魂……">
@@ -1404,6 +1410,10 @@ const TIMEOUT = 30000;
 let last = {};
 let kbType = '';
 let I18N_MESSAGES = {};
+let I18N_BUNDLE = {};
+function tr(key, fallback){
+  return I18N_BUNDLE[key] || fallback;
+}
 
 const SCENES = {
   exploring: {label:'探索', desc:'听风辨路，猫娘陪你看江湖。', cls:'gold'},
@@ -1589,9 +1599,24 @@ function renderKB(s){
   $('kbRelations').textContent = k.relations ?? 0;
   $('kbTips').textContent = k.tips ?? 0;
   $('kbPending').textContent = k.unverified_tips ?? 0;
-  const labels = {boss:'Boss', mob:'小怪', bell:'铃铛', weapon:'主武器',
-                  phantom_edge:'影之武装', accessory:'饰品', medicine:'药瓶',
-                  mechanic:'机制', playbook:'玩法库', region:'区域'};
+  const labels = {
+    boss:tr('knowledge.boss','Boss'),
+    quest:tr('knowledge.quest','任务'),
+    route:tr('knowledge.route','路线'),
+    collectible:tr('knowledge.collectible','收集物'),
+    npc:tr('knowledge.npc','NPC'),
+    mob:tr('knowledge.mob','小怪'),
+    bell:tr('knowledge.bell','铃铛'),
+    weapon:tr('knowledge.weapon','主武器'),
+    phantom_edge:tr('knowledge.edge','影之武装'),
+    accessory:tr('knowledge.accessory','饰品'),
+    medicine:tr('knowledge.medicine','药瓶'),
+    item:tr('knowledge.item','道具'),
+    mechanic:tr('knowledge.mechanic','机制'),
+    playbook:tr('knowledge.playbook','玩法库'),
+    region:tr('knowledge.region','区域'),
+    guide:tr('knowledge.guide','挑战')
+  };
   const coverage = k.coverage || {};
   $('kbCoverage').innerHTML = Object.keys(labels)
     .map(type => `<span class="chip">${labels[type]} ${coverage[type] ?? 0}</span>`)
@@ -1900,6 +1925,7 @@ async function loadI18n(){
     const locale = (navigator.language || 'zh-CN').replace('_','-');
     const candidates = [locale, locale.split('-')[0], 'zh-CN', 'en'];
     const bundle = candidates.map(x => I18N_MESSAGES[x]).find(x => x) || {};
+    I18N_BUNDLE = bundle;
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.dataset.i18n;
       if(bundle[key]) el.textContent = bundle[key];
@@ -2012,7 +2038,9 @@ $('btnSearch').onclick = async () => {
     if(!items.length){ el.innerHTML = '<div class="empty">没有找到，喵不编。</div>'; return; }
     el.innerHTML = items.map(x => {
       const f = x.facts || {};
-      const brief = f.tip || f.use || f.category || f.archetype || '';
+      const hints = Array.isArray(f.acquisition_hints) ? f.acquisition_hints : [];
+      const brief = f.summary || f.guide_note || hints[0] || f.tip || f.use
+        || f.category || f.archetype || '';
       return `<div class="kb-item"><div class="t"><span>${x.name || x.id}</span><small>${x.type || ''}</small></div><div class="d">${brief}${x.hidden_by_spoiler ? ' · 详细内容被剧透等级隐藏' : ''}</div></div>`;
     }).join('');
   }catch(e){ toast('检索失败：' + e.message); }

@@ -6,7 +6,7 @@ N.E.K.O 插件 + UE5 游戏内 Mod。让宿主当前猫娘陪主人玩《Phantom
 - 多槽位随身：主/副武器、多个影之武装、多个饰品、药瓶/快捷道具；
 - 读世界：区域、Boss、前方敌人、铃铛、任务；
 - 跨会话记忆：Boss 尝试/死亡/首杀、装备、偏好、约定；
-- 知识库：Boss、小怪、铃铛、武器、影之武装、铸魂；
+- 知识库：Boss、任务、探索路线、铃铛、收集物、NPC、物品、装备与铸魂；
 - 画面识别：游戏内 F11 截图，交给宿主视觉模型；`pbz_look` 工具按需看画面；
 - Boss 前从已验证建议池随机 1~3 条；
 - 独立 LLM（OpenAI 兼容 / OpenAI / Anthropic / Gemini），只做记忆摘要与知识整理；
@@ -20,7 +20,7 @@ N.E.K.O 插件 + UE5 游戏内 Mod。让宿主当前猫娘陪主人玩《Phantom
 - **侦察**：独立罗盘页，Boss、小怪、方位、距离、铃铛与手动刷新；
 - **交锋**：Boss 交手记录、事件流；
 - **忆卷**：跨会话记忆、约定、本地统计；
-- **百晓**：分类覆盖统计、按 Boss/小怪/装备/药瓶/机制/玩法库筛选、种子重载；
+- **百晓**：分类覆盖统计，可按 Boss/任务/路线/收集物/NPC/物品/装备筛选并重载种子；
 - **灵犀**：独立 LLM 配置、测试连接、Token 账；
 - **调息**：TTS/字幕/主动说话/剧透等级/Boss 建议条数/静默。
 
@@ -59,7 +59,9 @@ neko_pbz/
 ├─ mod/
 │  ├─ pbz-neko-companion/   PuerTS JS：只读状态 + 字幕
 │  └─ lua/PBZNekoCompanion/ UE4SS Lua：读 reply.txt + F10
-├─ scripts/deploy.ps1      一键部署
+├─ scripts/
+│  ├─ deploy.ps1                  一键部署
+│  └─ import_pbz_game_data.js     从本机 PBZ 数据模块刷新知识种子
 └─ tests/                  单元测试
 ```
 
@@ -89,15 +91,37 @@ data/
    ├─ seed_equipment.json    武器/影之武装/饰品/药瓶
    ├─ seed_mechanics.json    杀气/切换武器/药瓶/破防等机制
    ├─ seed_tips.json         玩法库 + 已验证 Boss 建议
+   ├─ seed_world.json        区域与探索玩法
+   ├─ seed_game_catalog.json 物品名称/分类/紧凑获取位置
+   ├─ seed_game_bosses.json  首领点位、首领组与短攻略
+   ├─ seed_game_quests.json  任务步骤、目标点、前置与奖励
+   ├─ seed_game_guide.json   路线、铃铛、收集物与挑战
+   ├─ seed_game_npcs.json    NPC 位置、用途与对话节点
+   ├─ seed_game_regions.json 区域章节与收集覆盖
+   ├─ sources.json           来源、日期、置信度和导入边界
    ├─ pbz_knowledge.db
    └─ corrections/*.json
 ```
 
 旧版单文件 SQLite 记忆会自动迁移到目录结构，原 DB 改名为 `.db.migrated` 保留。
 
-首批知识库包含 98 个实体：12 Boss、8 类小怪、7 铃铛、11 武器、
-14 影之武装、10 饰品、8 药瓶、12 机制、8 玩法库条目、8 区域；
+当前知识库包含 1446 个去重实体：61 Boss、72 任务、87 路线、534 收集物、
+171 铃铛、15 NPC、279 道具、27 主武器、25 影之武装、66 饰品、17 药瓶、
+12 机制、8 玩法库条目、13 区域、8 类小怪与 51 挑战/玩法卡片；
 19 条已验证通用建议，9 条 Boss 专属建议等待实机核验。
+
+知识种子从本机安装目录中的 PBZ 物品目录和任务/地图数据模块离线整理，
+只保留名称、分类、坐标、步骤、短提醒等结构化事实，不复制脚本、二进制资源或长攻略全文。
+来源与置信度写入 `data/knowledge/sources.json`；具体效果、数值和战斗阶段仍需实机核验。
+
+刷新数据：
+
+```powershell
+node .\scripts\import_pbz_game_data.js
+```
+
+脚本读取安装目录后只写插件 `data/knowledge/`，运行时不依赖 Node、PBZQuestGuide
+或 pbz-map-helper。
 
 ## 部署
 

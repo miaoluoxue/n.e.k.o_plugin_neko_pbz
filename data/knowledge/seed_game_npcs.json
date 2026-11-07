@@ -1,0 +1,478 @@
+{
+  "version": 1,
+  "source": "PBZ quest-guide NPC roster",
+  "entities": [
+    {
+      "id": "npc.XiGu.1",
+      "type": "npc",
+      "name": "玉儿",
+      "aliases": [
+        "BPF_YuEr_XG"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide_npc_data",
+      "facts": {
+        "category": "NPC",
+        "world": "XiGu",
+        "world_label": "悲泣溪谷",
+        "location": "驿站营地的玉儿",
+        "purpose": "血肉花、见习医师的接取与交付",
+        "summary": "血肉花、见习医师的接取与交付",
+        "relevant": true,
+        "source_asset": "BPF_YuEr_XG",
+        "topics": [
+          {
+            "label": "驿站初次对话后",
+            "tag": "xg.营地玉儿.第一次对话后"
+          },
+          {
+            "label": "采药任务开始",
+            "tag": "xg.营地玉儿.收集药材开始"
+          },
+          {
+            "label": "药材收集结束",
+            "tag": "xg.营地玉儿.收集药材结束"
+          }
+        ],
+        "source_refs": [
+          "questguide_npc_data"
+        ]
+      }
+    },
+    {
+      "id": "npc.XiGu.2",
+      "type": "npc",
+      "name": "老弓手",
+      "aliases": [
+        "BPF_LaoGongShou_New"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide_npc_data",
+      "facts": {
+        "category": "NPC",
+        "world": "XiGu",
+        "world_label": "悲泣溪谷",
+        "location": "驿站左侧屋顶",
+        "purpose": "清理门户与羽弓交付",
+        "summary": "清理门户与羽弓交付",
+        "relevant": true,
+        "source_asset": "BPF_LaoGongShou_New",
+        "topics": [
+          {
+            "label": "初次对话后",
+            "tag": "xg.老弓手.第一次对话后"
+          },
+          {
+            "label": "交还羽弓",
+            "tag": "xg.老弓手.交还羽弓"
+          }
+        ],
+        "source_refs": [
+          "questguide_npc_data"
+        ]
+      }
+    },
+    {
+      "id": "npc.XiGu.3",
+      "type": "npc",
+      "name": "蓝衣队长",
+      "aliases": [
+        "BPF_LiuYi_YiZhan"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide_npc_data",
+      "facts": {
+        "category": "NPC",
+        "world": "XiGu",
+        "world_label": "悲泣溪谷",
+        "location": "驿站入口附近，难言之隐任务",
+        "purpose": "难言之隐调查、手令与回报",
+        "summary": "难言之隐调查、手令与回报",
+        "relevant": true,
+        "source_asset": "BPF_LiuYi_YiZhan",
+        "topics": [
+          {
+            "label": "队长任务对话后",
+            "tag": "xg.村庄.队长任务对话后"
+          },
+          {
+            "label": "手令对话后",
+            "tag": "xg.村庄.队长手令对话后"
+          }
+        ],
+        "source_refs": [
+          "questguide_npc_data"
+        ]
+      }
+    },
+    {
+      "id": "npc.XiGu.4",
+      "type": "npc",
+      "name": "白山女队长",
+      "aliases": [
+        "BPF_NvJianKe_YiZhan"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "questguide_npc_data",
+      "facts": {
+        "category": "NPC",
+        "world": "XiGu",
+        "world_label": "悲泣溪谷",
+        "location": "驿站营地，粉衣女剑客",
+        "purpose": "",
+        "summary": "驿站营地，粉衣女剑客",
+        "relevant": false,
+        "source_asset": "BPF_NvJianKe_YiZhan",
+        "topics": [
+          {
+            "label": "对话后",
+            "tag": "xg.村庄.白山女队长对话后"
+          }
+        ],
+        "source_refs": [
+          "questguide_npc_data"
+        ]
+      }
+    },
+    {
+      "id": "npc.XiGu.5",
+      "type": "npc",
+      "name": "货郎",
+      "aliases": [
+        "BPF_XiGu_HuoLang"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide_npc_data",
+      "facts": {
+        "category": "NPC",
+        "world": "XiGu",
+        "world_label": "悲泣溪谷",
+        "location": "驿站货郎",
+        "purpose": "风车收集与交付",
+        "summary": "风车收集与交付",
+        "relevant": true,
+        "source_asset": "BPF_XiGu_HuoLang",
+        "topics": [
+          {
+            "label": "初次对话完成",
+            "tag": "xg.货郎.第一次对话完成"
+          }
+        ],
+        "source_refs": [
+          "questguide_npc_data"
+        ]
+      }
+    },
+    {
+      "id": "npc.XiGu.6",
+      "type": "npc",
+      "name": "炼邪",
+      "aliases": [
+        "BPF_LianXie"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "questguide_npc_data",
+      "facts": {
+        "category": "NPC",
+        "world": "XiGu",
+        "world_label": "悲泣溪谷",
+        "location": "驿站武器教学处",
+        "purpose": "",
+        "summary": "驿站武器教学处",
+        "relevant": false,
+        "source_asset": "BPF_LianXie",
+        "topics": [
+          {
+            "label": "初次对话后",
+            "tag": "xg.炼邪.第一次对话后"
+          }
+        ],
+        "source_refs": [
+          "questguide_npc_data"
+        ]
+      }
+    },
+    {
+      "id": "npc.XiGu.7",
+      "type": "npc",
+      "name": "屋内惊恐的正道弟子",
+      "aliases": [
+        "BPF_HaiPaDeTaoBing"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide_npc_data",
+      "facts": {
+        "category": "NPC",
+        "world": "XiGu",
+        "world_label": "悲泣溪谷",
+        "location": "驿站屋内，破门后可见",
+        "purpose": "凶斧调查线索与后续物品情报",
+        "summary": "凶斧调查线索与后续物品情报",
+        "relevant": true,
+        "source_asset": "BPF_HaiPaDeTaoBing",
+        "topics": [
+          {
+            "label": "初次对话后",
+            "tag": "xg.村庄.害怕的逃兵对话后"
+          }
+        ],
+        "source_refs": [
+          "questguide_npc_data"
+        ]
+      }
+    },
+    {
+      "id": "npc.XiGu.8",
+      "type": "npc",
+      "name": "老乞丐",
+      "aliases": [
+        "BPF_LaoQiGai_XG"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "questguide_npc_data",
+      "facts": {
+        "category": "NPC",
+        "world": "XiGu",
+        "world_label": "悲泣溪谷",
+        "location": "驿站的老乞丐",
+        "purpose": "",
+        "summary": "驿站的老乞丐",
+        "relevant": false,
+        "source_asset": "BPF_LaoQiGai_XG",
+        "topics": [
+          {
+            "label": "初次对话后",
+            "tag": "xg.老乞丐.第一次对话之后"
+          }
+        ],
+        "source_refs": [
+          "questguide_npc_data"
+        ]
+      }
+    },
+    {
+      "id": "npc.XiGu.9",
+      "type": "npc",
+      "name": "苦叶寺僧人",
+      "aliases": [
+        "BPF_KuYeSiSengRen"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide_npc_data",
+      "facts": {
+        "category": "NPC",
+        "world": "XiGu",
+        "world_label": "悲泣溪谷",
+        "location": "驿站僧人",
+        "purpose": "一个不留相关念珠物品",
+        "summary": "一个不留相关念珠物品",
+        "relevant": true,
+        "source_asset": "BPF_KuYeSiSengRen",
+        "topics": [
+          {
+            "label": "对话节点",
+            "tag": "xg.村庄.苦叶寺僧人对话"
+          }
+        ],
+        "source_refs": [
+          "questguide_npc_data"
+        ]
+      }
+    },
+    {
+      "id": "npc.XiGu.10",
+      "type": "npc",
+      "name": "入口小院的两名枪兵",
+      "aliases": [
+        "BPF_JiangHuRenShi_YiZhan_01"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "questguide_npc_data",
+      "facts": {
+        "category": "NPC",
+        "world": "XiGu",
+        "world_label": "悲泣溪谷",
+        "location": "驿站入口小院，属于同一段对话",
+        "purpose": "",
+        "summary": "驿站入口小院，属于同一段对话",
+        "relevant": false,
+        "source_asset": "BPF_JiangHuRenShi_YiZhan_01",
+        "topics": [
+          {
+            "label": "小院枪兵对话后",
+            "tag": "xg.村庄.小院枪兵对话后"
+          }
+        ],
+        "source_refs": [
+          "questguide_npc_data"
+        ]
+      }
+    },
+    {
+      "id": "npc.XiGu.11",
+      "type": "npc",
+      "name": "驿站枪兵弟子",
+      "aliases": [
+        "BPF_JiangHuRenShi_YiZhan_03"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "questguide_npc_data",
+      "facts": {
+        "category": "NPC",
+        "world": "XiGu",
+        "world_label": "悲泣溪谷",
+        "location": "驿站营地中的枪兵弟子",
+        "purpose": "",
+        "summary": "驿站营地中的枪兵弟子",
+        "relevant": false,
+        "source_asset": "BPF_JiangHuRenShi_YiZhan_03",
+        "topics": [
+          {
+            "label": "对话后",
+            "tag": "xg.村庄.枪兵弟子对话后"
+          }
+        ],
+        "source_refs": [
+          "questguide_npc_data"
+        ]
+      }
+    },
+    {
+      "id": "npc.XiGu.12",
+      "type": "npc",
+      "name": "巡逻枪兵",
+      "aliases": [
+        "BPF_JiangHuRenShi_XunLuo"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "questguide_npc_data",
+      "facts": {
+        "category": "NPC",
+        "world": "XiGu",
+        "world_label": "悲泣溪谷",
+        "location": "驿站附近巡逻",
+        "purpose": "",
+        "summary": "驿站附近巡逻",
+        "relevant": false,
+        "source_asset": "BPF_JiangHuRenShi_XunLuo",
+        "topics": [
+          {
+            "label": "巡逻对话完成",
+            "tag": "xg.村庄.巡逻枪兵对话完成"
+          }
+        ],
+        "source_refs": [
+          "questguide_npc_data"
+        ]
+      }
+    },
+    {
+      "id": "npc.XiGu.13",
+      "type": "npc",
+      "name": "铁链院门守卫",
+      "aliases": [
+        "BPF_JiangHuRenShi_TieLian"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "questguide_npc_data",
+      "facts": {
+        "category": "NPC",
+        "world": "XiGu",
+        "world_label": "悲泣溪谷",
+        "location": "封锁院落的铁链门旁，区别于桥头拒马枪兵",
+        "purpose": "",
+        "summary": "封锁院落的铁链门旁，区别于桥头拒马枪兵",
+        "relevant": false,
+        "source_asset": "BPF_JiangHuRenShi_TieLian",
+        "topics": [
+          {
+            "label": "铁链守卫对话后",
+            "tag": "xg.村庄.守铁链枪兵对话后"
+          }
+        ],
+        "source_refs": [
+          "questguide_npc_data"
+        ]
+      }
+    },
+    {
+      "id": "npc.XiGu.14",
+      "type": "npc",
+      "name": "蓝衣剑客",
+      "aliases": [
+        "BPF_SongXiaoWu_YiZhan"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "questguide_npc_data",
+      "facts": {
+        "category": "NPC",
+        "world": "XiGu",
+        "world_label": "悲泣溪谷",
+        "location": "驿站，和队长共同出现；脚本未找到独立初次完成标记",
+        "purpose": "",
+        "summary": "驿站，和队长共同出现；脚本未找到独立初次完成标记",
+        "relevant": false,
+        "source_asset": "BPF_SongXiaoWu_YiZhan",
+        "topics": [],
+        "source_refs": [
+          "questguide_npc_data"
+        ]
+      }
+    },
+    {
+      "id": "npc.XiGu.15",
+      "type": "npc",
+      "name": "桥头拒马的两名枪兵",
+      "aliases": [
+        "BPF_JiangHuRenShi_JuMa"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 1,
+      "confidence": 0.7,
+      "source": "questguide_npc_data",
+      "facts": {
+        "category": "NPC",
+        "world": "XiGu",
+        "world_label": "悲泣溪谷",
+        "location": "驿站西侧桥头，说“怪面盘踞，此路已封”",
+        "purpose": "",
+        "summary": "驿站西侧桥头，说“怪面盘踞，此路已封”",
+        "relevant": false,
+        "source_asset": "BPF_JiangHuRenShi_JuMa",
+        "topics": [],
+        "source_refs": [
+          "questguide_npc_data"
+        ]
+      }
+    }
+  ],
+  "relations": []
+}

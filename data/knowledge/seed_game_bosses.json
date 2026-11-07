@@ -1,0 +1,1617 @@
+{
+  "version": 1,
+  "source": "PBZ quest-guide boss locations and compact chapter notes",
+  "entities": [
+    {
+      "id": "boss.ah_hua",
+      "type": "boss",
+      "name": "新娘阿花",
+      "aliases": [
+        "阿花",
+        "新娘阿花"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss",
+        "phases": null,
+        "threat": "高",
+        "recommended_defense": "先观察突进与召唤，再决定格挡或拉开",
+        "tip": "具体招式与阶段仍待实机核验，未核验前不编招式名。",
+        "map_world": "XiGu",
+        "map_world_label": "悲泣溪谷",
+        "map_position_cm": [
+          -71590,
+          210880,
+          -19190
+        ],
+        "boss_group": "战斗奖励 击败新娘阿花",
+        "guide_battle_id": "battle-31",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "塔后右侧地洞滑下，左走到底。攻略建议用黑伤系武器，远离鲜红花朵。",
+        "guide_note": "塔后右侧地洞滑下，左走到底。攻略建议用黑伤系武器，远离鲜红花朵。",
+        "guide_chapter": "",
+        "guide_section": "钢铁巨塔：鬼新娘与塔顶鬼差"
+      }
+    },
+    {
+      "id": "boss.cangang",
+      "type": "boss",
+      "name": "痴狂暴徒：残钢",
+      "aliases": [
+        "残钢",
+        "痴狂暴徒：残钢",
+        "痴狂暴徒·残钢"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss/精英组",
+        "threat": "高",
+        "note": "同场可能出现金面、铁面等同伴；具体招式待实机核验。",
+        "recommended_defense": "先观察出手顺序，避免同时吃多方向攻击",
+        "map_world": "XiGu",
+        "map_world_label": "悲泣溪谷",
+        "map_position_cm": [
+          -22357,
+          291900,
+          -26243
+        ],
+        "boss_group": "战斗结算后获得 击败该组敌人：痴狂暴徒：残钢、金面、铁面",
+        "guide_battle_id": "battle-32",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "先观察敌人混战，等他被消耗后再参战。",
+        "guide_note": "先观察敌人混战，等他被消耗后再参战。",
+        "guide_chapter": "",
+        "guide_section": "破开红丝线，击败残钢"
+      }
+    },
+    {
+      "id": "boss.guide.0b9339bf4dd9",
+      "type": "boss",
+      "name": "天玄派：毕远掌门残躯",
+      "aliases": [
+        "天玄派：毕远掌门残躯",
+        "天玄派·毕远掌门残躯"
+      ],
+      "region": "陆家村",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "LuJiaCun",
+        "map_world_label": "陆家村",
+        "map_position_cm": [
+          -46988,
+          104193,
+          994
+        ],
+        "boss_group": "战斗结算后获得 击败天玄派：毕远掌门残躯",
+        "guide_battle_id": "battle-437",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "剧情首领。",
+        "guide_note": "剧情首领。",
+        "guide_chapter": 3,
+        "guide_section": "两位掌门的残躯"
+      }
+    },
+    {
+      "id": "boss.guide.1422aaeb3114",
+      "type": "boss",
+      "name": "鬼差高手·勾魂",
+      "aliases": [
+        "鬼差高手·勾魂"
+      ],
+      "region": "第四章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "街道最底部沿楼梯到顶；刀发亮是反击架势，避免此时进攻。",
+        "guide_chapter": 4,
+        "guide_section": "修好狮头：码头与山庄门口",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "街道最底部沿楼梯到顶；刀发亮是反击架势，避免此时进攻。"
+      }
+    },
+    {
+      "id": "boss.guide.155040808740",
+      "type": "boss",
+      "name": "鬼差队长·火流星",
+      "aliases": [
+        "鬼差队长·火流星"
+      ],
+      "region": "第四章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "沿主街大楼梯往上触发；二阶段红光抓取要躲避。",
+        "guide_chapter": 4,
+        "guide_section": "进镇：酒窖、廊桥到市集",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "沿主街大楼梯往上触发；二阶段红光抓取要躲避。"
+      }
+    },
+    {
+      "id": "boss.guide.17a721d2fb10",
+      "type": "boss",
+      "name": "吞噬尸体的小雪",
+      "aliases": [
+        "吞噬尸体的小雪"
+      ],
+      "region": "第五章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "隐藏首领。攻略建议只攻击身上有火焰的怪物，火焰会转移，用此削减首领血量。",
+        "guide_chapter": 5,
+        "guide_section": "吞噬尸体的小雪 → 战场遗迹",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "隐藏首领。攻略建议只攻击身上有火焰的怪物，火焰会转移，用此削减首领血量。"
+      }
+    },
+    {
+      "id": "boss.guide.2a45dde2633b",
+      "type": "boss",
+      "name": "暗魔天堡之主：魔渊",
+      "aliases": [
+        "暗魔天堡之主：魔渊"
+      ],
+      "region": "第八章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "在戏梦山庄龙柱挑战中出现。",
+        "guide_chapter": 8,
+        "guide_section": "戏园内、囚锋与戏梦山庄龙柱",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "在戏梦山庄龙柱挑战中出现。"
+      }
+    },
+    {
+      "id": "boss.guide.3517f5af33ec",
+      "type": "boss",
+      "name": "赤影骨刃：囚锋",
+      "aliases": [
+        "赤影骨刃：囚锋"
+      ],
+      "region": "戏梦山庄",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "XiMeng",
+        "map_world_label": "戏梦山庄",
+        "map_position_cm": [
+          -214247,
+          77890,
+          7380
+        ],
+        "boss_group": "战斗结算后获得 击败赤影骨刃：囚锋",
+        "guide_battle_id": "battle-304",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "推进到戏园尽头触发。",
+        "guide_note": "推进到戏园尽头触发。",
+        "guide_chapter": 8,
+        "guide_section": "戏园内、囚锋与戏梦山庄龙柱"
+      }
+    },
+    {
+      "id": "boss.guide.36d6678b0bc4",
+      "type": "boss",
+      "name": "玉面郎君",
+      "aliases": [
+        "玉面郎君"
+      ],
+      "region": "第七章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "本段剧情首领。",
+        "guide_chapter": 7,
+        "guide_section": "玉面郎君·荒行子",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "本段剧情首领。"
+      }
+    },
+    {
+      "id": "boss.guide.46fde64cefd9",
+      "type": "boss",
+      "name": "救苦救难梦华圣母娘娘",
+      "aliases": [
+        "救苦救难梦华圣母娘娘"
+      ],
+      "region": "第九章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "断魂崖终战的第二位首领。",
+        "guide_chapter": 9,
+        "guide_section": "断魂崖与终战",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "断魂崖终战的第二位首领。"
+      }
+    },
+    {
+      "id": "boss.guide.48389676c1a0",
+      "type": "boss",
+      "name": "软剑·乌冷霜",
+      "aliases": [
+        "软剑·乌冷霜"
+      ],
+      "region": "第五章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "从幽禁之地铃铛出发，荡过绳索到前方战场，属于区域右上方隐藏首领。",
+        "guide_chapter": 5,
+        "guide_section": "白山派的覆灭之路 → 幽禁之地",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "从幽禁之地铃铛出发，荡过绳索到前方战场，属于区域右上方隐藏首领。"
+      }
+    },
+    {
+      "id": "boss.guide.49d0261ebb43",
+      "type": "boss",
+      "name": "力者和锯者",
+      "aliases": [
+        "力者和锯者"
+      ],
+      "region": "第九章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "在巨物盘踞处挑战双人首领，对应「锯理力争」。",
+        "guide_chapter": 9,
+        "guide_section": "巨物盘踞处与力者和锯者",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "在巨物盘踞处挑战双人首领，对应「锯理力争」。"
+      }
+    },
+    {
+      "id": "boss.guide.5cae421b81b7",
+      "type": "boss",
+      "name": "十二号·偃月刀偶：“玉鼎”",
+      "aliases": [
+        "十二号·偃月刀偶：“玉鼎”"
+      ],
+      "region": "戏梦山庄",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "XiMeng",
+        "map_world_label": "戏梦山庄",
+        "map_position_cm": [
+          -189554,
+          91291,
+          3878
+        ],
+        "boss_group": "战斗结算后获得 击败十二号·偃月刀偶：“玉鼎”",
+        "guide_battle_id": "battle-302",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "在演武场挑战玉鼎，是攻略所列四个玉偶首领之一。",
+        "guide_note": "在演武场挑战玉鼎，是攻略所列四个玉偶首领之一。",
+        "guide_chapter": 8,
+        "guide_section": "演武场与偃月刀偶玉鼎"
+      }
+    },
+    {
+      "id": "boss.guide.5d2be9c9de19",
+      "type": "boss",
+      "name": "亡命徒·荆野",
+      "aliases": [
+        "亡命徒·荆野"
+      ],
+      "region": "第二章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "战前先回驿站向玉儿交付见习医师药材，攻略提示打完荆野会断线。铃铛左拐穿坑洞；斩骑符、痴者残剑应对骑马阶段，下马后用巨凶斧蓄力破盾。",
+        "guide_chapter": 2,
+        "guide_section": "救下小张，穿过陷阱打荆野",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "战前先回驿站向玉儿交付见习医师药材，攻略提示打完荆野会断线。铃铛左拐穿坑洞；斩骑符、痴者残剑应对骑马阶段，下马后用巨凶斧蓄力破盾。"
+      }
+    },
+    {
+      "id": "boss.guide.5d6023cddb48",
+      "type": "boss",
+      "name": "雷枪·长鸿",
+      "aliases": [
+        "雷枪·长鸿"
+      ],
+      "region": "第四章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "下方开阔区域触发，建议避雷符；召唤雷霆时先远离，等效果消失再打，注意麻痹积累。二阶段为骑兵，可配斩骑符；药瓶带青蛇药剂，麻痹快满时喝。",
+        "guide_chapter": 4,
+        "guide_section": "长鸿、玉儿家与舞狮尊主",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "下方开阔区域触发，建议避雷符；召唤雷霆时先远离，等效果消失再打，注意麻痹积累。二阶段为骑兵，可配斩骑符；药瓶带青蛇药剂，麻痹快满时喝。"
+      }
+    },
+    {
+      "id": "boss.guide.63515da07e80",
+      "type": "boss",
+      "name": "灭法之法：炎茹",
+      "aliases": [
+        "灭法之法：炎茹"
+      ],
+      "region": "陆家村",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "LuJiaCun",
+        "map_world_label": "陆家村",
+        "map_position_cm": [
+          -48526,
+          96486,
+          1731
+        ],
+        "boss_group": "",
+        "guide_battle_id": "quest-HuXinMiMi-S4-0",
+        "guide_battle_kind": "entrance",
+        "source_refs": [
+          "native quest target"
+        ],
+        "summary": "首领战斗区域"
+      }
+    },
+    {
+      "id": "boss.guide.645dd7857aef",
+      "type": "boss",
+      "name": "女妖·骨婉约",
+      "aliases": [
+        "女妖·骨婉约"
+      ],
+      "region": "第四章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "铃铛前方；头埋入路障时后撤避开范围震动，被吼叫定身按提示挣脱。",
+        "guide_chapter": 4,
+        "guide_section": "窄巷滑索、水塘与井底",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "铃铛前方；头埋入路障时后撤避开范围震动，被吼叫定身按提示挣脱。"
+      }
+    },
+    {
+      "id": "boss.guide.65b1686f383f",
+      "type": "boss",
+      "name": "三张脸的诡异魔偶",
+      "aliases": [
+        "三张脸的诡异魔偶"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "XiGu",
+        "map_world_label": "悲泣溪谷",
+        "map_position_cm": [
+          8993,
+          288868,
+          -31288
+        ],
+        "boss_group": "",
+        "guide_battle_id": "quest-SanMianHunDun-S4-0",
+        "guide_battle_kind": "entrance",
+        "source_refs": [
+          "native quest target",
+          "questguide_chapters"
+        ],
+        "summary": "圣母像裂缝互动进入；攻略建议推进到庞镇后回访。",
+        "guide_note": "圣母像裂缝互动进入；攻略建议推进到庞镇后回访。",
+        "guide_chapter": "",
+        "guide_section": "回访建议：庞镇后，圣母像裂缝"
+      }
+    },
+    {
+      "id": "boss.guide.6e74d6656922",
+      "type": "boss",
+      "name": "疯婆子奎艳艳",
+      "aliases": [
+        "疯婆子奎艳艳"
+      ],
+      "region": "枷笼山",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "DengDingShanDao",
+        "map_world_label": "枷笼山",
+        "map_position_cm": [
+          -60261,
+          -75158,
+          23270
+        ],
+        "boss_group": "战斗奖励 击败疯婆子奎艳艳",
+        "guide_battle_id": "battle-138",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "剧情首领。攻略提醒先推倒人偶女子，与笼内周平子交谈后再挑战，避免影响勿相忘。",
+        "guide_note": "剧情首领。攻略提醒先推倒人偶女子，与笼内周平子交谈后再挑战，避免影响勿相忘。",
+        "guide_chapter": 7,
+        "guide_section": "疯婆子奎艳艳 → 宗祠外山门"
+      }
+    },
+    {
+      "id": "boss.guide.77cd9aaa2875",
+      "type": "boss",
+      "name": "七星剑阵·大师兄",
+      "aliases": [
+        "七星剑阵·大师兄"
+      ],
+      "region": "第五章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "可选首领，可绕行。第一阶段六弟子合围与护盾，第二阶段注意丝线蓄力；若保留红衣女剑客，她会在第二阶段加入，变为双侠战。",
+        "guide_chapter": 5,
+        "guide_section": "七星剑阵·大师兄",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "可选首领，可绕行。第一阶段六弟子合围与护盾，第二阶段注意丝线蓄力；若保留红衣女剑客，她会在第二阶段加入，变为双侠战。"
+      }
+    },
+    {
+      "id": "boss.guide.7cb458915a9c",
+      "type": "boss",
+      "name": "悲痛欲绝的阿瑾",
+      "aliases": [
+        "悲痛欲绝的阿瑾"
+      ],
+      "region": "第六章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "陆家村浅滩船坞，再会兄长相关。",
+        "guide_chapter": 6,
+        "guide_section": "陆家村浅滩：湖心榕树",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "陆家村浅滩船坞，再会兄长相关。"
+      }
+    },
+    {
+      "id": "boss.guide.85e62863b3d9",
+      "type": "boss",
+      "name": "金面具黑衣人",
+      "aliases": [
+        "金面具黑衣人"
+      ],
+      "region": "第六章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "湖心龙柱内。",
+        "guide_chapter": 6,
+        "guide_section": "湖心龙柱：金面具黑衣人",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "湖心龙柱内。"
+      }
+    },
+    {
+      "id": "boss.guide.886348d2b0c5",
+      "type": "boss",
+      "name": "神医·谢秋冬",
+      "aliases": [
+        "神医·谢秋冬"
+      ],
+      "region": "第四章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "穿过井底触发；先打能自由活动的小怪，可用火流星引爆炸药桶。",
+        "guide_chapter": 4,
+        "guide_section": "窄巷滑索、水塘与井底",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "穿过井底触发；先打能自由活动的小怪，可用火流星引爆炸药桶。"
+      }
+    },
+    {
+      "id": "boss.guide.8c0bc3f6cc5d",
+      "type": "boss",
+      "name": "梦差：冷荼",
+      "aliases": [
+        "梦差：冷荼"
+      ],
+      "region": "第九章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "断魂崖终战的第一位首领。",
+        "guide_chapter": 9,
+        "guide_section": "断魂崖与终战",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "断魂崖终战的第一位首领。"
+      }
+    },
+    {
+      "id": "boss.guide.8d56ad672632",
+      "type": "boss",
+      "name": "长鸿：雷电枪骑",
+      "aliases": [
+        "长鸿：雷电枪骑"
+      ],
+      "region": "后街",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "HouJie",
+        "map_world_label": "后街",
+        "map_position_cm": [
+          -255601,
+          48027,
+          -6178
+        ],
+        "boss_group": "战斗奖励 击败长鸿：雷电枪骑",
+        "guide_battle_id": "battle-346",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails"
+        ],
+        "summary": "战斗奖励 击败长鸿：雷电枪骑"
+      }
+    },
+    {
+      "id": "boss.guide.8ff87f71d55a",
+      "type": "boss",
+      "name": "“虎炮”：雷当",
+      "aliases": [
+        "“虎炮”：雷当"
+      ],
+      "region": "第八章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "在圣躯心池推进剧情。雷当的下一形态是「雷当：独臂虎」。",
+        "guide_chapter": 8,
+        "guide_section": "圣躯府邸、圣躯心池与雷当",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "在圣躯心池推进剧情。雷当的下一形态是「雷当：独臂虎」。"
+      }
+    },
+    {
+      "id": "boss.guide.91a0efc9e693",
+      "type": "boss",
+      "name": "风雪刀客",
+      "aliases": [
+        "风雪刀客"
+      ],
+      "region": "梅谷湖",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "MeiGuHu",
+        "map_world_label": "梅谷湖",
+        "map_position_cm": [
+          -149683,
+          -19208,
+          897
+        ],
+        "boss_group": "战斗奖励 击败风雪刀客",
+        "guide_battle_id": "battle-236",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "白影陨落之处。攻击会累积冻结值，满后会被冻结；攻略建议带血色森林取得的防冰符，或用青蛇药剂解冻。",
+        "guide_note": "白影陨落之处。攻击会累积冻结值，满后会被冻结；攻略建议带血色森林取得的防冰符，或用青蛇药剂解冻。",
+        "guide_chapter": 7,
+        "guide_section": "回访：梅谷湖·湖心秘密"
+      }
+    },
+    {
+      "id": "boss.guide.9302d019e89b",
+      "type": "boss",
+      "name": "双蛇夫人·白赤练",
+      "aliases": [
+        "双蛇夫人·白赤练"
+      ],
+      "region": "第二章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "战前确认救死扶伤已回报、双生血肉花已交玉儿、白山秘闻已接、六朵虚空记忆之花已收齐。二阶段可获弦音助战，优先击破召唤的蛇。",
+        "guide_chapter": 2,
+        "guide_section": "迷雾、镜林谜题与双蛇夫人",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "战前确认救死扶伤已回报、双生血肉花已交玉儿、白山秘闻已接、六朵虚空记忆之花已收齐。二阶段可获弦音助战，优先击破召唤的蛇。"
+      }
+    },
+    {
+      "id": "boss.guide.9e9c18a7ca13",
+      "type": "boss",
+      "name": "荒行子：撕裂锯轮",
+      "aliases": [
+        "荒行子：撕裂锯轮"
+      ],
+      "region": "枷笼山",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "DengDingShanDao",
+        "map_world_label": "枷笼山",
+        "map_position_cm": [
+          -60734,
+          -102662,
+          29510
+        ],
+        "boss_group": "战斗奖励 击败荒行子：撕裂锯轮",
+        "guide_battle_id": "battle-154",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails"
+        ],
+        "summary": "战斗奖励 击败荒行子：撕裂锯轮"
+      }
+    },
+    {
+      "id": "boss.guide.a4824d24ed74",
+      "type": "boss",
+      "name": "癫狂暴徒·铁杀",
+      "aliases": [
+        "癫狂暴徒·铁杀"
+      ],
+      "region": "第七章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "本段剧情首领。",
+        "guide_chapter": 7,
+        "guide_section": "祭拜圣母之路·铁杀营地·囚笼洞口",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "本段剧情首领。"
+      }
+    },
+    {
+      "id": "boss.guide.ab275d04157b",
+      "type": "boss",
+      "name": "灭法之法：蛊鹤",
+      "aliases": [
+        "灭法之法：蛊鹤",
+        "灭法之法·蛊鹤"
+      ],
+      "region": "梅谷湖",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "MeiGuHu",
+        "map_world_label": "梅谷湖",
+        "map_position_cm": [
+          -76873,
+          27433,
+          1000
+        ],
+        "boss_group": "",
+        "guide_battle_id": "quest-HuXinMiMi-S4-2",
+        "guide_battle_kind": "entrance",
+        "source_refs": [
+          "native quest target",
+          "questguide_chapters"
+        ],
+        "summary": "与稻草人互动后挑战。",
+        "guide_note": "与稻草人互动后挑战。",
+        "guide_chapter": 6,
+        "guide_section": "梅谷村东岛·稻草人蛊鹤"
+      }
+    },
+    {
+      "id": "boss.guide.af8193d484dd",
+      "type": "boss",
+      "name": "操偶师·荡秽",
+      "aliases": [
+        "操偶师·荡秽"
+      ],
+      "region": "第三章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "从钓鱼人偶旁往下跳；召出分身时，红眼睛的是假身，专打真身。",
+        "guide_chapter": 3,
+        "guide_section": "萤火引路：残偶弃置坑",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "从钓鱼人偶旁往下跳；召出分身时，红眼睛的是假身，专打真身。"
+      }
+    },
+    {
+      "id": "boss.guide.b423caa16d55",
+      "type": "boss",
+      "name": "被面具控制的舞狮尊主·烈焰",
+      "aliases": [
+        "被面具控制的舞狮尊主·烈焰"
+      ],
+      "region": "第四章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "调查舞狮开战；喷水令其潮湿，火焰招式会受影响；喷火球阶段在木桩间移动躲避。",
+        "guide_chapter": 4,
+        "guide_section": "长鸿、玉儿家与舞狮尊主",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "调查舞狮开战；喷水令其潮湿，火焰招式会受影响；喷火球阶段在木桩间移动躲避。"
+      }
+    },
+    {
+      "id": "boss.guide.b8144bdc3dea",
+      "type": "boss",
+      "name": "昆仑叛教者·荒行子",
+      "aliases": [
+        "昆仑叛教者·荒行子"
+      ],
+      "region": "第七章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "区域最终首领。",
+        "guide_chapter": 7,
+        "guide_section": "玉面郎君·荒行子",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "区域最终首领。"
+      }
+    },
+    {
+      "id": "boss.guide.b90eede9a667",
+      "type": "boss",
+      "name": "拳痴：铁狂",
+      "aliases": [
+        "拳痴：铁狂",
+        "拳痴·铁狂"
+      ],
+      "region": "血色森林",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "FuJiZhiLin",
+        "map_world_label": "血色森林",
+        "map_position_cm": [
+          -43854,
+          162265,
+          -245
+        ],
+        "boss_group": "战斗奖励 击败拳痴：铁狂",
+        "guide_battle_id": "battle-113",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "爬下梯子触发；亡命斩马刀配合格挡消耗杀气，注意连招末尾红光。",
+        "guide_note": "爬下梯子触发；亡命斩马刀配合格挡消耗杀气，注意连招末尾红光。",
+        "guide_chapter": 2,
+        "guide_section": "拳痴与镜林龙柱"
+      }
+    },
+    {
+      "id": "boss.guide.c005723c8584",
+      "type": "boss",
+      "name": "灭法之法：寒岁",
+      "aliases": [
+        "灭法之法：寒岁"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "XiGu",
+        "map_world_label": "悲泣溪谷",
+        "map_position_cm": [
+          -86794,
+          203318,
+          2015861
+        ],
+        "boss_group": "",
+        "guide_battle_id": "quest-HuXinMiMi-S4-3",
+        "guide_battle_kind": "entrance",
+        "source_refs": [
+          "native quest target"
+        ],
+        "summary": "首领战斗区域"
+      }
+    },
+    {
+      "id": "boss.guide.c2f1587ad519",
+      "type": "boss",
+      "name": "剑痴：花千笑",
+      "aliases": [
+        "剑痴：花千笑",
+        "剑痴·花千笑"
+      ],
+      "region": "血色森林",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "FuJiZhiLin",
+        "map_world_label": "血色森林",
+        "map_position_cm": [
+          -133274,
+          170720,
+          -1474
+        ],
+        "boss_group": "战斗奖励 击败剑痴：花千笑",
+        "guide_battle_id": "battle-108",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "喝酒时杀气转为护盾，先跑到桥另一头，等杀气下降见底再打。",
+        "guide_note": "喝酒时杀气转为护盾，先跑到桥另一头，等杀气下降见底再打。",
+        "guide_chapter": 2,
+        "guide_section": "入林：官道与剑痴"
+      }
+    },
+    {
+      "id": "boss.guide.c7aa697fb6c5",
+      "type": "boss",
+      "name": "廿一号·剑偶：“玉璧”",
+      "aliases": [
+        "廿一号·剑偶：“玉璧”",
+        "廿一号·剑偶“玉璧”"
+      ],
+      "region": "正道大营",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "ZhengDaoDaYing",
+        "map_world_label": "正道大营",
+        "map_position_cm": [
+          29342,
+          55923,
+          5978
+        ],
+        "boss_group": "战斗结算后获得 获取分支：（击败廿一号·剑偶：“玉璧”；《白山秘闻》：找到并击败毕桃桃的人偶（进行中）） 或 （击败廿一号·剑偶：“玉璧”；不处于《白山秘闻》：找到并击败毕桃桃的人偶（进行中））",
+        "guide_battle_id": "battle-493",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "四大人偶之一，白山秘闻中的人偶形态，招式带雷电。",
+        "guide_note": "四大人偶之一，白山秘闻中的人偶形态，招式带雷电。",
+        "guide_chapter": 5,
+        "guide_section": "廿一号·剑偶“玉璧”·校场"
+      }
+    },
+    {
+      "id": "boss.guide.c8ecbf2b6f16",
+      "type": "boss",
+      "name": "灭法之法：雷婷",
+      "aliases": [
+        "灭法之法：雷婷"
+      ],
+      "region": "后街",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "HouJie",
+        "map_world_label": "后街",
+        "map_position_cm": [
+          -267802,
+          87264,
+          -6927
+        ],
+        "boss_group": "",
+        "guide_battle_id": "quest-HuXinMiMi-S4-1",
+        "guide_battle_kind": "entrance",
+        "source_refs": [
+          "native quest target"
+        ],
+        "summary": "首领战斗区域"
+      }
+    },
+    {
+      "id": "boss.guide.cc9b14836110",
+      "type": "boss",
+      "name": "鬼差高手·断肠",
+      "aliases": [
+        "鬼差高手·断肠"
+      ],
+      "region": "第六章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "白蛇屋首领，力挫三差相关。",
+        "guide_chapter": 6,
+        "guide_section": "白蛇屋·鬼差高手断肠",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "白蛇屋首领，力挫三差相关。"
+      }
+    },
+    {
+      "id": "boss.guide.d0bd0b2476ad",
+      "type": "boss",
+      "name": "红衣女剑客：保留活口",
+      "aliases": [
+        "红衣女剑客：保留活口"
+      ],
+      "region": "第五章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "出建筑后爬梯子触发战斗。攻略提醒不要击杀她，战斗中可用抓锁链离开。保留活口后，她会在大师兄第二阶段参战；击杀会中断魔教之女，错过双侠两朵花和同心双鱼佩。",
+        "guide_chapter": 5,
+        "guide_section": "巨锤客·万钧 → 鸽舍",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "出建筑后爬梯子触发战斗。攻略提醒不要击杀她，战斗中可用抓锁链离开。保留活口后，她会在大师兄第二阶段参战；击杀会中断魔教之女，错过双侠两朵花和同心双鱼佩。"
+      }
+    },
+    {
+      "id": "boss.guide.d45fe7f56b6a",
+      "type": "boss",
+      "name": "左殇",
+      "aliases": [
+        "左殇"
+      ],
+      "region": "第九章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "从金色传送门进入战斗。面对真龙之躯时，留意进场招式的闪避时机，打完一轮就拉开距离。",
+        "guide_chapter": 9,
+        "guide_section": "金色传送门与结局分岔",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "从金色传送门进入战斗。面对真龙之躯时，留意进场招式的闪避时机，打完一轮就拉开距离。"
+      }
+    },
+    {
+      "id": "boss.guide.d680b40afd98",
+      "type": "boss",
+      "name": "横刀：毕峰",
+      "aliases": [
+        "横刀：毕峰",
+        "横刀·毕峰"
+      ],
+      "region": "枷笼山",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "DengDingShanDao",
+        "map_world_label": "枷笼山",
+        "map_position_cm": [
+          -60220,
+          -55515,
+          18269
+        ],
+        "boss_group": "战斗奖励 全部满足：处于常规游戏模式；击败横刀：毕峰",
+        "guide_battle_id": "battle-152",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "囚笼道首领，攻略列为刀冠双绝与结局相关。",
+        "guide_note": "囚笼道首领，攻略列为刀冠双绝与结局相关。",
+        "guide_chapter": 7,
+        "guide_section": "横刀·毕峰 → 横刀平台"
+      }
+    },
+    {
+      "id": "boss.guide.e15145448606",
+      "type": "boss",
+      "name": "巨锤客：万钧",
+      "aliases": [
+        "巨锤客：万钧",
+        "巨锤客·万钧"
+      ],
+      "region": "正道大营",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "ZhengDaoDaYing",
+        "map_world_label": "正道大营",
+        "map_position_cm": [
+          20754,
+          74747,
+          6707
+        ],
+        "boss_group": "战斗奖励 击败巨锤客：万钧",
+        "guide_battle_id": "battle-494",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "本区主线首领。",
+        "guide_note": "本区主线首领。",
+        "guide_chapter": 5,
+        "guide_section": "巨锤客·万钧 → 鸽舍"
+      }
+    },
+    {
+      "id": "boss.guide.eb9ce0cf8f27",
+      "type": "boss",
+      "name": "“火刃”：祝原",
+      "aliases": [
+        "“火刃”：祝原"
+      ],
+      "region": "第六章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "庞镇杀气塔炉内；攻略列为结局相关首领。",
+        "guide_chapter": 6,
+        "guide_section": "庞镇杀气塔：祝原与第二块浑源石",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "庞镇杀气塔炉内；攻略列为结局相关首领。"
+      }
+    },
+    {
+      "id": "boss.guide.edf617e6984f",
+      "type": "boss",
+      "name": "堕落将军：武轩",
+      "aliases": [
+        "堕落将军：武轩",
+        "堕落将军·武轩"
+      ],
+      "region": "后街",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "HouJie",
+        "map_world_label": "后街",
+        "map_position_cm": [
+          -216269,
+          130769,
+          -3855
+        ],
+        "boss_group": "战斗奖励 击败堕落将军：武轩",
+        "guide_battle_id": "battle-349",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "后街圆形舞台；格挡削盾，处决后利用破防空档输出。",
+        "guide_note": "后街圆形舞台；格挡削盾，处决后利用破防空档输出。",
+        "guide_chapter": 4,
+        "guide_section": "去后街：武轩与庞镇小张"
+      }
+    },
+    {
+      "id": "boss.guide.f22077d147c4",
+      "type": "boss",
+      "name": "独眼弓客",
+      "aliases": [
+        "独眼弓客"
+      ],
+      "region": "梅谷湖",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "MeiGuHu",
+        "map_world_label": "梅谷湖",
+        "map_position_cm": [
+          -9412,
+          -3020,
+          930
+        ],
+        "boss_group": "战斗结算后获得 击败独眼弓客",
+        "guide_battle_id": "battle-238",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "独眼之岛船坞。",
+        "guide_note": "独眼之岛船坞。",
+        "guide_chapter": 6,
+        "guide_section": "独眼之岛"
+      }
+    },
+    {
+      "id": "boss.guide.f41c862e1f97",
+      "type": "boss",
+      "name": "鬼差高手·斩骑",
+      "aliases": [
+        "鬼差高手·斩骑"
+      ],
+      "region": "第四章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "继续往西，群架路口触发；持枪突进可格挡化解。",
+        "guide_chapter": 4,
+        "guide_section": "斩骑与地下酒馆门口",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "继续往西，群架路口触发；持枪突进可格挡化解。"
+      }
+    },
+    {
+      "id": "boss.guide.fa43a6c7ffc6",
+      "type": "boss",
+      "name": "苦叶寺：碧海大师残躯",
+      "aliases": [
+        "苦叶寺：碧海大师残躯",
+        "苦叶寺·碧海大师残躯"
+      ],
+      "region": "陆家村",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "LuJiaCun",
+        "map_world_label": "陆家村",
+        "map_position_cm": [
+          -58964,
+          105574,
+          -2002
+        ],
+        "boss_group": "战斗结算后获得 击败苦叶寺：碧海大师残躯",
+        "guide_battle_id": "battle-438",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "回开阔区域中间触发；先清掉召出的三名僧人，他才会出金钟罩。",
+        "guide_note": "回开阔区域中间触发；先清掉召出的三名僧人，他才会出金钟罩。",
+        "guide_chapter": 3,
+        "guide_section": "两位掌门的残躯"
+      }
+    },
+    {
+      "id": "boss.guide.fa4f9ab6bf3f",
+      "type": "boss",
+      "name": "守门人拙壁",
+      "aliases": [
+        "守门人拙壁",
+        "守门人·拙壁"
+      ],
+      "region": "陆家村",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "map_world": "LuJiaCun",
+        "map_world_label": "陆家村",
+        "map_position_cm": [
+          -33795,
+          126115,
+          -4130
+        ],
+        "boss_group": "战斗结算后获得 击败守门人拙壁",
+        "guide_battle_id": "battle-441",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "从老根头藏身处继续往前，附近游荡的持盾首领；攻略建议用巨凶斧蓄力破盾后处决。",
+        "guide_note": "从老根头藏身处继续往前，附近游荡的持盾首领；攻略建议用巨凶斧蓄力破盾后处决。",
+        "guide_chapter": 3,
+        "guide_section": "梦醒之后：老根头与守门人"
+      }
+    },
+    {
+      "id": "boss.guide.fccd0e8838bb",
+      "type": "boss",
+      "name": "琴女·烟千岁",
+      "aliases": [
+        "琴女·烟千岁"
+      ],
+      "region": "第六章",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "questguide",
+      "facts": {
+        "category": "Boss",
+        "guide_note": "六朵记忆之花收齐后回乐坊船坞铃铛处。攻略建议等反蓝球和蓝光攻击时打出紫球破防；烈焰狮头可挂紫火应对无敌。",
+        "guide_chapter": 6,
+        "guide_section": "浮华引：湖上的烟儿与琴女",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "六朵记忆之花收齐后回乐坊船坞铃铛处。攻略建议等反蓝球和蓝光攻击时打出紫球破防；烈焰狮头可挂紫火应对无敌。"
+      }
+    },
+    {
+      "id": "boss.mu_xiaokui",
+      "type": "boss",
+      "name": "沐小葵",
+      "aliases": [
+        "小葵",
+        "组织少主·沐小葵"
+      ],
+      "region": "杀气塔",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss",
+        "phases": null,
+        "threat": "高",
+        "recommended_defense": "保留退路，注意阶段变化",
+        "tip": "具体招式与阶段仍待实机核验。",
+        "guide_note": "章节首领；挑战前收齐5条红丝带。",
+        "guide_chapter": 3,
+        "guide_section": "井下试验场与组织少主",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "章节首领；挑战前收齐5条红丝带。"
+      }
+    },
+    {
+      "id": "boss.peng_meng",
+      "type": "boss",
+      "name": "彭猛",
+      "aliases": [
+        "斧老大",
+        "斧老大：彭猛",
+        "斧老大·彭猛"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss",
+        "threat": "高",
+        "tip": "与巨凶斧相关；具体招式待实机核验。",
+        "map_world": "XiGu",
+        "map_world_label": "悲泣溪谷",
+        "map_position_cm": [
+          -51805,
+          260330,
+          -24221
+        ],
+        "boss_group": "战斗奖励 击败斧老大：彭猛",
+        "guide_battle_id": "battle-36",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "黑光招必须闪避。破防后可用残钢刃输出。",
+        "guide_note": "黑光招必须闪避。破防后可用残钢刃输出。",
+        "guide_chapter": "",
+        "guide_section": "驿站一带：斧老大与三件委托"
+      }
+    },
+    {
+      "id": "boss.tie_gui",
+      "type": "boss",
+      "name": "铁鬼",
+      "aliases": [
+        "玉妖铁鬼",
+        "玉妖与铁鬼",
+        "玉妖·铁鬼（追加阶段）"
+      ],
+      "region": "拳心任务线",
+      "spoiler_level": 2,
+      "confidence": 0.7,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss/切磋",
+        "threat": "高",
+        "note": "与铁拳套、妖锯铸魂材料线索相关；具体招式待核验。",
+        "guide_note": "找齐5条红丝带后，沐小葵第一阶段血量降到约三分之一时召出两名护卫。",
+        "guide_chapter": 3,
+        "guide_section": "井下试验场与组织少主",
+        "source_refs": [
+          "questguide_chapters"
+        ],
+        "summary": "找齐5条红丝带后，沐小葵第一阶段血量降到约三分之一时召出两名护卫。"
+      }
+    },
+    {
+      "id": "boss.yucong",
+      "type": "boss",
+      "name": "玉琮",
+      "aliases": [
+        "卅四号·混沌魔偶：“玉琮”"
+      ],
+      "region": "隐藏 Boss",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss",
+        "phases": null,
+        "threat": "高",
+        "tip": "部分前置会改变战斗阶段；未核验前只提示注意变化。",
+        "map_world": "FuJiZhiLin",
+        "map_world_label": "血色森林",
+        "map_position_cm": [
+          19958,
+          151835,
+          -1715
+        ],
+        "boss_group": "战斗奖励 获取分支：（击败该组敌人：“玉琮”：寒冰、“玉琮”：混沌、“玉琮”：钢刃） 或 （击败卅四号·混沌魔偶：“玉琮”；未满足（装备已铸魂的「长形黑伤」））",
+        "guide_battle_id": "battle-110",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails"
+        ],
+        "summary": "战斗奖励 获取分支：（击败该组敌人：“玉琮”：寒冰、“玉琮”：混沌、“玉琮”：钢刃） 或 （击败卅四号·混沌魔偶：“玉琮”；未满足（装备已铸魂的「长形黑伤」））"
+      }
+    },
+    {
+      "id": "boss.yuzan",
+      "type": "boss",
+      "name": "玉瓒",
+      "aliases": [
+        "三号·乐师偶：玉瓒",
+        "三号·乐师偶：“玉瓒”",
+        "三号·乐师偶“玉瓒”"
+      ],
+      "region": "人偶相关关卡",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss",
+        "threat": "中高",
+        "note": "与妖锯、幻术琵琶等掉落/能力线索相关；具体招式待核验。",
+        "recommended_defense": "留意远程与幻术类干扰",
+        "map_world": "LuJiaCun",
+        "map_world_label": "陆家村",
+        "map_position_cm": [
+          -63417,
+          86369,
+          -5698
+        ],
+        "boss_group": "战斗结算后获得 击败三号·乐师偶：“玉瓒”",
+        "guide_battle_id": "battle-439",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "四大人偶之一。",
+        "guide_note": "四大人偶之一。",
+        "guide_chapter": 3,
+        "guide_section": "井下试验场与组织少主"
+      }
+    },
+    {
+      "id": "boss.zhuiming",
+      "type": "boss",
+      "name": "追命",
+      "aliases": [
+        "“组织”猎杀者：追命",
+        "猎杀者·追命"
+      ],
+      "region": "悲泣溪谷",
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "catalog",
+      "facts": {
+        "category": "Boss",
+        "threat": "高",
+        "tip": "关底 Boss；相关影之武装为追命锁镰。",
+        "map_world": "XiGu",
+        "map_world_label": "悲泣溪谷",
+        "map_position_cm": [
+          -65430,
+          194394,
+          -17561
+        ],
+        "boss_group": "",
+        "guide_battle_id": "quest-MainCh1-2-GangTieJuTa-2-0",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "native quest target",
+          "questguide_chapters"
+        ],
+        "summary": "攻略建议格挡磨杀气，龙卷风时远离；二阶段死亡从二阶段重来。",
+        "guide_note": "攻略建议格挡磨杀气，龙卷风时远离；二阶段死亡从二阶段重来。",
+        "guide_chapter": "",
+        "guide_section": "大瀑布追命，拿锁镰开门"
+      }
+    },
+    {
+      "id": "edge.dragon_fork",
+      "type": "boss",
+      "name": "游龙叉",
+      "aliases": [
+        "游龙",
+        "发狂的水行帮主：游龙",
+        "水行帮主：游龙",
+        "水行帮主·游龙（第一次）",
+        "发狂的水行帮主·游龙"
+      ],
+      "spoiler_level": 2,
+      "confidence": 0.82,
+      "source": "catalog",
+      "facts": {
+        "category": "影之武装",
+        "use": "远程/机关",
+        "tip": "具体适用场景待实机核验。",
+        "map_world": "HouJie",
+        "map_world_label": "后街",
+        "map_position_cm": [
+          -274100,
+          73734,
+          -7925
+        ],
+        "boss_group": "战斗结算后获得 击败水行帮主：游龙",
+        "guide_battle_id": "battle-347",
+        "guide_battle_kind": "battle-area",
+        "source_refs": [
+          "pbz-map-tracker 0.6.7 nativeDetails",
+          "questguide_chapters"
+        ],
+        "summary": "水行帮战场，独步烟波及翻江倒海相关。",
+        "guide_note": "水行帮战场，独步烟波及翻江倒海相关。",
+        "guide_chapter": 6,
+        "guide_section": "水行帮船坞·发狂的游龙"
+      },
+      "region": "梅谷湖"
+    }
+  ],
+  "relations": []
+}

@@ -265,14 +265,18 @@ class UiMixin:
     @plugin_entry(
         id="pbz_reload_knowledge",
         name="重载知识库种子",
-        description="重新导入 data/knowledge/seed.json（不会删除运行时学习内容）。",
+        description="重新导入全部 data/knowledge/seed*.json，并重新应用玩家纠错。",
         input_schema={"type": "object", "properties": {}},
         metadata={"agent_hidden": True},
     )
     async def act_reload_knowledge(self, **_: Any) -> Any:
         if not self.service:
             return Ok({"output": "服务未启动", "data": {}})
-        seed = Path(__file__).resolve().parent.parent / "data" / "knowledge" / "seed.json"
-        count = self.service.knowledge.load_seed(seed)
-        return Ok({"output": f"已导入 {count} 条实体",
+        seed_root = Path(__file__).resolve().parent.parent / "data" / "knowledge"
+        count = sum(
+            self.service.knowledge.load_seed(seed)
+            for seed in sorted(seed_root.glob("seed*.json"))
+        )
+        corrections = self.service.knowledge.apply_corrections()
+        return Ok({"output": f"已导入 {count} 条实体，重新应用 {corrections} 条纠错",
                    "data": self.service.knowledge.stats()})
