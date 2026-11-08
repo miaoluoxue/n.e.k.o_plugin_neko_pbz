@@ -56,6 +56,15 @@ def test_bridge_reads_easycsv_slots(tmp_path):
     assert b.read_game_heartbeat()["game_seq"] == 3
 
 
+def test_bridge_reads_utf16_easycsv_json(tmp_path):
+    b = Bridge(tmp_path)
+    state_dir = b.root / "state"
+    state_dir.mkdir()
+    (state_dir / "New_CSV.csv").write_text(
+        json.dumps(_state()), encoding="utf-16")
+    assert b.read_state()["world"]["id"] == "XiGu"
+
+
 def test_bridge_consumes_assist_request_once(tmp_path):
     b = Bridge(tmp_path)
     path = b.root / "assist_request.txt"

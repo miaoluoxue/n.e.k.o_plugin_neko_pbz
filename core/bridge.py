@@ -31,10 +31,14 @@ def write_json(path: Path, data: Dict[str, Any]) -> None:
 
 def read_json(path: Path) -> Optional[Dict[str, Any]]:
     try:
-        with path.open("r", encoding="utf-8-sig") as fh:
-            data = json.load(fh)
+        raw = path.read_bytes()
+        if raw.startswith((b"\xff\xfe", b"\xfe\xff")):
+            text = raw.decode("utf-16")
+        else:
+            text = raw.decode("utf-8-sig")
+        data = json.loads(text)
         return data if isinstance(data, dict) else None
-    except (OSError, ValueError, TypeError):
+    except (OSError, UnicodeError, ValueError, TypeError):
         return None
 
 
