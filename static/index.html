@@ -2066,8 +2066,8 @@ function render(s){
 
 async function refresh(){
   try{
-    const r = await callEntry('get_dashboard_state', {});
-    render(r.data || {});
+    const r = await callEntry('get_panel_state', {});
+    render(r && typeof r === 'object' && !Array.isArray(r) ? r : {});
   }catch(e){
     $('dot').className = 'dot bad';
     $('conn').textContent = '面板断开';

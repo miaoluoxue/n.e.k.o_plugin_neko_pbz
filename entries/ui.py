@@ -35,6 +35,16 @@ class UiMixin:
         return Ok({"output": "ok", "data": data})
 
     @plugin_entry(
+        id="get_panel_state",
+        name="获取面板状态",
+        description="供静态面板轮询的扁平状态入口。",
+        input_schema={"type": "object", "properties": {}},
+        metadata={"agent_hidden": True},
+    )
+    async def act_panel_state(self, **_: Any) -> Any:
+        return Ok(self.service.snapshot() if self.service else {"connected": False})
+
+    @plugin_entry(
         id="pbz_i18n",
         name="获取国际化文案",
         description="返回插件 i18n locale bundles，供面板按浏览器语言本地化。",

@@ -29,3 +29,4 @@ def test_panel_exposes_i18n_hooks():
     html = (ROOT / "static" / "index.html").read_text(encoding="utf-8")
     assert 'data-i18n="nav.scan"' in html
     assert 'data-i18n="scan.title"' in html
+    assert "callEntry('get_panel_state'" in html
