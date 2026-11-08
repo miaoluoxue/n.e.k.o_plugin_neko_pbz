@@ -268,6 +268,10 @@ class PbzService:
 
     def _rule_summary(self) -> str:
         parts = []
+        if self.save_key:
+            goal = self.memory.get_goal(self.save_key)
+            if goal.get("text") and goal.get("status") == "active":
+                parts.append(f"本局目标：{goal['text']}")
         if self._session_zones:
             parts.append("去过 " + "、".join(dict.fromkeys(self._session_zones[-4:])))
         if self._session_deaths:
@@ -443,7 +447,41 @@ class PbzService:
                             f"最好 {round(item.get('best_hp_percent') or 0)}%")
                 except Exception:
                     pass
+                try:
+                    death = self.memory.last_death(self.save_key)
+                    context = death.get("context") or {}
+                    if context:
+                        boss = context.get("boss") or {}
+                        facts.append(
+                            "上次死亡："
+                            f"生命 {context.get('hp_percent', '?')}%，"
+                            f"杀气 {context.get('shachi_percent', '?')}%，"
+                            f"Boss {boss.get('name') or boss.get('id') or '无'}"
+                            f" {boss.get('hp_percent', '?')}%")
+                except Exception:
+                    pass
+        if self.save_key:
+            try:
+                goal = self.memory.get_goal(self.save_key)
+                if goal.get("text") and goal.get("status") == "active":
+                    facts.append(f"本局目标：{goal['text']}")
+            except Exception:
+                pass
         return facts
+
+    def set_session_goal(self, text: str) -> Dict[str, Any]:
+        if not self.save_key:
+            return {"ok": False, "error": "还没有识别到当前存档"}
+        goal = self.memory.set_goal(self.save_key, text)
+        self._refresh_digest(force=True)
+        return {"ok": True, "goal": goal}
+
+    def complete_session_goal(self) -> Dict[str, Any]:
+        if not self.save_key:
+            return {"ok": False, "error": "还没有识别到当前存档"}
+        goal = self.memory.complete_goal(self.save_key)
+        self._refresh_digest(force=True)
+        return {"ok": bool(goal), "goal": goal}
 
     async def request_assist(self, focus: str = "brief", *,
                              source: str = "panel") -> Dict[str, Any]:
@@ -716,10 +754,14 @@ class PbzService:
         scene = self._scene(state)
         history = []
         promises = []
+        goal = {}
+        last_death = {}
         if self.save_key:
             try:
                 history = self.memory.boss_history(self.save_key, limit=5)
                 promises = self.memory.open_promises(self.save_key, limit=5)
+                goal = self.memory.get_goal(self.save_key)
+                last_death = self.memory.last_death(self.save_key)
             except Exception:
                 pass
         last_line = ""
@@ -767,6 +809,8 @@ class PbzService:
             "memory_digest": self.digest,
             "boss_history": history,
             "promises": promises,
+            "goal": goal,
+            "last_death": last_death,
             "last_line": last_line,
             "knowledge": {**self.knowledge.stats(),
                           "coverage": self.knowledge.coverage()},

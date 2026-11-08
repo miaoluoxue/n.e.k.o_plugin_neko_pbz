@@ -44,6 +44,7 @@ class EventEngine:
         self._bell_id = ""
         self._quests: Dict[str, str] = {}
         self._enemy_sig = ""
+        self._last_viable: Dict[str, Any] = {}
 
     def reset(self) -> None:
         self.__init__()
@@ -97,10 +98,48 @@ class EventEngine:
         dead = bool(player.get("dead")) or (hp is not None and hp <= 0)
         if dead and not self._dead:
             self._dead = True
-            emit("death", "P0")
+            emit("death", "P0", context=dict(self._last_viable))
         elif not dead and self._dead:
             self._dead = False
             emit("respawn", "P0")
+        if not dead:
+            boss_now = state.get("boss") or {}
+            eq_now = player.get("equipment") or {}
+            self._last_viable = {
+                "hp_percent": round(hp, 1) if hp is not None else None,
+                "shachi_percent": (
+                    round(_num((player.get("shachi") or {}).get("percent")), 1)
+                    if (player.get("shachi") or {}).get("percent") is not None else None
+                ),
+                "in_combat": bool(player.get("in_combat")),
+                "world": str(world.get("name") or world.get("id") or ""),
+                "boss": {
+                    "id": str(boss_now.get("id") or boss_now.get("name") or ""),
+                    "name": str(boss_now.get("name") or ""),
+                    "hp_percent": boss_now.get("hp_percent"),
+                    "phase": boss_now.get("phase"),
+                } if boss_now else {},
+                "enemies": [
+                    {
+                        "name": str(e.get("name") or e.get("id") or ""),
+                        "distance": e.get("distance"),
+                        "direction": e.get("direction"),
+                    }
+                    for e in (state.get("enemies") or [])[:8]
+                    if isinstance(e, dict)
+                ],
+                "equipment": {
+                    "main_weapon": (eq_now.get("main_weapon") or {}).get("name") or "",
+                    "phantom_edges": [
+                        e.get("name") for e in eq_now.get("phantom_edges") or []
+                        if isinstance(e, dict)
+                    ],
+                    "accessories": [
+                        a.get("name") if isinstance(a, dict) else str(a)
+                        for a in eq_now.get("accessories") or []
+                    ],
+                },
+            }
 
         # 杀气
         shachi = player.get("shachi") or {}

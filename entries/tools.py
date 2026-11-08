@@ -132,6 +132,68 @@ class ToolMixin:
         return Ok({"output": heading + "\n当前关键字段均已读到。", "data": data})
 
     @llm_tool(
+        name="pbz_session_goal",
+        description="设置、查看、完成或清除本局目标。目标会进入跨会话摘要和即时陪玩上下文。",
+        parameters={
+            "type": "object",
+            "properties": {
+                "text": {"type": "string", "description": "目标；留空查看当前目标"},
+                "complete": {"type": "boolean", "description": "把当前目标标记完成"},
+                "clear": {"type": "boolean", "description": "清除当前目标"},
+            },
+        },
+    )
+    async def tool_pbz_session_goal(self, text: str = "",
+                                    complete: bool = False,
+                                    clear: bool = False,
+                                    **_: Any) -> Any:
+        if not self.service:
+            return Ok({"output": "陪玩服务未启动。"})
+        if complete:
+            result = self.service.complete_session_goal()
+            if not result.get("ok"):
+                return Ok({"output": str(result.get("error") or "当前没有可完成的目标")})
+            return Ok({"output": f"本局目标已完成：{result['goal'].get('text', '')}"})
+        if clear:
+            result = self.service.set_session_goal("")
+            if not result.get("ok"):
+                return Ok({"output": str(result.get("error") or "没有可清除的目标")})
+            return Ok({"output": "本局目标已清除"})
+        if text.strip():
+            result = self.service.set_session_goal(text.strip())
+            if not result.get("ok"):
+                return Ok({"output": str(result.get("error") or "目标保存失败")})
+            return Ok({"output": f"本局目标：{result['goal']['text']}"})
+        goal = self.service.snapshot().get("goal") or {}
+        if goal.get("text") and goal.get("status") == "active":
+            return Ok({"output": f"本局目标：{goal['text']}"})
+        return Ok({"output": "本局还没有设置目标。"})
+
+    @llm_tool(
+        name="pbz_last_death",
+        description="查看最近一次死亡前的局面快照，用于复盘而不是重复泛泛安慰。",
+        parameters={"type": "object", "properties": {}},
+    )
+    async def tool_pbz_last_death(self, **_: Any) -> Any:
+        if not self.service:
+            return Ok({"output": "陪玩服务未启动。"})
+        data = self.service.snapshot().get("last_death") or {}
+        context = data.get("context") or {}
+        if not context:
+            return Ok({"output": "还没有记录到死亡前局面。"})
+        boss = context.get("boss") or {}
+        enemies = context.get("enemies") or []
+        return Ok({
+            "output": (
+                f"上次死亡前生命 {context.get('hp_percent', '?')}%，"
+                f"杀气 {context.get('shachi_percent', '?')}%，"
+                f"Boss {boss.get('name') or boss.get('id') or '无'}"
+                f" {boss.get('hp_percent', '?')}%；附近目标 {len(enemies)} 个。"
+            ),
+            "data": data,
+        })
+
+    @llm_tool(
         name="pbz_what_ahead",
         description="回答主人“前面有什么怪”：使用最近一次前向扫描结果，报方位、距离、数量与类型；没有数据就明说。",
         parameters={"type": "object", "properties": {}},

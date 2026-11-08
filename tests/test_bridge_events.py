@@ -51,7 +51,8 @@ def test_event_engine_low_hp_death_and_boss():
     low = e.step(_state(hp_percent=30))
     assert any(x["type"] == "low_hp" for x in low)
     dead = e.step(_state(hp_percent=0, dead=True))
-    assert any(x["type"] == "death" for x in dead)
+    death = next(x for x in dead if x["type"] == "death")
+    assert death["data"]["context"]["hp_percent"] == 30
     revived = e.step(_state(hp_percent=60))
     assert any(x["type"] == "respawn" for x in revived)
 

@@ -270,6 +270,15 @@ class MemoryStore:
                 facts[fk] = old
                 _write(path / "facts.json", facts)
 
+            if kind == "death":
+                context = data.get("context") if isinstance(data.get("context"), dict) else {}
+                _write(path / "last_death.json", {
+                    "ts": now,
+                    "boss_id": boss_id,
+                    "boss_name": boss_name,
+                    "context": context,
+                })
+
     # ── 会话 ─────────────────────────────
     def start_session(self, save_key: str) -> str:
         session_id = time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:6]
@@ -293,6 +302,40 @@ class MemoryStore:
                                  "mood_end": mood_end})
                     _write(path, data)
                     return
+
+    def last_death(self, save_key: str) -> Dict[str, Any]:
+        with self._lock:
+            data = _read(self._dir(save_key) / "last_death.json", {})
+        return data if isinstance(data, dict) else {}
+
+    # ── 本局目标 ─────────────────────────
+    def set_goal(self, save_key: str, text: str) -> Dict[str, Any]:
+        now = time.time()
+        goal = {
+            "text": str(text or "").strip(),
+            "status": "active" if str(text or "").strip() else "cleared",
+            "created_at": now,
+            "updated_at": now,
+        }
+        with self._lock:
+            path = self._ensure_save(save_key)
+            _write(path / "goal.json", goal)
+        return goal
+
+    def get_goal(self, save_key: str) -> Dict[str, Any]:
+        with self._lock:
+            data = _read(self._dir(save_key) / "goal.json", {})
+        return data if isinstance(data, dict) else {}
+
+    def complete_goal(self, save_key: str) -> Dict[str, Any]:
+        with self._lock:
+            path = self._ensure_save(save_key)
+            data = _read(path / "goal.json", {})
+            if not data:
+                return {}
+            data.update({"status": "completed", "updated_at": time.time()})
+            _write(path / "goal.json", data)
+        return data
 
     # ── 约定 ─────────────────────────────
     def add_promise(self, save_key: str, text: str, due_hint: str = "") -> int:
@@ -355,6 +398,9 @@ class MemoryStore:
                     lines.append(f"最近区域：{f.get('value')}")
                 elif f.get("kind") == "weapon":
                     lines.append(f"最近武器：{str(f.get('value', '')).split('|')[0]}")
+            goal = self.get_goal(save_key)
+            if goal.get("text") and goal.get("status") == "active":
+                lines.append(f"本局目标：{goal['text']}")
             for p in self.open_promises(save_key, 3):
                 lines.append(f"约定：{p.get('text')}")
         return "\n".join(f"- {x}" for x in lines[:limit])
@@ -392,7 +438,8 @@ class MemoryStore:
         base = self._dir(save_key)
         out: Dict[str, Any] = {}
         for name in ("save.json", "bosses.json", "facts.json",
-                     "preferences.json", "promises.json"):
+                     "preferences.json", "promises.json", "goal.json",
+                     "last_death.json"):
             out[name] = _read(base / name, {})
         sessions = []
         for path in (base / "sessions").glob("*.json"):

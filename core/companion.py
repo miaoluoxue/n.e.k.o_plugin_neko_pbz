@@ -102,6 +102,21 @@ class PromptBuilder:
             state_txt = "已激活" if bell.get("activated") else "未激活"
             facts.append(f"铃铛：{bell.get('name') or bell.get('id') or '附近'}"
                          f"，{state_txt}，{bell.get('distance', '?')}米")
+        if kind == "death":
+            context = data.get("context") or {}
+            if isinstance(context, dict) and context:
+                death_boss = context.get("boss") or {}
+                facts.append(
+                    "死亡前："
+                    f"生命 {context.get('hp_percent', '?')}%，"
+                    f"杀气 {context.get('shachi_percent', '?')}%，"
+                    f"Boss {death_boss.get('name') or death_boss.get('id') or '无'}"
+                    f" {death_boss.get('hp_percent', '?')}%")
+                enemies = context.get("enemies") or []
+                if enemies:
+                    facts.append("死亡前附近目标：" + "、".join(
+                        str(e.get("name") or "未知") for e in enemies[:4]
+                        if isinstance(e, dict)))
         if kind == "enemy_spotted":
             facts.append("前方：" + _enemy_line(state))
         if quests:

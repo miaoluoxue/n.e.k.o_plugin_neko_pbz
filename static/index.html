@@ -534,6 +534,9 @@ body::before{
 .diag-item b{display:block;font-size:11px;margin-bottom:3px;color:var(--ink)}
 .diag-item.bad{border-color:rgba(223,77,60,.35);background:rgba(223,77,60,.055)}
 .diag-item.bad b{color:var(--red2)}
+.goal-row{display:flex;gap:6px;margin-bottom:10px}
+.goal-row input{flex:1;min-width:0}
+.goal-row button{padding:6px 10px;font-size:10px}
 .scan-compass{
   width:300px;height:300px;margin:12px auto 8px;border-radius:50%;position:relative;
   border:1px solid rgba(201,164,92,.3);
@@ -1102,6 +1105,11 @@ body[data-style="landscape"] .brand-footer::before{
       <div class="grid g-3" style="margin-top:12px">
         <article class="card">
           <h3>当前任务 <span class="sub">追踪</span></h3>
+          <div class="goal-row">
+            <input id="sessionGoalInput" placeholder="本局目标，例如：推进主线 / 收集三件武器">
+            <button class="primary" id="btnSaveGoal">定目标</button>
+            <button id="btnCompleteGoal">完成</button>
+          </div>
           <div id="questList" class="quest-list"><div class="empty">还没有读到任务</div></div>
         </article>
         <article class="card">
@@ -1242,6 +1250,7 @@ body[data-style="landscape"] .brand-footer::before{
         <article class="card">
           <h3>交锋记录 <span class="sub">本档</span></h3>
           <div id="bossHistoryBig" class="history"><div class="empty">还没有 Boss 交手记录</div></div>
+          <div id="lastDeath" class="note" style="margin-top:12px">还没有死亡前快照。</div>
         </article>
         <article class="card">
           <h3>事件流 <span class="sub">最近 30 条</span></h3>
@@ -1705,6 +1714,21 @@ $('btnExportDiagnostics').onclick = async () => {
     toast(r.output || '诊断已导出');
   }catch(e){ toast('诊断导出失败：' + e.message); }
 };
+$('btnSaveGoal').onclick = async () => {
+  const text = $('sessionGoalInput').value.trim();
+  try{
+    const r = await callEntry('pbz_session_goal', {text});
+    toast(r.output || '目标已保存');
+    await refresh();
+  }catch(e){ toast('目标保存失败：' + e.message); }
+};
+$('btnCompleteGoal').onclick = async () => {
+  try{
+    const r = await callEntry('pbz_session_goal', {complete:true});
+    toast(r.output || '目标已完成');
+    await refresh();
+  }catch(e){ toast('目标更新失败：' + e.message); }
+};
 document.querySelectorAll('[data-assist-focus]').forEach(btn => {
   btn.onclick = async () => {
     const focus = btn.dataset.assistFocus || 'brief';
@@ -1868,6 +1892,25 @@ function renderDiagnostics(s){
     el.appendChild(row);
   });
 }
+function renderGoal(s){
+  const goal = s.goal || {};
+  if(!isEditing()){
+    $('sessionGoalInput').value = goal.status === 'active' ? (goal.text || '') : '';
+  }
+  $('btnCompleteGoal').disabled = goal.status !== 'active';
+}
+function renderLastDeath(s){
+  const el = $('lastDeath');
+  const data = s.last_death || {};
+  const context = data.context || {};
+  if(!context){
+    el.textContent = '还没有死亡前快照。';
+    return;
+  }
+  const boss = context.boss || {};
+  const enemies = context.enemies || [];
+  el.textContent = `上次死亡前：生命 ${context.hp_percent ?? '?'}% · 杀气 ${context.shachi_percent ?? '?'}% · Boss ${boss.name || boss.id || '无'} ${boss.hp_percent ?? '?'}% · 附近 ${enemies.length} 个目标`;
+}
 function applyUI(ui){
   ui = ui || {};
   document.body.dataset.style = ui.style || 'scroll';
@@ -1956,6 +1999,8 @@ function render(s){
   renderVision(s);
   renderAssist(s);
   renderDiagnostics(s);
+  renderGoal(s);
+  renderLastDeath(s);
   renderRadar(s.enemies || []);
   renderEnemies(s.enemies || []);
   renderHistory(s.boss_history || [], 'bossHistory');

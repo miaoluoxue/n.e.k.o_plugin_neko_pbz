@@ -238,6 +238,39 @@ class UiMixin:
         })
 
     @plugin_entry(
+        id="pbz_session_goal",
+        name="本局目标",
+        description="设置、完成或清除当前存档的本局陪玩目标。",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "text": {"type": "string"},
+                "complete": {"type": "boolean"},
+                "clear": {"type": "boolean"},
+            },
+        },
+        metadata={"agent_hidden": True},
+    )
+    async def act_session_goal(self, text: str = "", complete: bool = False,
+                               clear: bool = False, **_: Any) -> Any:
+        if not self.service:
+            return Ok({"output": "服务未启动", "data": {"ok": False}})
+        if complete:
+            result = self.service.complete_session_goal()
+            return Ok({"output": (
+                f"已完成：{result.get('goal', {}).get('text', '')}"
+                if result.get("ok") else str(result.get("error") or "没有可完成的目标")
+            ), "data": result})
+        if clear:
+            result = self.service.set_session_goal("")
+            return Ok({"output": "本局目标已清除", "data": result})
+        result = self.service.set_session_goal(text)
+        return Ok({"output": (
+            f"本局目标：{result.get('goal', {}).get('text', '')}"
+            if result.get("ok") else str(result.get("error") or "目标保存失败")
+        ), "data": result})
+
+    @plugin_entry(
         id="pbz_vision_scan",
         name="视觉侦察",
         description="截取当前《影之刃零》画面，交给宿主视觉模型观察；猫娘会结合画面和结构化状态回应。",

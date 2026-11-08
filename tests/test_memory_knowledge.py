@@ -104,3 +104,29 @@ def test_player_corrections_survive_seed_refresh(tmp_path):
         "玩家核对后的首领信息"
     )
     refreshed.close()
+
+
+def test_death_snapshot_and_session_goal(tmp_path):
+    db = MemoryStore(tmp_path / "memory")
+    key = "slot:test"
+    db.touch_save(key, character_name="black")
+    context = {
+        "hp_percent": 21,
+        "shachi_percent": 8,
+        "boss": {"name": "沐小葵", "hp_percent": 43, "phase": 2},
+        "enemies": [{"name": "护卫", "distance": 4}],
+    }
+    db.record_event(key, {
+        "type": "death", "ts": 100, "data": {"context": context},
+    }, current_boss={"name": "沐小葵"})
+    death = db.last_death(key)
+    assert death["boss_name"] == "沐小葵"
+    assert death["context"]["hp_percent"] == 21
+    goal = db.set_goal(key, "推进主线")
+    assert goal["status"] == "active"
+    assert "推进主线" in db.digest(key)
+    completed = db.complete_goal(key)
+    assert completed["status"] == "completed"
+    assert db.export(key)["goal.json"]["text"] == "推进主线"
+    assert db.export(key)["last_death.json"]["context"]["enemies"][0]["name"] == "护卫"
+    db.close()
