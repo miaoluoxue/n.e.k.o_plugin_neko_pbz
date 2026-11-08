@@ -45,38 +45,65 @@ class Overlay {
         this.mailSlot = null;
         this.expireAt = 0;
         this.hidden = false;
+        this.ready = false;
+        this.overlayError = "";
+        this.lastCreateAttempt = 0;
         this._create();
     }
 
     _create() {
-        if (!this.viewport) throw new Error("viewport unavailable");
-        this.text = makeText(17);
-        this.border = UE.NewObject(UE.Border.StaticClass(), gi);
-        this.border.SetPadding(new UE.Margin(16, 10, 16, 10));
-        this.border.SetBrushColor(new UE.LinearColor(0.015, 0.018, 0.022, 0.72));
-        this.border.SetContent(this.text);
-        this.border.SetVisibility(UE.ESlateVisibility.Collapsed);
-        this.slot = new UE.GameViewportWidgetSlot();
-        this.slot.ZOrder = 900000;
-        this.slot.bAutoRemoveOnWorldRemoved = true;
-        this._layout();
-        if (!this.viewport.AddWidget(this.border, this.slot)) {
-            throw new Error("AddWidget failed");
+        if (this.ready) return true;
+        const now = Date.now();
+        if (now - this.lastCreateAttempt < 1500) return false;
+        this.lastCreateAttempt = now;
+        this.viewport = safe(() => UE.SubsystemBlueprintLibrary.GetEngineSubsystem(
+            UE.GameViewportSubsystem.StaticClass()), null) || this.viewport;
+        if (!this.viewport) {
+            this.overlayError = "viewport unavailable";
+            return false;
         }
+        try {
+            this.text = makeText(17);
+            this.border = UE.NewObject(UE.Border.StaticClass(), gi);
+            this.border.SetPadding(new UE.Margin(16, 10, 16, 10));
+            this.border.SetBrushColor(new UE.LinearColor(0.015, 0.018, 0.022, 0.72));
+            this.border.SetContent(this.text);
+            this.border.SetVisibility(UE.ESlateVisibility.Collapsed);
+            this.slot = new UE.GameViewportWidgetSlot();
+            this.slot.ZOrder = 900000;
+            this.slot.bAutoRemoveOnWorldRemoved = true;
+            this._layout();
+            if (!this.viewport.AddWidget(this.border, this.slot)) {
+                throw new Error("subtitle AddWidget failed");
+            }
 
-        this.mailbox = makeText(1);
-        this.mailbox.SetText(UE.KismetTextLibrary.Conv_StringToText(READY + this.bridgeDir));
-        this.mailbox.SetVisibility(UE.ESlateVisibility.Collapsed);
-        this.mailSlot = new UE.GameViewportWidgetSlot();
-        this.mailSlot.ZOrder = 900001;
-        this.mailSlot.bAutoRemoveOnWorldRemoved = true;
-        const m = new UE.Margin();
-        m.Left = 2; m.Top = 2; m.Right = 60; m.Bottom = 20;
-        this.mailSlot.Offsets = m;
-        this.viewport.AddWidget(this.mailbox, this.mailSlot);
+            this.mailbox = makeText(1);
+            this.mailbox.SetText(UE.KismetTextLibrary.Conv_StringToText(READY + this.bridgeDir));
+            this.mailbox.SetVisibility(UE.ESlateVisibility.Collapsed);
+            this.mailSlot = new UE.GameViewportWidgetSlot();
+            this.mailSlot.ZOrder = 900001;
+            this.mailSlot.bAutoRemoveOnWorldRemoved = true;
+            const m = new UE.Margin();
+            m.Left = 2; m.Top = 2; m.Right = 60; m.Bottom = 20;
+            this.mailSlot.Offsets = m;
+            if (!this.viewport.AddWidget(this.mailbox, this.mailSlot)) {
+                throw new Error("mailbox AddWidget failed");
+            }
+            this.ready = true;
+            this.overlayError = "";
+            return true;
+        } catch (error) {
+            this.overlayError = String(error && error.message || error);
+            try { if (this.border) this.viewport.RemoveWidget(this.border); } catch (_) {}
+            try { if (this.mailbox) this.viewport.RemoveWidget(this.mailbox); } catch (_) {}
+            this.border = this.text = this.slot = this.mailbox = this.mailSlot = null;
+            this.ready = false;
+            return false;
+        }
     }
 
     _layout() {
+        if (!this.slot) return;
         const size = safe(() => UE.WidgetLayoutLibrary.GetViewportSize(gi), null);
         const w = Number(size?.X) || 1920;
         const h = Number(size?.Y) || 1080;
@@ -89,14 +116,14 @@ class Overlay {
     }
 
     show(line, ttl) {
-        if (!this.border) return;
+        if (!this.ready || !this.border) return;
         this.text.SetText(UE.KismetTextLibrary.Conv_StringToText(String(line || "")));
         this.expireAt = Date.now() + Math.max(1500, (Number(ttl) || 6) * 1000);
         if (!this.hidden) this.border.SetVisibility(UE.ESlateVisibility.HitTestInvisible);
     }
 
     _readMailbox() {
-        if (!this.mailbox) return;
+        if (!this.ready || !this.mailbox) return;
         const raw = safe(() => this.mailbox.GetText().ToString(), "");
         if (!raw || raw.startsWith(READY)) return;
         if (raw.startsWith(MSG)) {
@@ -118,6 +145,7 @@ class Overlay {
     }
 
     tick() {
+        if (!this._create()) return;
         this._readMailbox();
         if (this.expireAt && Date.now() > this.expireAt) {
             this.expireAt = 0;
@@ -127,9 +155,10 @@ class Overlay {
     }
 
     stop() {
-        try { if (this.border) this.viewport.RemoveWidget(this.border); } catch (_) {}
-        try { if (this.mailbox) this.viewport.RemoveWidget(this.mailbox); } catch (_) {}
+        try { if (this.ready && this.border) this.viewport.RemoveWidget(this.border); } catch (_) {}
+        try { if (this.ready && this.mailbox) this.viewport.RemoveWidget(this.mailbox); } catch (_) {}
         this.border = this.text = this.slot = this.mailbox = this.mailSlot = null;
+        this.ready = false;
     }
 }
 

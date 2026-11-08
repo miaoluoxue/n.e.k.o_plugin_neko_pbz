@@ -10,37 +10,80 @@ let overlay = null;
 let timer = null;
 let heartbeatAt = 0;
 let lastError = "";
+let overlayError = "";
 
 function writeFile(name, body) {
     return !!UE.EasyCsv.SaveStringToFile(body, bridge + "/" + name);
 }
 
+function ensureOverlay() {
+    if (overlay) return;
+    try {
+        overlay = new Overlay(bridge);
+    } catch (error) {
+        overlayError = String(error && error.stack || error);
+    }
+}
+
+function writeStatus(stateReady) {
+    writeFile("mod_status.json", JSON.stringify({
+        version: 1,
+        ts: Date.now() / 1000,
+        state_ready: stateReady,
+        overlay_ready: !!overlay?.ready,
+        overlay_error: overlay?.overlayError || overlayError,
+        error: lastError,
+    }));
+}
+
 function tick() {
     try {
-        const state = api.snapshot();
-        state.seq = ++seq;
-        writeFile("state.json", JSON.stringify(state));
+        ensureOverlay();
         if (overlay) overlay.tick();
+        let state;
+        try {
+            state = api.snapshot();
+        } catch (error) {
+            lastError = String(error && error.stack || error);
+            writeStatus(false);
+            return;
+        }
+        state.seq = ++seq;
+        state.game = {
+            ...(state.game || {}),
+            overlay_ready: !!overlay?.ready,
+            overlay_error: overlay?.overlayError || overlayError,
+            mod_ready: true,
+        };
+        if (!writeFile("state.json", JSON.stringify(state))) {
+            lastError = "state.json write failed";
+        } else {
+            lastError = "";
+        }
+        writeStatus(true);
         if (Date.now() - heartbeatAt > 2000) {
             heartbeatAt = Date.now();
             writeFile("heartbeat.json", JSON.stringify({
                 version: 1, ts: Date.now() / 1000, game_seq: seq,
                 plugin_seq: 0, status: lastError ? "degraded" : "ok",
                 error: lastError,
+                overlay_ready: !!overlay?.ready,
+                overlay_error: overlay?.overlayError || overlayError,
             }));
         }
     } catch (error) {
         lastError = String(error && error.stack || error);
+        writeStatus(false);
         console.error("[NekoPBZ] tick failed: " + lastError);
     }
 }
 
 try {
-    overlay = new Overlay(bridge);
+    ensureOverlay();
     tick();
     timer = setInterval(tick, 250);
     console.log("[NekoPBZ] ready bridge=" + bridge +
-        " overlay=" + !!overlay);
+        " overlay=" + !!overlay?.ready + " overlayError=" + overlayError);
 } catch (error) {
     lastError = String(error && error.stack || error);
     console.error("[NekoPBZ] start failed: " + lastError);

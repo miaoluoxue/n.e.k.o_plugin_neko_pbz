@@ -18,6 +18,11 @@
 - **密钥保护**：Windows 上优先使用 DPAPI 保存独立 LLM Key，不写入明文。
 - **自动发布校验**：新增资产校验脚本与 GitHub Actions CI。
 
+### 修复
+
+- **面板无数据**：游戏启动早期字幕 `AddWidget` 失败不再终止状态采样；
+  Overlay 改为延迟重试，`state.json` 与 `mod_status.json` 独立写入。
+
 ## v0.1.1
 
 **主题**：即时陪玩与情境化互动。
