@@ -13,7 +13,9 @@ let lastError = "";
 let overlayError = "";
 
 function writeFile(name, body) {
-    return !!UE.EasyCsv.SaveStringToFile(body, bridge + "/" + name);
+    if (!UE.EasyCsv || typeof UE.EasyCsv.SaveStringToFile !== "function") return false;
+    const slot = String(name || "").replace(/\.json$/i, "").replace(/[^A-Za-z0-9_.-]/g, "_");
+    return UE.EasyCsv.SaveStringToFile(String(body || ""), bridge + "/" + slot) === true;
 }
 
 function ensureOverlay() {
@@ -63,7 +65,7 @@ function tick() {
         writeStatus(true);
         if (Date.now() - heartbeatAt > 2000) {
             heartbeatAt = Date.now();
-            writeFile("heartbeat.json", JSON.stringify({
+            writeFile("game_heartbeat", JSON.stringify({
                 version: 1, ts: Date.now() / 1000, game_seq: seq,
                 plugin_seq: 0, status: lastError ? "degraded" : "ok",
                 error: lastError,

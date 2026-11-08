@@ -22,6 +22,8 @@
 
 - **面板无数据**：游戏启动早期字幕 `AddWidget` 失败不再终止状态采样；
   Overlay 改为延迟重试，`state.json` 与 `mod_status.json` 独立写入。
+- **EasyCsv 桥接路径**：修正 `SaveStringToFile` 第二参数必须为目录的问题；
+  状态、Mod 状态和游戏心跳改为独立 EasyCsv 槽位，Python 端兼容目录读取。
 
 ## v0.1.1
 

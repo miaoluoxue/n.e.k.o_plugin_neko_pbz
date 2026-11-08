@@ -794,6 +794,10 @@ class PbzService:
                 last_line = str(item["text"])
                 break
         self._diagnostics = diagnose_state(state)
+        game_mod = self.bridge.read_mod_status() or {}
+        game_heartbeat = self.bridge.read_game_heartbeat() or {}
+        if game_mod and not connected:
+            game_mod = {**game_mod, "state_ready": False, "stale": True}
         self._snapshot = {
             "connected": connected,
             "scene": scene,
@@ -840,6 +844,8 @@ class PbzService:
                           "coverage": self.knowledge.coverage()},
             "memory": self.memory.stats(),
             "diagnostics": self._diagnostics,
+            "game_mod": game_mod,
+            "game_heartbeat": game_heartbeat,
             "events": list(self._log)[-30:],
             "voice": bool(self.cfg.get("voice_enabled", True)),
             "host_bus": bool(self.speech.watcher.supported),

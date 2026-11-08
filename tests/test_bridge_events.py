@@ -36,6 +36,26 @@ def test_bridge_roundtrip(tmp_path):
     assert line.count("|") == 3 and line.endswith("先敲铃。\n")
 
 
+def test_bridge_reads_easycsv_slots(tmp_path):
+    b = Bridge(tmp_path)
+    state_dir = b.root / "state"
+    state_dir.mkdir()
+    (state_dir / "New_CSV.csv").write_text(
+        json.dumps(_state()), encoding="utf-8")
+    status_dir = b.root / "mod_status"
+    status_dir.mkdir()
+    (status_dir / "New_CSV.csv").write_text(
+        json.dumps({"state_ready": True, "overlay_ready": False}),
+        encoding="utf-8")
+    game_hb = b.root / "game_heartbeat"
+    game_hb.mkdir()
+    (game_hb / "New_CSV.csv").write_text(
+        json.dumps({"game_seq": 3}), encoding="utf-8")
+    assert b.read_state()["world"]["id"] == "XiGu"
+    assert b.read_mod_status()["state_ready"] is True
+    assert b.read_game_heartbeat()["game_seq"] == 3
+
+
 def test_bridge_consumes_assist_request_once(tmp_path):
     b = Bridge(tmp_path)
     path = b.root / "assist_request.txt"

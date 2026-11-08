@@ -1890,7 +1890,13 @@ function renderDiagnostics(s){
   const el = $('diagList');
   el.innerHTML = '';
   if(!checks.length){
-    el.innerHTML = '<div class="empty">还没有状态诊断</div>';
+    const mod = s.game_mod || {};
+    const bits = [];
+    if(mod.ts) bits.push(`Mod 已运行${mod.state_ready ? ' · 状态文件已写' : ' · 状态文件未确认'}`);
+    if(mod.overlay_ready === false) bits.push('字幕 UI 正在延迟重试');
+    if(mod.overlay_error) bits.push(`Overlay：${mod.overlay_error}`);
+    if(mod.error) bits.push(`Mod 错误：${mod.error}`);
+    el.innerHTML = `<div class="empty">${bits.join(' · ') || '还没有状态诊断'}</div>`;
     return;
   }
   checks.forEach(item => {

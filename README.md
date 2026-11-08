@@ -225,6 +225,14 @@ ProjectPBZ\Saved\NekoBridge\state.json
 ProjectPBZ\Saved\NekoBridge\heartbeat.json
 ```
 
+游戏侧使用 EasyCsv 目录槽位时，实际文件为：
+
+```text
+ProjectPBZ\Saved\NekoBridge\state\New_CSV.csv
+ProjectPBZ\Saved\NekoBridge\mod_status\New_CSV.csv
+ProjectPBZ\Saved\NekoBridge\game_heartbeat\New_CSV.csv
+```
+
 ### 有状态但没有语音
 
 检查宿主 `push_message` 是否可用、TTS 是否启用，以及当前是否处于静默时间。

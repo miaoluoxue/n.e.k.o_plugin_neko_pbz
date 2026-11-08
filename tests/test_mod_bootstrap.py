@@ -15,3 +15,5 @@ def test_overlay_failure_cannot_block_state_sampling():
     assert "this.ready = false" in overlay
     assert "subtitle AddWidget failed" in overlay
     assert "lastCreateAttempt" in overlay
+    assert 'bridge + "/" + slot' in main
+    assert 'writeFile("game_heartbeat"' in main

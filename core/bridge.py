@@ -1,10 +1,10 @@
 """游戏 Mod ↔ Python 插件的文件桥接。
 
 协议：
-  state.json     游戏 → 插件，覆盖写
+  state/New_CSV.csv 游戏 → 插件，覆盖写（EasyCsv 目录槽位）
   events.jsonl   游戏 → 插件，追加写
   reply.json     插件 → 游戏，覆盖写
-  heartbeat.json 双向存活信号
+  heartbeat.json 插件存活信号；game_heartbeat 为游戏侧存活信号
 
 游戏侧 JS 每 250ms 采样；插件侧异步读取，不阻塞宿主命令循环。
 """
@@ -43,6 +43,9 @@ class Bridge:
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
         self.state_path = self.root / "state.json"
+        self.game_state_path = self.root / "state" / "New_CSV.csv"
+        self.mod_status_path = self.root / "mod_status" / "New_CSV.csv"
+        self.game_heartbeat_path = self.root / "game_heartbeat" / "New_CSV.csv"
         self.events_path = self.root / "events.jsonl"
         self.reply_path = self.root / "reply.json"
         self.reply_text_path = self.root / "reply.txt"
@@ -54,7 +57,8 @@ class Bridge:
     # ── 读 ────────────────────────────────
     def read_state(self) -> Optional[Dict[str, Any]]:
         state = None
-        for path in (self.state_path,
+        for path in (self.game_state_path,
+                     self.state_path,
                      self.state_path.with_name(self.state_path.name + ".csv"),
                      self.root / "state.csv"):
             state = read_json(path)
@@ -65,6 +69,12 @@ class Bridge:
         if int(state.get("version") or 0) != 1:
             return None
         return state
+
+    def read_mod_status(self) -> Optional[Dict[str, Any]]:
+        return read_json(self.mod_status_path)
+
+    def read_game_heartbeat(self) -> Optional[Dict[str, Any]]:
+        return read_json(self.game_heartbeat_path)
 
     def state_age(self, state: Optional[Dict[str, Any]] = None) -> float:
         state = state if state is not None else self.read_state()
