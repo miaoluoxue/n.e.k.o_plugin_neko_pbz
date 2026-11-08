@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import time
 from typing import Any, Dict
 
 from plugin.sdk.plugin import Ok, llm_tool
@@ -49,6 +50,86 @@ class ToolMixin:
             lines.append(f"铃铛：{bell.get('name') or bell.get('id') or '附近'}，"
                          f"{'已激活' if bell.get('activated') else '未激活'}")
         return Ok({"output": "\n".join(lines)})
+
+    @llm_tool(
+        name="pbz_control",
+        description="按玩家自然语言控制陪玩：静默/恢复、主动说话、字幕、语音、即时陪玩和剧透等级。",
+        parameters={
+            "type": "object",
+            "properties": {
+                "quiet_minutes": {"type": "number", "description": "静默分钟数；0 表示解除静默"},
+                "proactive": {"type": "boolean"},
+                "overlay_enabled": {"type": "boolean"},
+                "voice_enabled": {"type": "boolean"},
+                "assist_enabled": {"type": "boolean"},
+                "spoiler_level": {"type": "integer", "description": "0/1/2"},
+            },
+        },
+    )
+    async def tool_pbz_control(self, quiet_minutes: Any = None,
+                               proactive: Any = None,
+                               overlay_enabled: Any = None,
+                               voice_enabled: Any = None,
+                               assist_enabled: Any = None,
+                               spoiler_level: Any = None,
+                               **_: Any) -> Any:
+        if not self.service:
+            return Ok({"output": "陪玩服务未启动。"})
+        patch: Dict[str, Any] = {}
+        if quiet_minutes is not None:
+            try:
+                minutes = max(0.0, float(quiet_minutes))
+            except (TypeError, ValueError):
+                minutes = 0.0
+            patch["quiet_until"] = time.time() + minutes * 60 if minutes else 0.0
+        for key, value in (
+            ("proactive", proactive),
+            ("overlay_enabled", overlay_enabled),
+            ("voice_enabled", voice_enabled),
+            ("assist_enabled", assist_enabled),
+        ):
+            if value is not None:
+                patch[key] = bool(value)
+        if spoiler_level is not None:
+            try:
+                patch["spoiler_level"] = max(0, min(2, int(spoiler_level)))
+            except (TypeError, ValueError):
+                pass
+        if not patch:
+            return Ok({"output": "没有需要调整的陪玩设置。"})
+        cfg = self.service.apply_settings(patch)
+        bits = []
+        if quiet_minutes is not None:
+            bits.append("已解除静默" if not cfg.get("quiet_until")
+                        else f"安静 {minutes:g} 分钟")
+        if "proactive" in patch:
+            bits.append("允许主动说话" if patch["proactive"] else "只回应、不主动开口")
+        if "overlay_enabled" in patch:
+            bits.append("游戏字幕开" if patch["overlay_enabled"] else "游戏字幕关")
+        if "voice_enabled" in patch:
+            bits.append("宿主语音开" if patch["voice_enabled"] else "宿主语音关")
+        if "assist_enabled" in patch:
+            bits.append("即时陪玩开" if patch["assist_enabled"] else "即时陪玩关")
+        if "spoiler_level" in patch:
+            bits.append(f"剧透等级 {cfg.get('spoiler_level')}")
+        return Ok({"output": "；".join(bits) or "设置已更新", "data": cfg})
+
+    @llm_tool(
+        name="pbz_diagnostics",
+        description="检查游戏状态读取能力：生命、杀气、敌人、装备、任务和桥接是否正常，指出缺失字段。",
+        parameters={"type": "object", "properties": {}},
+    )
+    async def tool_pbz_diagnostics(self, **_: Any) -> Any:
+        if not self.service:
+            return Ok({"output": "陪玩服务未启动。"})
+        data = self.service.snapshot().get("diagnostics") or {}
+        warnings = data.get("warnings") or []
+        heading = (f"状态读取完整度 {data.get('score', 0)}%"
+                   f"（{data.get('passed', 0)}/{data.get('total', 0)}）")
+        if warnings:
+            return Ok({"output": heading + "\n" + "\n".join(f"- {x}" for x in warnings),
+                       "data": data})
+        return Ok({"output": heading + "\n当前关键字段均已读到。", "data": data})
 
     @llm_tool(
         name="pbz_what_ahead",

@@ -528,7 +528,12 @@ body::before{
 .scan-head p{margin:0;font-size:11px}
 .scan-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
 .scan-compass-card{grid-row:span 2}
-.vision-card,.assist-card{grid-column:1/-1}
+.vision-card,.assist-card,.diagnostics-card{grid-column:1/-1}
+.diag-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:7px;margin-top:10px}
+.diag-item{padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:rgba(232,223,204,.025);font-size:10px}
+.diag-item b{display:block;font-size:11px;margin-bottom:3px;color:var(--ink)}
+.diag-item.bad{border-color:rgba(223,77,60,.35);background:rgba(223,77,60,.055)}
+.diag-item.bad b{color:var(--red2)}
 .scan-compass{
   width:300px;height:300px;margin:12px auto 8px;border-radius:50%;position:relative;
   border:1px solid rgba(201,164,92,.3);
@@ -1211,6 +1216,14 @@ body[data-style="landscape"] .brand-footer::before{
           </div>
           <div id="assistResult" class="note" style="margin-top:11px">还没有请求即时陪玩。</div>
         </article>
+        <article class="card diagnostics-card">
+          <h3><span data-i18n="scan.diagnostics">状态校准</span> <span id="diagScore" class="sub">等待游戏</span></h3>
+          <p class="muted small" style="margin:0 0 9px">检查生命、杀气、敌人、装备、任务和桥接字段。缺失项会明确标出，不用猜测补齐。</p>
+          <div id="diagList" class="diag-list"><div class="empty">还没有状态诊断</div></div>
+          <div class="actions" style="margin-top:10px">
+            <button id="btnExportDiagnostics">导出诊断报告</button>
+          </div>
+        </article>
         <article class="card vision-card">
           <h3><span data-i18n="scan.vision">视觉侦察</span> <span id="visionStatus" class="sub">宿主视觉模型</span></h3>
           <p class="muted small" style="margin:0 0 10px">结构化数据看不到时，截取当前游戏窗口交给宿主视觉模型。游戏内按 F11 触发；面板按钮需要游戏在前台。只截游戏窗口，不截桌面。</p>
@@ -1686,6 +1699,12 @@ $('btnVision').onclick = async () => {
     await refresh();
   }catch(e){ toast('视觉侦察失败：' + e.message); }
 };
+$('btnExportDiagnostics').onclick = async () => {
+  try{
+    const r = await callEntry('pbz_export_diagnostics', {});
+    toast(r.output || '诊断已导出');
+  }catch(e){ toast('诊断导出失败：' + e.message); }
+};
 document.querySelectorAll('[data-assist-focus]').forEach(btn => {
   btn.onclick = async () => {
     const focus = btn.dataset.assistFocus || 'brief';
@@ -1826,6 +1845,29 @@ function renderAssist(s){
     $('assistResult').textContent = `已请求${labels[a.focus] || '即时陪玩'}，猫娘正在回应。`;
   }
 }
+function renderDiagnostics(s){
+  const d = s.diagnostics || {};
+  const checks = d.checks || [];
+  $('diagScore').textContent = checks.length
+    ? `完整度 ${d.score ?? 0}% · ${d.passed ?? 0}/${d.total ?? checks.length}`
+    : '等待游戏';
+  const el = $('diagList');
+  el.innerHTML = '';
+  if(!checks.length){
+    el.innerHTML = '<div class="empty">还没有状态诊断</div>';
+    return;
+  }
+  checks.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'diag-item' + (item.ok ? '' : ' bad');
+    const title = document.createElement('b');
+    title.textContent = `${item.ok ? '✓' : '!'} ${item.label || item.key}`;
+    const detail = document.createElement('span');
+    detail.textContent = item.detail || '';
+    row.append(title, detail);
+    el.appendChild(row);
+  });
+}
 function applyUI(ui){
   ui = ui || {};
   document.body.dataset.style = ui.style || 'scroll';
@@ -1913,6 +1955,7 @@ function render(s){
   renderScanMini(s);
   renderVision(s);
   renderAssist(s);
+  renderDiagnostics(s);
   renderRadar(s.enemies || []);
   renderEnemies(s.enemies || []);
   renderHistory(s.boss_history || [], 'bossHistory');

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import json
 import logging
 import time
 from collections import deque
@@ -14,6 +15,8 @@ from ..adapters import LLMProvider, LLMThrottle
 from ..perception import capture_pbz_window
 from .bridge import Bridge
 from .companion import PromptBuilder
+from .config import ConfigStore
+from .diagnostics import diagnose_state
 from .events import EventEngine
 from .host_speech import HostSpeech
 from .knowledge import KnowledgeStore
@@ -92,6 +95,7 @@ class PbzService:
         self._last_assist: Dict[str, Any] = {
             "focus": "", "submitted": False, "error": "", "ts": 0.0,
         }
+        self._diagnostics: Dict[str, Any] = {}
 
     # ── 生命周期 ─────────────────────────
     def _host_llm_call(self):
@@ -128,6 +132,37 @@ class PbzService:
                     out = out.get("output") or out.get("text") or out.get("content") or ""
                 return str(out or "").strip()
             self.llm.set_host_call(fallback)
+
+    def apply_settings(self, patch: Dict[str, Any]) -> Dict[str, Any]:
+        cfg = ConfigStore(self.data_root).save(patch)
+        self.cfg.update(cfg)
+        self.speech.voice_enabled = bool(cfg.get("voice_enabled", True))
+        self.configure_llm()
+        return cfg
+
+    def export_diagnostics(self) -> Dict[str, Any]:
+        state = self.last_state or {}
+        payload = {
+            "version": 1,
+            "exported_at": time.time(),
+            "connected": bool(self._snapshot.get("connected")),
+            "diagnostics": self._diagnostics,
+            "world": state.get("world") or {},
+            "player": {
+                "name": (state.get("player") or {}).get("name"),
+                "capabilities": state.get("capabilities") or {},
+            },
+            "bridge_dir": str(self.bridge.root),
+        }
+        root = self.data_root / "diagnostics"
+        root.mkdir(parents=True, exist_ok=True)
+        path = root / "latest.json"
+        tmp = path.with_name(path.name + ".tmp")
+        tmp.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8")
+        tmp.replace(path)
+        return {"path": str(path), "data": payload}
 
     @property
     def llm_available(self) -> bool:
@@ -692,6 +727,7 @@ class PbzService:
             if item.get("text"):
                 last_line = str(item["text"])
                 break
+        self._diagnostics = diagnose_state(state)
         self._snapshot = {
             "connected": connected,
             "scene": scene,
@@ -735,6 +771,7 @@ class PbzService:
             "knowledge": {**self.knowledge.stats(),
                           "coverage": self.knowledge.coverage()},
             "memory": self.memory.stats(),
+            "diagnostics": self._diagnostics,
             "events": list(self._log)[-30:],
             "voice": bool(self.cfg.get("voice_enabled", True)),
             "host_bus": bool(self.speech.watcher.supported),

@@ -31,6 +31,7 @@
   "scan.bell": "铃铛侦察",
   "scan.vision": "视觉侦察",
   "scan.assist": "即时陪玩",
+  "scan.diagnostics": "状态校准",
   "scan.no_boss": "暂无 Boss",
   "scan.no_enemies": "扫描范围安静",
   "scan.bell_unknown": "尚未靠近铃铛",

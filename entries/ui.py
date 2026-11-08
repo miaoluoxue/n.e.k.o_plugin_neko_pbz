@@ -106,12 +106,9 @@ class UiMixin:
         minutes = kwargs.get("quiet_minutes")
         if minutes is not None:
             patch["quiet_until"] = time.time() + max(0.0, float(minutes)) * 60
-        cfg = self._config_store().save(patch)
+        cfg = (self.service.apply_settings(patch) if self.service
+               else self._config_store().save(patch))
         self.cfg = cfg
-        if self.service:
-            self.service.cfg.update(cfg)
-            self.service.speech.voice_enabled = bool(cfg.get("voice_enabled", True))
-            self.service.configure_llm()
         return Ok({"output": "设置已保存", "data": cfg})
 
     @plugin_entry(
@@ -198,8 +195,22 @@ class UiMixin:
             "enemies": snap.get("enemies") or [],
             "bell": snap.get("bell") or {},
             "assist": snap.get("assist") or {},
+            "diagnostics": snap.get("diagnostics") or {},
         }
         return Ok({"output": "侦察已刷新", "data": data})
+
+    @plugin_entry(
+        id="pbz_export_diagnostics",
+        name="导出状态诊断",
+        description="把当前状态能力、缺失字段与桥接信息写入 data/diagnostics/latest.json。",
+        input_schema={"type": "object", "properties": {}},
+        metadata={"agent_hidden": True},
+    )
+    async def act_export_diagnostics(self, **_: Any) -> Any:
+        if not self.service:
+            return Ok({"output": "服务未启动", "data": {}})
+        result = self.service.export_diagnostics()
+        return Ok({"output": f"诊断已导出到 {result['path']}", "data": result})
 
     @plugin_entry(
         id="pbz_assist",
