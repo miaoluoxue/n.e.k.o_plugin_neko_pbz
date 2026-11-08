@@ -9,8 +9,18 @@ const TsHelper = (() => {
 })();
 
 const gi = puerts.argv.getByName("GameInstance");
-const world = (() => { try { return gi.GetWorld(); } catch (_) { return null; } })();
-const context = world || gi;
+const initialWorld = (() => {
+    try { return gi.GetWorld(); } catch (_) { return null; }
+})();
+const initialContext = initialWorld || gi;
+
+function liveWorld() {
+    return safe(() => gi.GetWorld(), null) || initialWorld;
+}
+
+function liveContext() {
+    return liveWorld() || gi;
+}
 
 function safe(fn, fallback = null) {
     try { const v = fn(); return v === undefined ? fallback : v; }
@@ -69,10 +79,12 @@ function hasTag(asc, tag) {
 }
 function getSubsystem(cls) {
     if (TsHelper && TsHelper.getWorldSubsystem) {
-        const hit = safe(() => TsHelper.getWorldSubsystem(context, cls.StaticClass()), null);
+        const hit = safe(
+            () => TsHelper.getWorldSubsystem(liveContext(), cls.StaticClass()), null);
         if (hit) return hit;
     }
-    return safe(() => world?.GetSubsystem?.(cls.StaticClass()), null)
+    const current = liveWorld();
+    return safe(() => current?.GetSubsystem?.(cls.StaticClass()), null)
         || safe(() => gi?.GetSubsystem?.(cls.StaticClass()), null);
 }
 function getGameInstanceSubsystem(cls) {
@@ -89,7 +101,20 @@ function bridgeDir() {
 }
 
 function getLocalCharacter() {
-    return safe(() => UE.PBZBlueprintFunctionLibrary.GetPBZLocalCharacter(context), null);
+    const current = liveWorld();
+    const controller = safe(
+        () => UE.GameplayStatics.GetPlayerController(current, 0), null);
+    const candidates = [controller, current, gi];
+    for (const target of candidates) {
+        if (!target) continue;
+        const character = safe(
+            () => UE.PBZBlueprintFunctionLibrary.GetPBZLocalCharacter(target), null);
+        if (isValid(character)) return character;
+    }
+    const pawn = safe(() => controller?.GetPawn?.(), null)
+        || safe(() => controller?.K2_GetPawn?.(), null)
+        || safe(() => UE.GameplayStatics.GetPlayerCharacter(current, 0), null);
+    return isValid(pawn) ? pawn : null;
 }
 function getAsc(character) {
     return safe(() => UE.AbilitySystemBlueprintLibrary.GetAbilitySystemComponent(character), null);
@@ -258,7 +283,8 @@ function discoverClasses() {
         const T = safe(() => UE[name], null);
         if (!T || !T.StaticClass) continue;
         const out = puerts.$ref(UE.NewArray(UE.Actor));
-        const ok = safe(() => UE.GameplayStatics.GetAllActorsOfClass(context, T.StaticClass(), out), false);
+        const ok = safe(() => UE.GameplayStatics.GetAllActorsOfClass(
+            liveContext(), T.StaticClass(), out), false);
         if (!ok) continue;
         const list = arr(safe(() => puerts.$unref(out), null));
         if (list.length) found.push({ name, cls: T, count: list.length });
@@ -278,7 +304,7 @@ function discoverBellClasses() {
         if (!T || !T.StaticClass) continue;
         const out = puerts.$ref(UE.NewArray(UE.Actor));
         if (!safe(() => UE.GameplayStatics.GetAllActorsOfClass(
-            context, T.StaticClass(), out), false)) continue;
+            liveContext(), T.StaticClass(), out), false)) continue;
         const list = arr(safe(() => puerts.$unref(out), null));
         if (list.length) found.push({ name, cls: T, count: list.length });
         if (found.length >= 8) break;
@@ -307,7 +333,7 @@ function scanEnemies(character) {
         diagnostics.push({ name: entry.name, count: entry.count });
         const actors = puerts.$ref(UE.NewArray(UE.Actor));
         safe(() => UE.GameplayStatics.GetAllActorsOfClass(
-            context, entry.cls.StaticClass(), actors), null);
+            liveContext(), entry.cls.StaticClass(), actors), null);
         for (const actor of arr(safe(() => puerts.$unref(actors), null))) {
             if (!isValid(actor)) continue;
             const loc = safe(() => actor.K2_GetActorLocation(), null);
@@ -353,7 +379,7 @@ function readBell(character, safeMode = false) {
             for (const entry of discoverBellClasses()) {
                 const actors = puerts.$ref(UE.NewArray(UE.Actor));
                 safe(() => UE.GameplayStatics.GetAllActorsOfClass(
-                    context, entry.cls.StaticClass(), actors), null);
+                    liveContext(), entry.cls.StaticClass(), actors), null);
                 for (const a of arr(safe(() => puerts.$unref(actors), null))) {
                     const loc = safe(() => a.K2_GetActorLocation(), null);
                     if (!loc) continue;
@@ -384,12 +410,13 @@ function readWorld() {
     return {
         id: text(safe(() => map?.GetCurrentMapID?.(), "")),
         name: text(safe(() => map?.GetCurrentMapName?.(), "")
-            || safe(() => UE.GameplayStatics.GetCurrentLevelName(context), "")),
+            || safe(() => UE.GameplayStatics.GetCurrentLevelName(liveContext()), "")),
         layer: null,
     };
 }
 function readQuests() {
-    const narrative = safe(() => UE.PBZBlueprintFunctionLibrary.GetPBZNarrativeComp(context), null);
+    const narrative = safe(
+        () => UE.PBZBlueprintFunctionLibrary.GetPBZNarrativeComp(liveContext()), null);
     if (!narrative) return [];
     const out = [];
     for (const quest of arr(safe(() => narrative.QuestList, null))) {
@@ -440,7 +467,8 @@ function snapshot(options = {}) {
     const scanned = safeMode
         ? { enemies: [], boss: null, diagnostics: [] }
         : scanEnemies(character);
-    const camera = safe(() => UE.GameplayStatics.GetPlayerCameraManager(context, 0), null);
+    const camera = safe(
+        () => UE.GameplayStatics.GetPlayerCameraManager(liveContext(), 0), null);
     const rot = safe(() => camera.GetCameraRotation(), null);
     const pos = safe(() => character?.K2_GetActorLocation(), null);
     return {
@@ -450,11 +478,11 @@ function snapshot(options = {}) {
         game_version: "CL-302256",
         game: {
             running: true,
-            paused: safe(() => UE.GameplayStatics.IsGamePaused(context), false),
+            paused: safe(() => UE.GameplayStatics.IsGamePaused(liveContext()), false),
             cutscene: false,
             menu_open: false,
         },
-        world: readWorld(),
+        world: readWorld(character),
         save: readSave(),
         player: {
             name: objName(character),
@@ -493,4 +521,7 @@ function snapshot(options = {}) {
     };
 }
 
-module.exports = { snapshot, bridgeDir, getLocalCharacter, context, gi };
+module.exports = {
+    snapshot, bridgeDir, getLocalCharacter, liveWorld, liveContext,
+    context: initialContext, gi,
+};

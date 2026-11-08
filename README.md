@@ -236,6 +236,14 @@ ProjectPBZ\Saved\NekoBridge\mod_status\New_CSV.csv
 ProjectPBZ\Saved\NekoBridge\game_heartbeat\New_CSV.csv
 ```
 
+如果游戏使用本地持久化目录，`ProjectSavedDir()` 可能解析为：
+
+```text
+%LOCALAPPDATA%\ProjectPBZ\Saved\NekoBridge
+```
+
+插件会按最新的 `state/New_CSV.csv` 自动选择真实桥接目录，旧的手动路径不会覆盖活跃目录。
+
 ### 有状态但没有语音
 
 检查宿主 `push_message` 是否可用、TTS 是否启用，以及当前是否处于静默时间。

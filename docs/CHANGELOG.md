@@ -26,6 +26,10 @@
   状态、Mod 状态和游戏心跳改为独立 EasyCsv 槽位，Python 端兼容目录读取。
 - **安全模式**：默认关闭游戏内 UMG 字幕与全场景敌人扫描，以 1 秒频率先稳定传输生命、
   地图、任务、装备等低风险字段；游戏内字幕改为后续显式开启。
+- **动态 World 解析**：不再缓存 MainStart 时的空上下文，每帧重新获取 World、
+  PlayerController 和本地角色。
+- **桥接路径自动发现**：识别 `%LOCALAPPDATA%\ProjectPBZ\Saved\NekoBridge`，
+  按最新游戏状态文件选择真实桥接目录。
 
 ## v0.1.1
 

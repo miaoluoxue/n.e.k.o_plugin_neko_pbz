@@ -83,8 +83,13 @@ if (-not $SkipPlugin) {
 
 if (-not $SkipMod) {
     if (-not (Test-Path -LiteralPath $GameRoot)) { throw "游戏目录不存在: $GameRoot" }
-    $bridge = Join-Path $GameRoot "ProjectPBZ\Saved\NekoBridge"
-    New-Item -ItemType Directory -Force -Path $bridge | Out-Null
+    $bridge = Join-Path $env:LOCALAPPDATA "ProjectPBZ\Saved\NekoBridge"
+    $legacyBridge = Join-Path $GameRoot "ProjectPBZ\Saved\NekoBridge"
+    foreach ($path in @($bridge, $legacyBridge)) {
+        foreach ($slot in @("state", "mod_status", "game_heartbeat")) {
+            New-Item -ItemType Directory -Force -Path (Join-Path $path $slot) | Out-Null
+        }
+    }
 
     $modSrc = Join-Path $dev "mod\pbz-neko-companion"
     $loader = Join-Path $GameRoot "ProjectPBZ\Content\JavaScript\PBZModLoader"
@@ -108,6 +113,6 @@ if (-not $SkipMod) {
 }
 
 Write-Host "`n部署完成。重启游戏/插件后："
-Write-Host "  - 游戏内 F10 显示/隐藏字幕"
-Write-Host "  - 面板检查 state.json / heartbeat.json"
-Write-Host "  - 首次进游戏后把 ProjectPBZ\Saved\NekoBridge\state.json 发回来做 P0 核验"
+Write-Host "  - 当前面板使用安全模式，不自动注入游戏内 UMG"
+Write-Host "  - 面板检查 state / mod_status / game_heartbeat 的 EasyCsv 槽位"
+Write-Host "  - 实际桥接目录: $bridge"

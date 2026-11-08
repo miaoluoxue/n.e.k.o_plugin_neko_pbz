@@ -69,25 +69,88 @@ def _home_documents() -> Iterable[Path]:
     yield home / "OneDrive" / "Documents" / "PbzMods" / "NekoBridge"
 
 
+def _bridge_activity(path: Path) -> float:
+    """Latest game-written bridge file; ignore plugin-only heartbeat."""
+    candidates = [
+        path / "state" / "New_CSV.csv",
+        path / "state.json",
+        path / "state.csv",
+        path / "mod_status" / "New_CSV.csv",
+        path / "mod_status.json",
+        path / "game_heartbeat" / "New_CSV.csv",
+    ]
+    latest = 0.0
+    for candidate in candidates:
+        try:
+            latest = max(latest, candidate.stat().st_mtime)
+        except OSError:
+            pass
+    return latest
+
+
+def _exists(path: Path) -> bool:
+    try:
+        return path.exists()
+    except OSError:
+        return False
+
+
+def bridge_candidates(configured: str = "") -> list[Path]:
+    out: list[Path] = []
+    seen: set[str] = set()
+
+    def add(path: Path) -> None:
+        key = str(path).casefold()
+        if key in seen:
+            return
+        seen.add(key)
+        out.append(path)
+
+    local = Path(os.environ.get("LOCALAPPDATA", ""))
+    if str(local):
+        add(local / "ProjectPBZ" / "Saved" / "NekoBridge")
+    if configured and str(configured).strip():
+        add(Path(str(configured)).expanduser())
+    for raw in _BRIDGE_CANDIDATES:
+        add(Path(raw))
+    for path in _home_documents():
+        add(path)
+    return out
+
+
 def resolve_bridge_dir(configured: str = "") -> Path:
     """找到游戏 Mod 与插件共用的桥接目录。
 
     游戏侧用 `ProjectSavedDir()/NekoBridge`，所以优先已知 Steam 路径；
     找不到时退回 Documents 下的兼容位置。目录由插件创建。
     """
-    if configured and str(configured).strip():
-        path = Path(str(configured)).expanduser()
-        path.mkdir(parents=True, exist_ok=True)
+    candidates = bridge_candidates(configured)
+    active = [(path, _bridge_activity(path)) for path in candidates]
+    fresh = [(path, stamp) for path, stamp in active if stamp > 0]
+    if fresh:
+        path = max(fresh, key=lambda item: item[1])[0]
+        try:
+            path.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass
         return path
-    for raw in _BRIDGE_CANDIDATES:
-        p = Path(raw)
-        if p.parent.exists():
-            p.mkdir(parents=True, exist_ok=True)
-            return p
-    for p in _home_documents():
-        if p.parent.exists() or p.home().exists():
-            p.mkdir(parents=True, exist_ok=True)
-            return p
+    configured_path = next(
+        (path for path in candidates if configured and str(path) == str(Path(configured))),
+        None,
+    )
+    if configured_path is not None:
+        try:
+            configured_path.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass
+        return configured_path
+    for path in candidates:
+        if _exists(path.parent):
+            try:
+                path.mkdir(parents=True, exist_ok=True)
+            except OSError:
+                pass
+            return path
     fallback = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "NekoBridge"
     fallback.mkdir(parents=True, exist_ok=True)
     return fallback

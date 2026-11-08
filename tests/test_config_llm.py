@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from plugin.plugins.neko_pbz.core import config as config_module
 from plugin.plugins.neko_pbz.core.config import ConfigStore
 
 
@@ -36,3 +37,17 @@ def test_empty_llm_key_is_removed(tmp_path):
     cfg = store.save({"llm_api_key": ""})
     assert cfg["llm_api_key"] == ""
     assert store.load()["llm_api_key"] == ""
+
+
+def test_bridge_prefers_latest_game_state_path(tmp_path, monkeypatch):
+    configured = tmp_path / "wrong" / "NekoBridge"
+    configured.mkdir(parents=True)
+    local_app = tmp_path / "LocalAppData"
+    active = local_app / "ProjectPBZ" / "Saved" / "NekoBridge"
+    state = active / "state" / "New_CSV.csv"
+    state.parent.mkdir(parents=True)
+    state.write_text("{}", encoding="utf-8")
+    monkeypatch.setenv("LOCALAPPDATA", str(local_app))
+    monkeypatch.setattr(config_module, "_BRIDGE_CANDIDATES", ())
+    monkeypatch.setattr(config_module, "_home_documents", lambda: ())
+    assert config_module.resolve_bridge_dir(str(configured)) == active
