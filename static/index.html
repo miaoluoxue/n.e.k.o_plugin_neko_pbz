@@ -528,7 +528,7 @@ body::before{
 .scan-head p{margin:0;font-size:11px}
 .scan-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
 .scan-compass-card{grid-row:span 2}
-.vision-card{grid-column:1/-1}
+.vision-card,.assist-card{grid-column:1/-1}
 .scan-compass{
   width:300px;height:300px;margin:12px auto 8px;border-radius:50%;position:relative;
   border:1px solid rgba(201,164,92,.3);
@@ -1200,6 +1200,17 @@ body[data-style="landscape"] .brand-footer::before{
           <div id="scanBell" class="scan-bell"><div class="scan-bell-icon">铃</div><div><b>尚未靠近铃铛</b><div class="muted small">靠近未激活铃铛时会在这里提示</div></div></div>
           <div id="scanBellIds" class="chips"></div>
         </article>
+        <article class="card assist-card">
+          <h3><span data-i18n="scan.assist">即时陪玩</span> <span id="assistStatus" class="sub">交给当前猫娘</span></h3>
+          <p class="muted small" style="margin:0 0 10px">不用切出游戏，按游戏内 F12 让猫娘接一句；也可以按下面分工让她看局面、任务、Boss 或本局记录。</p>
+          <div class="actions">
+            <button class="primary" data-assist-focus="brief" data-i18n="assist.brief">看当前局面</button>
+            <button data-assist-focus="quest" data-i18n="assist.quest">看任务</button>
+            <button data-assist-focus="boss" data-i18n="assist.boss">看 Boss</button>
+            <button data-assist-focus="review" data-i18n="assist.review">复盘本局</button>
+          </div>
+          <div id="assistResult" class="note" style="margin-top:11px">还没有请求即时陪玩。</div>
+        </article>
         <article class="card vision-card">
           <h3><span data-i18n="scan.vision">视觉侦察</span> <span id="visionStatus" class="sub">宿主视觉模型</span></h3>
           <p class="muted small" style="margin:0 0 10px">结构化数据看不到时，截取当前游戏窗口交给宿主视觉模型。游戏内按 F11 触发；面板按钮需要游戏在前台。只截游戏窗口，不截桌面。</p>
@@ -1334,6 +1345,7 @@ body[data-style="landscape"] .brand-footer::before{
           <label class="switch"><span>宿主 TTS 播报猫娘回复</span><input id="voiceEnabled" type="checkbox"></label>
           <label class="switch"><span>游戏内字幕</span><input id="overlayEnabled" type="checkbox"></label>
           <label class="switch"><span>允许主动开口</span><input id="proactive" type="checkbox"></label>
+          <label class="switch"><span>允许 F12 / 面板即时陪玩</span><input id="assistEnabled" type="checkbox"></label>
           <label class="field" style="margin-top:12px"><span>剧透等级</span>
             <select id="spoiler">
               <option value="0">0 · 只讲眼前</option>
@@ -1674,6 +1686,22 @@ $('btnVision').onclick = async () => {
     await refresh();
   }catch(e){ toast('视觉侦察失败：' + e.message); }
 };
+document.querySelectorAll('[data-assist-focus]').forEach(btn => {
+  btn.onclick = async () => {
+    const focus = btn.dataset.assistFocus || 'brief';
+    const buttons = document.querySelectorAll('[data-assist-focus]');
+    buttons.forEach(item => { item.disabled = true; });
+    try{
+      const r = await callEntry('pbz_assist', {focus});
+      toast(r.output || '已交给猫娘');
+      await refresh();
+    }catch(e){
+      toast('即时陪玩失败：' + e.message);
+    }finally{
+      buttons.forEach(item => { item.disabled = false; });
+    }
+  };
+});
 function renderQuests(quests){
   const el = $('questList'); el.innerHTML = '';
   if(!quests || !quests.length){ el.innerHTML = '<div class="empty">还没有读到任务</div>'; return; }
@@ -1782,6 +1810,22 @@ function renderVision(s){
   if(v.error) $('visionResult').textContent = `提示：${v.error}`;
   else if(v.submitted) $('visionResult').textContent = '画面已交给宿主视觉模型，猫娘正在回应。';
 }
+function renderAssist(s){
+  const a = s.assist || {};
+  const labels = {brief:'当前局面', quest:'当前任务', boss:'Boss', review:'本局复盘'};
+  $('assistStatus').textContent = a.enabled === false
+    ? '已关闭'
+    : (a.ts ? `最近 · ${labels[a.focus] || '即时陪玩'}` : '交给当前猫娘');
+  if(a.enabled === false){
+    $('assistResult').textContent = '即时陪玩已在“调息”中关闭。';
+  }else if(s.waiting_reply){
+    $('assistResult').textContent = '猫娘正在组织回应，游戏内字幕会在回复完成后出现。';
+  }else if(a.error){
+    $('assistResult').textContent = `提示：${a.error}`;
+  }else if(a.submitted){
+    $('assistResult').textContent = `已请求${labels[a.focus] || '即时陪玩'}，猫娘正在回应。`;
+  }
+}
 function applyUI(ui){
   ui = ui || {};
   document.body.dataset.style = ui.style || 'scroll';
@@ -1868,6 +1912,7 @@ function render(s){
   renderScan(s);
   renderScanMini(s);
   renderVision(s);
+  renderAssist(s);
   renderRadar(s.enemies || []);
   renderEnemies(s.enemies || []);
   renderHistory(s.boss_history || [], 'bossHistory');
@@ -1890,6 +1935,7 @@ function render(s){
     $('voiceEnabled').checked = s.voice !== false;
     $('overlayEnabled').checked = s.overlay !== false;
     $('proactive').checked = s.proactive !== false;
+    $('assistEnabled').checked = s.assist?.enabled !== false;
     $('spoiler').value = s.spoiler_level ?? 1;
     $('adviceMin').value = s.boss_advice_min ?? 1;
     $('adviceMax').value = s.boss_advice_max ?? 3;
@@ -1939,6 +1985,7 @@ async function saveSettings(extra={}){
     voice_enabled: $('voiceEnabled').checked,
     overlay_enabled: $('overlayEnabled').checked,
     proactive: $('proactive').checked,
+    assist_enabled: $('assistEnabled').checked,
     spoiler_level: Number($('spoiler').value),
     boss_advice_min: Number($('adviceMin').value),
     boss_advice_max: Number($('adviceMax').value),

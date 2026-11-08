@@ -162,3 +162,21 @@ class Bridge:
         except OSError:
             pass
         return True
+
+    def consume_assist_request(self) -> str:
+        """Consume one F12/manual assist request and return its focus."""
+        path = self.root / "assist_request.txt"
+        if not path.exists():
+            return ""
+        focus = "brief"
+        try:
+            raw = path.read_text(encoding="utf-8-sig", errors="ignore").strip().lower()
+            if raw in {"brief", "quest", "boss", "review"}:
+                focus = raw
+        except OSError:
+            pass
+        try:
+            path.unlink()
+        except OSError:
+            pass
+        return focus

@@ -40,6 +40,9 @@ DEFAULTS: Dict[str, Any] = {
     "vision_max_edge": 1024,
     "vision_jpeg_quality": 80,
     "vision_cooldown": 8.0,
+    # 游戏内 F12 / 面板快捷互动：交给宿主当前人设即时回应。
+    "assist_enabled": True,
+    "assist_cooldown": 3.0,
     # 面板偏好：持久化到 data/config/ui.json
     "ui_style": "scroll",
     "ui_theme": "ink",

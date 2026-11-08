@@ -76,6 +76,7 @@ class UiMixin:
                 "llm_max_calls_per_minute": {"type": "integer"},
                 "vision_enabled": {"type": "boolean"},
                 "vision_require_foreground": {"type": "boolean"},
+                "assist_enabled": {"type": "boolean"},
                 "ui_theme": {"type": "string"},
                 "ui_style": {"type": "string"},
                 "ui_density": {"type": "string"},
@@ -93,7 +94,7 @@ class UiMixin:
             "overlay_enabled", "proactive", "boss_advice_min", "boss_advice_max",
             "llm_enabled", "llm_provider", "llm_model", "llm_base_url",
             "llm_timeout", "llm_max_calls_per_minute",
-            "vision_enabled", "vision_require_foreground",
+            "vision_enabled", "vision_require_foreground", "assist_enabled",
             "ui_theme", "ui_density", "ui_scale", "ui_motion",
             "ui_style",
             "ui_show_radar", "ui_show_llm_strip"}}
@@ -196,8 +197,34 @@ class UiMixin:
             "boss_intel": snap.get("boss_intel"),
             "enemies": snap.get("enemies") or [],
             "bell": snap.get("bell") or {},
+            "assist": snap.get("assist") or {},
         }
         return Ok({"output": "侦察已刷新", "data": data})
+
+    @plugin_entry(
+        id="pbz_assist",
+        name="即时陪玩",
+        description="让宿主当前猫娘基于当前局面、任务、Boss 或本局记录即时回应。",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "focus": {
+                    "type": "string",
+                    "enum": ["brief", "quest", "boss", "review"],
+                },
+            },
+        },
+        metadata={"agent_hidden": True},
+    )
+    async def act_assist(self, focus: str = "brief", **_: Any) -> Any:
+        if not self.service:
+            return Ok({"output": "服务未启动", "data": {"ok": False}})
+        result = await self.service.request_assist(focus, source="panel")
+        return Ok({
+            "output": "已交给猫娘" if result.get("ok")
+            else str(result.get("error") or "现在还不能即时陪玩"),
+            "data": result,
+        })
 
     @plugin_entry(
         id="pbz_vision_scan",

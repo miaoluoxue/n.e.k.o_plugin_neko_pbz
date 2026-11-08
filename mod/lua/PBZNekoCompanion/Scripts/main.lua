@@ -89,4 +89,22 @@ RegisterKeyBind(Key.F11, function()
     end
 end)
 
+-- F12: one-shot contextual companion assist; the Python plugin chooses wording.
+RegisterKeyBind(Key.F12, function()
+    local mailbox, current = find_mailbox()
+    if not mailbox then return end
+    if current and current:sub(1, #READY) == READY then
+        local bridge = current:sub(#READY + 1)
+        ExecuteInGameThread(function()
+            pcall(function()
+                local file = io.open(bridge .. "/assist_request.txt", "w")
+                if file then
+                    file:write("brief")
+                    file:close()
+                end
+            end)
+        end)
+    end
+end)
+
 print("[PBZNekoCompanion] subtitle bridge loaded\n")

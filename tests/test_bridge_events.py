@@ -36,6 +36,15 @@ def test_bridge_roundtrip(tmp_path):
     assert line.count("|") == 3 and line.endswith("先敲铃。\n")
 
 
+def test_bridge_consumes_assist_request_once(tmp_path):
+    b = Bridge(tmp_path)
+    path = b.root / "assist_request.txt"
+    path.write_text("quest", encoding="utf-8")
+    assert b.consume_assist_request() == "quest"
+    assert not path.exists()
+    assert b.consume_assist_request() == ""
+
+
 def test_event_engine_low_hp_death_and_boss():
     e = EventEngine()
     assert e.step(_state()) == []

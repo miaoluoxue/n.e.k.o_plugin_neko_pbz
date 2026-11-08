@@ -128,3 +128,46 @@ def test_llm_priority_independent_then_host_fallback(tmp_path):
     svc2 = PbzService(plugin, independent, tmp_path / "data2")
     assert svc2.llm_mode == "independent"
     asyncio.run(svc2.stop())
+
+
+def test_assist_uses_current_quest_and_host_persona(tmp_path):
+    plugin = _Plugin(tmp_path / "data")
+    bridge = tmp_path / "bridge-assist"
+    bridge.mkdir()
+    cfg = {
+        "bridge_dir": str(bridge), "poll_interval": 0.1,
+        "state_stale_seconds": 30, "voice_enabled": True,
+        "spoiler_level": 2, "proactive": True,
+        "boss_advice_min": 1, "boss_advice_max": 3,
+        "quiet_until": 0, "host_reply_timeout": 10,
+        "event_log_limit": 20,
+        "assist_enabled": True, "assist_cooldown": 0,
+    }
+    state = {
+        "version": 1, "seq": 1, "ts": time.time(),
+        "game": {"cutscene": False, "menu_open": False},
+        "world": {"id": "FuJiZhiLin", "name": "血色森林"},
+        "player": {"name": "black", "hp_percent": 88, "in_combat": False,
+                   "dead": False, "shachi": {"percent": 64},
+                   "equipment": {"main_weapon": {"id": "Weapon_001", "name": "黑伤"},
+                                 "phantom_edges": [], "accessories": []}},
+        "enemies": [], "boss": None,
+        "quests": [{"id": "BaiShanMiWen", "name": "白山秘闻",
+                    "state": "active", "tasks": [{"current": 1, "required": 1}]}],
+        "bell": {"near": False, "activated": False, "id": ""},
+    }
+    bridge.joinpath("state.json").write_text(json.dumps(state), encoding="utf-8")
+    bridge.joinpath("assist_request.txt").write_text("quest", encoding="utf-8")
+    svc = PbzService(plugin, cfg, tmp_path / "data")
+
+    async def run():
+        await svc._tick()
+        assert plugin.calls[-1]["ai_behavior"] == "respond"
+        prompt = plugin.calls[-1]["parts"][0]["text"]
+        assert "[即时陪玩请求]" in prompt
+        assert "白山秘闻" in prompt
+        assert "当前任务" in prompt
+        assert not bridge.joinpath("assist_request.txt").exists()
+        await svc.stop()
+
+    asyncio.run(run())

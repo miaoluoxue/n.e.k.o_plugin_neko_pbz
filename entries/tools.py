@@ -225,6 +225,28 @@ class ToolMixin:
         return Ok({"output": "\n\n".join(chunks)})
 
     @llm_tool(
+        name="pbz_assist",
+        description="让猫娘根据当前局面即时陪玩：快速局面提醒、当前任务下一步、Boss提醒或本局复盘。",
+        parameters={
+            "type": "object",
+            "properties": {
+                "focus": {
+                    "type": "string",
+                    "enum": ["brief", "quest", "boss", "review"],
+                    "description": "brief=当前局面，quest=任务，boss=Boss，review=本局复盘",
+                },
+            },
+        },
+    )
+    async def tool_pbz_assist(self, focus: str = "brief", **_: Any) -> Any:
+        if not self.service:
+            return Ok({"output": "陪玩服务未启动。"})
+        result = await self.service.request_assist(focus, source="chat")
+        if not result.get("ok"):
+            return Ok({"output": str(result.get("error") or "现在还不能即时陪玩")})
+        return Ok({"output": "已经把当前情况交给猫娘，她正在回应。"})
+
+    @llm_tool(
         name="pbz_playbook",
         description="查询《影之刃零》玩法库：战前准备、战斗节奏、探索/铃铛、铸魂、配装槽位等。",
         parameters={

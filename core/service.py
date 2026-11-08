@@ -88,6 +88,10 @@ class PbzService:
             "ok": False, "error": "not_captured", "captured_at": 0.0,
             "width": 0, "height": 0, "submitted": False,
         }
+        self._last_assist_ts = 0.0
+        self._last_assist: Dict[str, Any] = {
+            "focus": "", "submitted": False, "error": "", "ts": 0.0,
+        }
 
     # ── 生命周期 ─────────────────────────
     def _host_llm_call(self):
@@ -183,6 +187,7 @@ class PbzService:
     async def _tick(self) -> None:
         if self.bridge.consume_vision_request() and self.cfg.get("vision_enabled", True):
             await self.capture_and_comment(force=True)
+        assist_focus = self.bridge.consume_assist_request()
         state = self.bridge.read_state()
         fresh = bool(state) and self.bridge.state_age(state) <= float(
             self.cfg.get("state_stale_seconds", 3.0))
@@ -197,6 +202,8 @@ class PbzService:
         else:
             self._refresh_snapshot(self.last_state, connected=False)
 
+        if assist_focus:
+            await self.request_assist(assist_focus, source="hotkey")
         await self._process_queue()
         await self._poll_final()
         now = time.time()
@@ -293,6 +300,183 @@ class PbzService:
             "submitted": False,
         }
         return result
+
+    def _assist_facts(self, focus: str) -> List[str]:
+        state = self.last_state or {}
+        player = state.get("player") or {}
+        world = state.get("world") or {}
+        eq = player.get("equipment") or {}
+        boss = state.get("boss") or {}
+        bell = state.get("bell") or {}
+        quests = state.get("quests") or []
+        facts = [
+            f"区域：{world.get('name') or world.get('id') or '未知'}",
+            f"生命：{player.get('hp_percent', '?')}%",
+            f"杀气：{(player.get('shachi') or {}).get('percent', '?')}%",
+            f"战斗：{'是' if player.get('in_combat') else '否'}",
+            f"主武器：{(eq.get('main_weapon') or {}).get('name') or '未读到'}",
+        ]
+        edges = [e.get("name") for e in eq.get("phantom_edges") or []
+                 if isinstance(e, dict) and e.get("name")]
+        if edges:
+            facts.append("影之武装：" + "、".join(edges))
+        if boss:
+            facts.append(
+                f"Boss：{boss.get('name') or boss.get('id') or '未知'}"
+                f" {boss.get('hp_percent', '?')}%")
+        if bell.get("near") or bell.get("activated"):
+            facts.append(
+                f"铃铛：{bell.get('name') or bell.get('id') or '附近'}"
+                f"，{'已激活' if bell.get('activated') else '未激活'}")
+        for quest in quests[:3]:
+            if not isinstance(quest, dict):
+                continue
+            tasks = []
+            for task in quest.get("tasks") or []:
+                if not isinstance(task, dict):
+                    continue
+                current = task.get("current")
+                required = task.get("required")
+                if current is not None or required is not None:
+                    tasks.append(f"{current if current is not None else '?'}/"
+                                 f"{required if required is not None else '?'}")
+            suffix = f"（{'、'.join(tasks)}）" if tasks else ""
+            facts.append(f"当前任务：{quest.get('name') or quest.get('id') or ''}{suffix}")
+
+        level = int(self.cfg.get("spoiler_level", 1))
+        if focus == "quest" and quests:
+            quest = next((q for q in quests if isinstance(q, dict)), {})
+            key = str(quest.get("name") or quest.get("id") or "")
+            entity = self.knowledge.get(key, spoiler_level=level) if key else None
+            if entity and entity.get("type") == "quest":
+                data = entity.get("facts") or {}
+                facts.append("任务资料：")
+                for index, step in enumerate(data.get("steps") or [], 1):
+                    if not isinstance(step, dict):
+                        continue
+                    text = step.get("instruction") or step.get("title") or ""
+                    if text:
+                        facts.append(f"- 第{index}步：{text}")
+                    if index >= 6:
+                        break
+                notes = data.get("guide_notes") or []
+                if notes:
+                    facts.append("- 提醒：" + str(notes[-1]))
+            elif key:
+                facts.append(f"任务资料：知识库里暂时没有「{key}」的可靠步骤")
+        elif focus == "boss" and boss:
+            key = str(boss.get("name") or boss.get("id") or "")
+            entity = self.knowledge.get(key, spoiler_level=level) if key else None
+            if entity:
+                data = entity.get("facts") or {}
+                for label, field in (
+                    ("区域", "map_world_label"),
+                    ("首领组", "boss_group"),
+                    ("短攻略", "guide_note"),
+                    ("应对", "recommended_defense"),
+                ):
+                    if data.get(field):
+                        facts.append(f"Boss{label}：{data[field]}")
+            try:
+                tips = self.knowledge.select_tips(
+                    boss, eq, spoiler_level=level,
+                    k_min=int(self.cfg.get("boss_advice_min", 1)),
+                    k_max=int(self.cfg.get("boss_advice_max", 3)))
+                facts.extend(f"建议：{tip}" for tip in tips)
+            except Exception:
+                pass
+        elif focus == "review":
+            facts.append(
+                f"本局统计：死亡 {self._session_deaths} 次，"
+                f"击败 {self._session_victories} 个 Boss")
+            if self._session_zones:
+                facts.append("去过：" + "、".join(dict.fromkeys(self._session_zones[-6:])))
+            recent = [
+                f"{item.get('type')} {item.get('text') or item.get('fallback') or ''}".strip()
+                for item in list(self._log)[-10:]
+                if item.get("type") != "host_reply"
+            ]
+            if recent:
+                facts.append("最近事件：" + "；".join(recent))
+            if self.save_key:
+                try:
+                    history = self.memory.boss_history(self.save_key, limit=4)
+                    for item in history:
+                        facts.append(
+                            f"Boss记录：{item.get('boss_name') or item.get('boss_id')}，"
+                            f"尝试 {item.get('attempts', 0)} 次，死亡 {item.get('deaths', 0)} 次，"
+                            f"最好 {round(item.get('best_hp_percent') or 0)}%")
+                except Exception:
+                    pass
+        return facts
+
+    async def request_assist(self, focus: str = "brief", *,
+                             source: str = "panel") -> Dict[str, Any]:
+        focus = focus if focus in {"brief", "quest", "boss", "review"} else "brief"
+        if not self.cfg.get("assist_enabled", True):
+            result = {"ok": False, "error": "即时陪玩已关闭", "focus": focus}
+            self._last_assist = {"focus": focus, "submitted": False,
+                                 "error": result["error"], "ts": time.time()}
+            return result
+        if not self.last_state or not self._snapshot.get("connected"):
+            result = {"ok": False, "error": "游戏状态未连接", "focus": focus}
+            self._last_assist = {"focus": focus, "submitted": False,
+                                 "error": result["error"], "ts": time.time()}
+            return result
+        if self.speech.waiting:
+            return {"ok": False, "error": "猫娘正在回应上一条消息", "focus": focus}
+        now = time.time()
+        remaining = float(self.cfg.get("assist_cooldown", 3.0)) - (
+            now - self._last_assist_ts)
+        if remaining > 0:
+            return {"ok": False,
+                    "error": f"请稍等 {remaining:.1f} 秒再请求",
+                    "focus": focus}
+
+        focus_instruction = {
+            "brief": "用一两句点出眼下最值得注意的局面，再给一个可执行的小提醒。",
+            "quest": "结合当前任务资料，明确下一步先做什么；不要把后续步骤一次全念完。",
+            "boss": "围绕当前 Boss 给战前或战中提醒，只说 1~3 条真正相关的信息。",
+            "review": "像并肩打完一局的伙伴那样简短复盘：先接情绪，再指出一个具体得失。",
+        }[focus]
+        facts = self._assist_facts(focus)
+        prompt = "\n".join([
+            "[即时陪玩请求]",
+            f"触发来源：{source}",
+            f"互动焦点：{focus}",
+            focus_instruction,
+            "当前事实：",
+            *[f"- {item}" for item in facts if item],
+            "要求：",
+            "1. 使用宿主当前猫娘人设，自然回应主人，不要自称助手或游戏工具。",
+            "2. 只使用上面的当前事实与任务/Boss资料；没有的信息不要编。",
+            "3. 不报内部字段、坐标、JSON、标题或列表。",
+            "4. 默认 1~3 句；战斗紧张时更短。",
+            f"5. 剧透等级 {int(self.cfg.get('spoiler_level', 1))}，不要提前透露未到剧情。",
+        ])
+        fallback = {
+            "brief": "喵在，先看眼前这一步，别急着抢。",
+            "quest": "先按当前任务提示走，别漏掉旁边的交付点。",
+            "boss": "先稳住，看准一轮起手再决定接还是躲。",
+            "review": "这局先记住这个失误，下一次我们换个节奏。",
+        }[focus]
+        line_id = self.bridge.next_id(f"assist-{focus}")
+        ok = self.speech.speak(prompt, fallback=fallback, line_id=line_id)
+        self._last_assist_ts = now
+        self._last_assist = {
+            "focus": focus, "submitted": bool(ok),
+            "error": "" if ok else self.speech.last_error,
+            "ts": now, "source": source,
+        }
+        self._log.append({
+            "ts": now, "type": "assist_request", "priority": "P1",
+            "focus": focus, "source": source, "submitted": bool(ok),
+            "fallback": fallback,
+            "error": self.speech.last_error if not ok else "",
+        })
+        return {"ok": bool(ok), "focus": focus,
+                "error": "" if ok else self.speech.last_error,
+                "line_id": line_id}
 
     async def capture_and_comment(self, *, force: bool = False) -> Dict[str, Any]:
         """截图并让宿主视觉模型看，再以猫娘人设回应。"""
@@ -584,6 +768,11 @@ class PbzService:
                 "submitted": bool(self._last_vision.get("submitted")),
                 "cooldown": float(self.cfg.get("vision_cooldown", 8.0)),
                 "require_foreground": bool(self.cfg.get("vision_require_foreground", True)),
+            },
+            "assist": {
+                "enabled": bool(self.cfg.get("assist_enabled", True)),
+                "cooldown": float(self.cfg.get("assist_cooldown", 3.0)),
+                **self._last_assist,
             },
             "ui": {
                 "style": str(self.cfg.get("ui_style") or "scroll"),
