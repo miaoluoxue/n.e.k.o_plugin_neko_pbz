@@ -170,7 +170,8 @@ data/
    └─ corrections/*.json
 ```
 
-- API Key 只写入本机 `data/config/llm.json`，不会回传到前端。
+- API Key 只写入本机 `data/config/llm.json`，不会回传到前端；Windows 优先使用
+  DPAPI 保护，受限环境使用非明文本地编码。
 - 截图只来自《影之刃零》窗口，不截桌面，不做持续录屏。
 - 不读取背包、仓库和材料数量。
 - 不修改游戏存档、数值或输入。
@@ -248,9 +249,13 @@ python .\scripts\probe_report.py
 ```powershell
 ruff check .
 python -m pytest -q
+python .\scripts\validate_assets.py
 node --check .\scripts\import_pbz_game_data.js
 node --check .\mod\pbz-neko-companion\main.js
 ```
+
+GitHub Actions 会在 `main` 推送与 Pull Request 上执行相同检查，包括数据 JSON、
+i18n 键一致性、实体 ID 唯一性、面板挂载点和 JavaScript 语法。
 
 知识数据需要随游戏版本更新时：
 

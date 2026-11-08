@@ -2,6 +2,8 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .ruff_cache/
+.ci-pytest/
+.test-*/
 .venv/
 data/config/user.json
 data/config/general.json
@@ -15,5 +17,6 @@ data/knowledge/*.db
 data/knowledge/*.db-*
 data/knowledge/corrections/
 data/knowledge/exports/
+data/diagnostics/
 *.bak
 *.log

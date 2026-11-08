@@ -171,3 +171,32 @@ def test_assist_uses_current_quest_and_host_persona(tmp_path):
         await svc.stop()
 
     asyncio.run(run())
+
+
+def test_event_queue_drops_stale_low_priority_and_prefers_p0(tmp_path):
+    plugin = _Plugin(tmp_path / "data")
+    bridge = tmp_path / "bridge-queue"
+    bridge.mkdir()
+    cfg = {
+        "bridge_dir": str(bridge), "poll_interval": 0.1,
+        "state_stale_seconds": 30, "voice_enabled": True,
+        "spoiler_level": 1, "proactive": True,
+        "boss_advice_min": 1, "boss_advice_max": 3,
+        "quiet_until": 0, "host_reply_timeout": 10,
+        "event_log_limit": 20,
+    }
+    svc = PbzService(plugin, cfg, tmp_path / "data")
+    svc.save_key = "slot:test"
+    now = time.time()
+    svc._enqueue({"type": "zone_change", "ts": now - 30, "data": {}})
+    svc._enqueue({"type": "boss_spawn", "ts": now - 1, "data": {}})
+    svc._enqueue({"type": "critical_hp", "ts": now, "data": {"hp_percent": 12}})
+    assert [item["type"] for item in svc._queue] == ["boss_spawn", "critical_hp"]
+
+    async def run():
+        await svc._process_queue()
+        assert svc._log[-1]["type"] == "critical_hp"
+        assert [item["type"] for item in svc._queue] == ["boss_spawn"]
+        await svc.stop()
+
+    asyncio.run(run())

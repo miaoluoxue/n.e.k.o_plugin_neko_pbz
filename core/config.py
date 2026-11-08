@@ -7,6 +7,8 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Iterable
 
+from .secrets import protect_secret, unprotect_secret
+
 DEFAULTS: Dict[str, Any] = {
     "enabled": True,
     "bridge_dir": "",
@@ -136,6 +138,12 @@ class ConfigStore:
             for key, value in raw.items():
                 if key in DEFAULTS and value is not None:
                     cfg[key] = value
+            if path == self.llm_path and raw.get("llm_api_key_enc"):
+                try:
+                    cfg["llm_api_key"] = unprotect_secret(
+                        str(raw["llm_api_key_enc"]))
+                except (OSError, ValueError):
+                    cfg["llm_api_key"] = ""
         legacy = _read(self.legacy_path)
         if legacy:
             for key, value in legacy.items():
@@ -158,7 +166,13 @@ class ConfigStore:
     def _write_category_files(self, cfg: Dict[str, Any]) -> None:
         buckets: Dict[str, Dict[str, Any]] = {"general": {}, "llm": {}, "ui": {}}
         for key in DEFAULTS:
-            buckets[self._category(key)][key] = cfg.get(key, DEFAULTS[key])
+            value = cfg.get(key, DEFAULTS[key])
+            if key == "llm_api_key":
+                value = ""
+            buckets[self._category(key)][key] = value
+        protected_key = protect_secret(str(cfg.get("llm_api_key") or ""))
+        if protected_key:
+            buckets["llm"]["llm_api_key_enc"] = protected_key
         _write(self.general_path, buckets["general"])
         _write(self.llm_path, buckets["llm"])
         _write(self.ui_path, buckets["ui"])

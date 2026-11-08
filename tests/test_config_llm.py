@@ -25,3 +25,14 @@ def test_llm_settings_roundtrip(tmp_path):
     assert (tmp_path / "config" / "llm.json").exists()
     assert (tmp_path / "config" / "ui.json").exists()
     assert not (tmp_path / "config" / "user.json").exists()
+    raw = (tmp_path / "config" / "llm.json").read_text(encoding="utf-8")
+    assert "sk-test" not in raw
+    assert "llm_api_key_enc" in raw
+
+
+def test_empty_llm_key_is_removed(tmp_path):
+    store = ConfigStore(tmp_path)
+    store.save({"llm_api_key": "sk-secret"})
+    cfg = store.save({"llm_api_key": ""})
+    assert cfg["llm_api_key"] == ""
+    assert store.load()["llm_api_key"] == ""

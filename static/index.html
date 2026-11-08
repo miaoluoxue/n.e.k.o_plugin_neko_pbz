@@ -1107,9 +1107,9 @@ body[data-style="landscape"] .brand-footer::before{
         <article class="card">
           <h3>当前任务 <span class="sub">追踪</span></h3>
           <div class="goal-row">
-            <input id="sessionGoalInput" placeholder="本局目标，例如：推进主线 / 收集三件武器">
-            <button class="primary" id="btnSaveGoal">定目标</button>
-            <button id="btnCompleteGoal">完成</button>
+            <input id="sessionGoalInput" data-i18n-placeholder="goal.placeholder" placeholder="本局目标，例如：推进主线 / 收集三件武器">
+            <button class="primary" id="btnSaveGoal" data-i18n="goal.save">定目标</button>
+            <button id="btnCompleteGoal" data-i18n="goal.complete">完成</button>
           </div>
           <div id="questList" class="quest-list"><div class="empty">还没有读到任务</div></div>
         </article>
@@ -1230,7 +1230,7 @@ body[data-style="landscape"] .brand-footer::before{
           <p class="muted small" style="margin:0 0 9px">检查生命、杀气、敌人、装备、任务和桥接字段。缺失项会明确标出，不用猜测补齐。</p>
           <div id="diagList" class="diag-list"><div class="empty">还没有状态诊断</div></div>
           <div class="actions" style="margin-top:10px">
-            <button id="btnExportDiagnostics">导出诊断报告</button>
+            <button id="btnExportDiagnostics" data-i18n="scan.diagnostics_export">导出诊断报告</button>
           </div>
         </article>
         <article class="card vision-card">
@@ -1290,8 +1290,8 @@ body[data-style="landscape"] .brand-footer::before{
           <div class="kb-stat"><span class="muted">关系</span><b id="kbRelations">0</b></div>
           <div class="kb-stat"><span class="muted">已验证建议</span><b id="kbTips">0</b></div>
           <div class="kb-stat"><span class="muted">待实机核验</span><b id="kbPending">0</b></div>
-          <div class="kb-stat"><span class="muted">玩家实测</span><b id="kbVerified">0</b></div>
-          <div class="kb-stat"><span class="muted">纠错记录</span><b id="kbCorrections">0</b></div>
+          <div class="kb-stat"><span class="muted" data-i18n="knowledge.player_verified">玩家实测</span><b id="kbVerified">0</b></div>
+          <div class="kb-stat"><span class="muted" data-i18n="knowledge.correction_count">纠错记录</span><b id="kbCorrections">0</b></div>
         </div>
         <div id="kbCoverage" class="chips" style="margin-top:12px"></div>
         <div id="kbFilters" class="kb-filters">
@@ -1321,9 +1321,9 @@ body[data-style="landscape"] .brand-footer::before{
         <div id="kbResults" class="kb-grid"><div class="empty">输入关键词，猫娘只给有来源的条目。</div></div>
       </article>
       <article class="card" style="margin-top:14px">
-        <h3>玩家实测 <span class="sub">不会被种子覆盖</span></h3>
+        <h3><span data-i18n="knowledge.player_corrections">玩家实测</span> <span class="sub">不会被种子覆盖</span></h3>
         <div class="actions" style="margin-bottom:10px">
-          <button id="btnLoadCorrections">刷新纠错记录</button>
+          <button id="btnLoadCorrections" data-i18n="knowledge.refresh_corrections">刷新纠错记录</button>
         </div>
         <div id="kbCorrectList" class="kb-grid"><div class="empty">还没有玩家纠错。</div></div>
       </article>
@@ -1764,7 +1764,7 @@ function renderQuests(quests){
     const tasks = (q.tasks || []).map(t => {
       const cur = t.current == null ? '?' : t.current;
       const req = t.required == null ? '?' : t.required;
-      return `${cur}/${req}${t.complete ? ' ✓' : ''}`;
+      return `${t.name ? t.name + ' ' : ''}${cur}/${req}${t.complete ? ' ✓' : ''}`;
     });
     const d = document.createElement('div'); d.className = 'quest';
     d.innerHTML = `<div class="qname"><span>${q.name || q.id || '任务'}</span><span class="muted">${q.state || ''}</span></div>${tasks.length ? `<div class="qtask">${tasks.join(' · ')}</div>` : ''}`;
@@ -2076,6 +2076,10 @@ async function loadI18n(){
       const key = el.dataset.i18n;
       if(bundle[key]) el.textContent = bundle[key];
     });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.dataset.i18nPlaceholder;
+      if(bundle[key]) el.placeholder = bundle[key];
+    });
     document.documentElement.lang = locale;
   }catch(_){ /* 静态预览/旧宿主保持中文回退 */ }
 }
@@ -2189,7 +2193,7 @@ $('btnSearch').onclick = async () => {
       const brief = f.summary || f.guide_note || hints[0] || f.tip || f.use
         || f.category || f.archetype || '';
       const evidence = f._evidence?.status === 'player_verified' ? ' · 玩家实测' : '';
-      return `<div class="kb-item"><div class="t"><span>${x.name || x.id}</span><small>${x.type || ''}</small></div><div class="d">${brief}${evidence}${x.hidden_by_spoiler ? ' · 详细内容被剧透等级隐藏' : ''}</div><button data-kb-correct="${encodeURIComponent(x.id || '')}">记录实测纠错</button></div>`;
+      return `<div class="kb-item"><div class="t"><span>${x.name || x.id}</span><small>${x.type || ''}</small></div><div class="d">${brief}${evidence}${x.hidden_by_spoiler ? ' · 详细内容被剧透等级隐藏' : ''}</div><button data-kb-correct="${encodeURIComponent(x.id || '')}">${tr('knowledge.correct','记录实测纠错')}</button></div>`;
     }).join('');
   }catch(e){ toast('检索失败：' + e.message); }
 };

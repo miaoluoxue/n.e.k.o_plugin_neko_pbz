@@ -41,6 +41,19 @@ function objName(o) {
     return text(safe(() => UE.KismetSystemLibrary.GetObjectName(o), ""))
         .replace(/_C_\d+$/, "").replace(/^Default__/, "");
 }
+function displayName(o, names = []) {
+    for (const name of names) {
+        const value = safe(() => o?.[name], null);
+        if (value) {
+            const plain = text(value);
+            if (plain) return plain;
+            const converted = text(safe(
+                () => UE.KismetTextLibrary.Conv_TextToString(value), ""));
+            if (converted) return converted;
+        }
+    }
+    return "";
+}
 function isValid(o) { return !!o && safe(() => UE.KismetSystemLibrary.IsValid(o), false); }
 function constructTag(name) {
     if (TsHelper && TsHelper.constructGameplayTag) {
@@ -301,7 +314,10 @@ function scanEnemies(character) {
             if (!loc) continue;
             const dist = Math.hypot(loc.X - player.X, loc.Y - player.Y, loc.Z - player.Z) / 100;
             if (dist > 45) continue;
-            const name = objName(actor);
+            const name = displayName(actor, [
+                "MonsterName", "EnemyName", "DisplayName", "CharacterName",
+                "BossName", "Name",
+            ]) || objName(actor);
             const vitals = readVitals(actor, getAsc(actor));
             out.push({
                 id: name, name, archetype: "",
@@ -310,6 +326,10 @@ function scanEnemies(character) {
                 hp_percent: vitals.hp_percent,
                 is_elite: /Elite|精英/i.test(name),
                 is_boss: /Boss|BossName/i.test(name) || /Boss/i.test(entry.name),
+                phase: num(safe(() => actor.BossPhase, null)
+                    ?? safe(() => actor.CurrentPhase, null)
+                    ?? safe(() => actor.Phase, null)
+                    ?? safe(() => actor.PhaseIndex, null)),
                 aggro: true, line_of_sight: true,
             });
             if (out.length >= 12) break;
@@ -344,10 +364,17 @@ function readBell(character) {
         }
     }
     const id = nearby ? nearby.id : "";
+    let name = id;
+    if (id) {
+        const data = safe(() => UE.BellManager.GetBellData(id), null);
+        name = displayName(data, [
+            "BellName", "DisplayName", "Name", "BellTitle",
+        ]) || name;
+    }
     return {
         near: !!nearby && nearby.distance <= 8,
         activated: id ? activated.includes(id) : false,
-        id, name: id,
+        id, name,
         distance: nearby ? Math.round(nearby.distance * 10) / 10 : null,
         activated_ids: activated.slice(0, 32),
     };
@@ -374,12 +401,19 @@ function readQuests() {
                     current: num(safe(() => task.CurrentProgress, null)),
                     required: num(safe(() => task.RequiredQuantity, null)),
                     complete: safe(() => task.IsComplete?.(), null),
+                    name: displayName(task, [
+                        "TaskName", "DisplayName", "Name", "Description",
+                        "TaskDescription", "TaskDesc",
+                    ]),
                 });
             }
         }
         out.push({
             id: objName(quest),
             name: text(safe(() => UE.KismetTextLibrary.Conv_TextToString(quest.GetQuestName()), "")),
+            description: displayName(quest, [
+                "QuestDescription", "Description", "QuestDesc",
+            ]),
             state: safe(() => quest.IsQuestComplete?.(), false) ? "completed" : "active",
             tasks,
         });

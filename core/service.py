@@ -230,9 +230,9 @@ class PbzService:
             self.last_state = state
             self._ensure_session(state)
             for event in self.engine.step(state):
-                self._queue.append(event)
+                self._enqueue(event)
             for event in self.bridge.read_events():
-                self._queue.append(event)
+                self._enqueue(event)
             self._refresh_snapshot(state, connected=True)
         else:
             self._refresh_snapshot(self.last_state, connected=False)
@@ -377,8 +377,10 @@ class PbzService:
                 current = task.get("current")
                 required = task.get("required")
                 if current is not None or required is not None:
-                    tasks.append(f"{current if current is not None else '?'}/"
-                                 f"{required if required is not None else '?'}")
+                    label = str(task.get("name") or "").strip()
+                    progress = (f"{current if current is not None else '?'}/"
+                                f"{required if required is not None else '?'}")
+                    tasks.append(f"{label} {progress}".strip())
             suffix = f"（{'、'.join(tasks)}）" if tasks else ""
             facts.append(f"当前任务：{quest.get('name') or quest.get('id') or ''}{suffix}")
 
@@ -625,12 +627,34 @@ class PbzService:
         self.digest_ts = time.time()
 
     # ── 事件处理 ─────────────────────────
+    def _enqueue(self, event: Dict[str, Any]) -> None:
+        now = time.time()
+        keep = []
+        for item in self._queue:
+            kind = str(item.get("type") or "")
+            age = now - float(item.get("ts") or now)
+            limit = 25.0 if self._priority(kind) == "P0" else (
+                35.0 if self._priority(kind) == "P1" else 10.0)
+            if age <= limit:
+                keep.append(item)
+        keep.append(event)
+        self._queue = deque(keep[-64:], maxlen=64)
+
     async def _process_queue(self) -> None:
         if not self._queue:
             return
         if self.speech.waiting:
             return
-        event = self._queue.popleft()
+        ranked = sorted(
+            enumerate(self._queue),
+            key=lambda pair: (
+                {"P0": 0, "P1": 1, "P2": 2}.get(
+                    self._priority(str(pair[1].get("type") or "")), 2),
+                float(pair[1].get("ts") or 0),
+            ))
+        index, event = ranked[0]
+        rest = [item for current, item in enumerate(self._queue) if current != index]
+        self._queue = deque(rest, maxlen=64)
         kind = str(event.get("type") or "")
         data = event.get("data") or {}
         boss = (self.last_state or {}).get("boss") or {}
