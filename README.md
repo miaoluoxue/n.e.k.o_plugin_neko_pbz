@@ -38,6 +38,9 @@ N.E.K.O 插件 · 游戏状态感知 · 江湖知识库 · 跨会话记忆 · �
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\deploy.ps1
 ```
 
+部署前请关闭《影之刃零》和 N.E.K.O。脚本检测到运行中进程会停止并提示；
+自动化场景确认风险后可显式添加 `-Force`，但运行中的游戏仍需重启后才会加载新 Mod。
+
 3. 启动《影之刃零》，确认 `PBZModLoader` 与 `PBZNekoCompanion` 已加载。
 4. 打开“影帐”面板，确认连接状态与游戏状态正常更新。
 5. 在 N.E.K.O 聊天里直接向猫娘提问或让她陪玩。

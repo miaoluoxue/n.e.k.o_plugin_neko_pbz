@@ -3,7 +3,8 @@
 param(
     [string]$GameRoot = "E:\SteamLibrary\steamapps\common\PBZ",
     [switch]$SkipPlugin,
-    [switch]$SkipMod
+    [switch]$SkipMod,
+    [switch]$Force
 )
 
 $ErrorActionPreference = "Stop"
@@ -12,6 +13,21 @@ $liveRoots = @(
     "C:\Users\10093\AppData\Local\N.E.K.O\.neko-plugin-installations\plugins\neko_pbz",
     "C:\Users\10093\AppData\Local\N.E.K.O\plugins\neko_pbz"
 )
+
+if (-not $Force) {
+    $running = @()
+    if (-not $SkipMod) {
+        $running += @(Get-Process -Name "PBZ" -ErrorAction SilentlyContinue |
+            ForEach-Object { "PBZ ($($_.Id))" })
+    }
+    if (-not $SkipPlugin) {
+        $running += @(Get-Process -Name "N.E.K.O" -ErrorAction SilentlyContinue |
+            ForEach-Object { "N.E.K.O ($($_.Id))" })
+    }
+    if ($running.Count -gt 0) {
+        throw "检测到运行中的进程：$($running -join ', ')。请先关闭游戏和 N.E.K.O，或显式使用 -Force。"
+    }
+}
 
 function Copy-Plugin([string]$dest) {
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
