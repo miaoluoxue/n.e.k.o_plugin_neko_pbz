@@ -122,8 +122,10 @@ function getAsc(character) {
 
 // ── 生命 / 杀气 ────────────────────────────
 const HP_PROPS = ["Health", "Hp", "HP", "CurrentHealth", "CurrentHp"];
-const MAX_HP_PROPS = ["MaxHealth", "MaxHp", "MaximumHealth"];
-const SHACHI_PROPS = ["ShaChi", "Shachi", "ShaQi", "Anger", "Rage", "Energy"];
+const MAX_HP_PROPS = ["Health_Max", "MaxHealth", "MaxHp", "MaximumHealth"];
+const SHACHI_PROPS = ["Shachi", "ShaChi", "ShaQi", "CurrentShachi", "Anger", "Rage"];
+const MAX_SHACHI_PROPS = ["Shachi_Max", "ShaChi_Max", "ShaQi_Max",
+    "MaxShachi", "Anger_Max", "Rage_Max"];
 
 function directProp(obj, names) {
     for (const name of names) {
@@ -139,12 +141,17 @@ function directProp(obj, names) {
     return null;
 }
 function readVitals(character, asc) {
-    const hp = directProp(character, HP_PROPS)
+    const attributeSet = safe(() => character.AttributeSetBase, null);
+    const hp = directProp(attributeSet, HP_PROPS)
+        ?? directProp(character, HP_PROPS)
         ?? safe(() => directProp(character.HealthComponent, HP_PROPS), null);
-    const maxHp = directProp(character, MAX_HP_PROPS)
+    const maxHp = directProp(attributeSet, MAX_HP_PROPS)
+        ?? directProp(character, MAX_HP_PROPS)
         ?? safe(() => directProp(character.HealthComponent, MAX_HP_PROPS), null);
-    let shachi = directProp(character, SHACHI_PROPS);
-    let shachiMax = null;
+    let shachi = directProp(attributeSet, SHACHI_PROPS)
+        ?? directProp(character, SHACHI_PROPS);
+    let shachiMax = directProp(attributeSet, MAX_SHACHI_PROPS)
+        ?? directProp(character, MAX_SHACHI_PROPS);
     if (shachi == null && asc) {
         // 部分版本把资源暴露在 ASC 上；只读常见字段，不做内存猜测。
         shachi = safe(() => directProp(asc, SHACHI_PROPS), null);
@@ -157,6 +164,7 @@ function readVitals(character, asc) {
         probes: {
             hp: hp != null, max_hp: maxHp != null, shachi: shachi != null,
             asc: asc ? objName(asc.GetClass ? asc.GetClass() : asc) : "",
+            attribute_set: attributeSet ? objName(attributeSet.GetClass()) : "",
         },
     };
 }
