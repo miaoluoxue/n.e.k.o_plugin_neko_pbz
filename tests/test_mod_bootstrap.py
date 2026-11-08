@@ -17,3 +17,6 @@ def test_overlay_failure_cannot_block_state_sampling():
     assert "lastCreateAttempt" in overlay
     assert 'bridge + "/" + slot' in main
     assert 'writeFile("game_heartbeat"' in main
+    assert "const ENABLE_OVERLAY = false" in main
+    assert "safeMode: true" in main
+    assert "SAMPLE_INTERVAL_MS = 1000" in main

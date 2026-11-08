@@ -342,12 +342,12 @@ function scanEnemies(character) {
 }
 
 // ── 铃铛 / 任务 / 世界 ────────────────────
-function readBell(character) {
+function readBell(character, safeMode = false) {
     const manager = getSubsystem(UE.BellManager);
     if (!manager) return { near: false, activated: false, id: "", name: "", distance: null };
     const activated = arr(safe(() => manager.ActivateBellIDs, null)).map(text);
     let nearby = null;
-    if (character) {
+    if (character && !safeMode) {
         const player = safe(() => character.K2_GetActorLocation(), null);
         if (player) {
             for (const entry of discoverBellClasses()) {
@@ -429,14 +429,17 @@ function readSave() {
     };
 }
 
-function snapshot() {
+function snapshot(options = {}) {
+    const safeMode = options.safeMode === true;
     const character = getLocalCharacter();
     const asc = getAsc(character);
     const vitals = readVitals(character, asc);
     const deadTag = hasTag(asc, "CharacterState.Death")
         || hasTag(asc, "CharacterState.Dead") || hasTag(asc, "State.Dead");
     const equipment = readEquipment(character);
-    const scanned = scanEnemies(character);
+    const scanned = safeMode
+        ? { enemies: [], boss: null, diagnostics: [] }
+        : scanEnemies(character);
     const camera = safe(() => UE.GameplayStatics.GetPlayerCameraManager(context, 0), null);
     const rot = safe(() => camera.GetCameraRotation(), null);
     const pos = safe(() => character?.K2_GetActorLocation(), null);
@@ -471,8 +474,9 @@ function snapshot() {
         enemies: scanned.enemies,
         boss: scanned.boss,
         quests: readQuests(),
-        bell: readBell(character),
+        bell: readBell(character, safeMode),
         capabilities: {
+            safe_mode: safeMode,
             character: !!character,
             asc: !!asc,
             vitals: vitals.probes,

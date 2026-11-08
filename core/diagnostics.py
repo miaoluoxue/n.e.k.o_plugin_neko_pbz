@@ -19,6 +19,7 @@ def diagnose_state(state: Dict[str, Any]) -> Dict[str, Any]:
     world = state.get("world") or {}
     equipment = player.get("equipment") or {}
     capabilities = state.get("capabilities") or {}
+    safe_mode = bool(capabilities.get("safe_mode"))
     vitals = capabilities.get("vitals") or {}
     equipment_caps = capabilities.get("equipment") or {}
     enemy_classes = capabilities.get("enemy_classes") or []
@@ -43,9 +44,10 @@ def diagnose_state(state: Dict[str, Any]) -> Dict[str, Any]:
         "已读取杀气" if shachi_ok else "未读取到杀气；资源提醒会降级")
     add("world.map", "区域/地图", bool(world.get("id") or world.get("name")),
         "已读取当前区域" if world.get("id") or world.get("name") else "未读取当前区域")
-    add("enemies.classes", "敌人识别", bool(enemy_classes),
-        f"发现 {len(enemy_classes)} 个可疑敌人类" if enemy_classes
-        else "未发现敌人类；前方侦察可能为空")
+    add("enemies.classes", "敌人识别", bool(enemy_classes) or safe_mode,
+        ("安全模式：已暂停全场景敌人扫描" if safe_mode else
+         f"发现 {len(enemy_classes)} 个可疑敌人类" if enemy_classes
+         else "未发现敌人类；前方侦察可能为空"), "info")
     add("equipment.main", "主武器", bool(
         equipment.get("main_weapon") or equipment.get("main_weapons")
         or equipment_caps.get("main_weapon")),
@@ -73,6 +75,7 @@ def diagnose_state(state: Dict[str, Any]) -> Dict[str, Any]:
         "checks": checks,
         "warnings": warnings,
         "probe": {
+            "safe_mode": safe_mode,
             "vitals": vitals,
             "enemy_classes": enemy_classes[:12],
             "equipment": equipment_caps,

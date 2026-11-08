@@ -1893,8 +1893,11 @@ function renderDiagnostics(s){
     const mod = s.game_mod || {};
     const bits = [];
     if(mod.ts) bits.push(`Mod 已运行${mod.state_ready ? ' · 状态文件已写' : ' · 状态文件未确认'}`);
-    if(mod.overlay_ready === false) bits.push('字幕 UI 正在延迟重试');
-    if(mod.overlay_error) bits.push(`Overlay：${mod.overlay_error}`);
+    if(mod.overlay_error === 'disabled-safe-mode') bits.push('安全模式：游戏内字幕暂时关闭');
+    else {
+      if(mod.overlay_ready === false) bits.push('字幕 UI 正在延迟重试');
+      if(mod.overlay_error) bits.push(`Overlay：${mod.overlay_error}`);
+    }
     if(mod.error) bits.push(`Mod 错误：${mod.error}`);
     el.innerHTML = `<div class="empty">${bits.join(' · ') || '还没有状态诊断'}</div>`;
     return;

@@ -24,6 +24,8 @@
   Overlay 改为延迟重试，`state.json` 与 `mod_status.json` 独立写入。
 - **EasyCsv 桥接路径**：修正 `SaveStringToFile` 第二参数必须为目录的问题；
   状态、Mod 状态和游戏心跳改为独立 EasyCsv 槽位，Python 端兼容目录读取。
+- **安全模式**：默认关闭游戏内 UMG 字幕与全场景敌人扫描，以 1 秒频率先稳定传输生命、
+  地图、任务、装备等低风险字段；游戏内字幕改为后续显式开启。
 
 ## v0.1.1
 

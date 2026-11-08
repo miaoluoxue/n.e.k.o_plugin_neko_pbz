@@ -5,12 +5,16 @@ const api = require("./game_api");
 const { Overlay } = require("./ui_bridge");
 
 const bridge = api.bridgeDir();
+// Stability first: arbitrary UMG insertion at MainStart can crash some game
+// builds. The panel only needs the file bridge, so in-game overlay is opt-in.
+const ENABLE_OVERLAY = false;
+const SAMPLE_INTERVAL_MS = 1000;
 let seq = 0;
 let overlay = null;
 let timer = null;
 let heartbeatAt = 0;
 let lastError = "";
-let overlayError = "";
+let overlayError = ENABLE_OVERLAY ? "" : "disabled-safe-mode";
 
 function writeFile(name, body) {
     if (!UE.EasyCsv || typeof UE.EasyCsv.SaveStringToFile !== "function") return false;
@@ -40,11 +44,13 @@ function writeStatus(stateReady) {
 
 function tick() {
     try {
-        ensureOverlay();
-        if (overlay) overlay.tick();
+        if (ENABLE_OVERLAY) {
+            ensureOverlay();
+            if (overlay) overlay.tick();
+        }
         let state;
         try {
-            state = api.snapshot();
+            state = api.snapshot({ safeMode: true });
         } catch (error) {
             lastError = String(error && error.stack || error);
             writeStatus(false);
@@ -83,9 +89,10 @@ function tick() {
 try {
     ensureOverlay();
     tick();
-    timer = setInterval(tick, 250);
+    timer = setInterval(tick, SAMPLE_INTERVAL_MS);
     console.log("[NekoPBZ] ready bridge=" + bridge +
-        " overlay=" + !!overlay?.ready + " overlayError=" + overlayError);
+        " safeMode=true overlay=" + !!overlay?.ready +
+        " overlayError=" + overlayError);
 } catch (error) {
     lastError = String(error && error.stack || error);
     console.error("[NekoPBZ] start failed: " + lastError);
