@@ -158,6 +158,55 @@ class UiMixin:
         })
 
     @plugin_entry(
+        id="pbz_correct_knowledge",
+        name="记录知识纠错",
+        description="把玩家实测写入知识实体，保留旧值、时间和备注。",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "entity_id": {"type": "string"},
+                "field": {"type": "string"},
+                "value": {"type": "string"},
+                "note": {"type": "string"},
+            },
+            "required": ["entity_id", "field", "value"],
+        },
+        metadata={"agent_hidden": True},
+    )
+    async def act_correct_knowledge(self, entity_id: str = "", field: str = "",
+                                    value: str = "", note: str = "",
+                                    **_: Any) -> Any:
+        if not self.service:
+            return Ok({"output": "服务未启动", "data": {"ok": False}})
+        ok = self.service.knowledge.remember_correction(
+            entity_id, field, value, source="player", note=note)
+        return Ok({
+            "output": "纠错已保存" if ok else "纠错保存失败",
+            "data": {"ok": ok},
+        })
+
+    @plugin_entry(
+        id="pbz_list_corrections",
+        name="查看知识纠错",
+        description="返回最近的玩家实测纠错记录。",
+        input_schema={
+            "type": "object",
+            "properties": {"limit": {"type": "integer"}},
+        },
+        metadata={"agent_hidden": True},
+    )
+    async def act_list_corrections(self, limit: int = 20, **_: Any) -> Any:
+        if not self.service:
+            return Ok({"output": "服务未启动", "data": {"items": []}})
+        items = self.service.knowledge.list_corrections(
+            limit=max(1, min(int(limit or 20), 100)))
+        for item in items:
+            entity = self.service.knowledge.get(
+                str(item.get("entity_id") or ""), spoiler_level=99)
+            item["entity_name"] = (entity or {}).get("name") or item.get("entity_id")
+        return Ok({"output": f"{len(items)} 条纠错", "data": {"items": items}})
+
+    @plugin_entry(
         id="pbz_export_memory",
         name="导出忆卷",
         description="把当前存档的 Boss、会话、事实、偏好与约定导出到 data/memory/exports。",

@@ -135,6 +135,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\deploy.ps1
 每种实体保留来源、剧透等级、置信度和可核验事实。玩家纠正保存在
 `data/knowledge/corrections/`，种子升级后会重新应用。
 
+百晓页支持“记录实测纠错”：保存实体字段、玩家实测值、原值、测试备注和时间。
+有玩家证据的条目会显示“玩家实测”，知识重载不会覆盖。聊天里也可以要求
+“记住这个 Boss 的实际招式”或“更正这条任务资料”。
+
 知识数据位于 `data/knowledge/`，来源说明见
 [sources.json](data/knowledge/sources.json)。
 

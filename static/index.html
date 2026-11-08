@@ -260,6 +260,7 @@ button.danger{border-color:rgba(182,70,62,.45);color:#efb0a8;background:rgba(182
 .kb-item .t{display:flex;justify-content:space-between;gap:8px;font-size:13px}
 .kb-item .t small{color:var(--gold);font-size:9px;letter-spacing:.12em}
 .kb-item .d{color:var(--muted);font-size:11px;margin-top:5px}
+.kb-item button{margin-top:8px;padding:5px 9px;font-size:10px;border-radius:999px}
 
 /* ── forms ── */
 .field{display:block;margin-bottom:12px}
@@ -1289,6 +1290,8 @@ body[data-style="landscape"] .brand-footer::before{
           <div class="kb-stat"><span class="muted">关系</span><b id="kbRelations">0</b></div>
           <div class="kb-stat"><span class="muted">已验证建议</span><b id="kbTips">0</b></div>
           <div class="kb-stat"><span class="muted">待实机核验</span><b id="kbPending">0</b></div>
+          <div class="kb-stat"><span class="muted">玩家实测</span><b id="kbVerified">0</b></div>
+          <div class="kb-stat"><span class="muted">纠错记录</span><b id="kbCorrections">0</b></div>
         </div>
         <div id="kbCoverage" class="chips" style="margin-top:12px"></div>
         <div id="kbFilters" class="kb-filters">
@@ -1316,6 +1319,13 @@ body[data-style="landscape"] .brand-footer::before{
           <button id="btnReloadKB">重载种子</button>
         </div>
         <div id="kbResults" class="kb-grid"><div class="empty">输入关键词，猫娘只给有来源的条目。</div></div>
+      </article>
+      <article class="card" style="margin-top:14px">
+        <h3>玩家实测 <span class="sub">不会被种子覆盖</span></h3>
+        <div class="actions" style="margin-bottom:10px">
+          <button id="btnLoadCorrections">刷新纠错记录</button>
+        </div>
+        <div id="kbCorrectList" class="kb-grid"><div class="empty">还没有玩家纠错。</div></div>
       </article>
     </section>
 
@@ -1633,6 +1643,8 @@ function renderKB(s){
   $('kbRelations').textContent = k.relations ?? 0;
   $('kbTips').textContent = k.tips ?? 0;
   $('kbPending').textContent = k.unverified_tips ?? 0;
+  $('kbVerified').textContent = k.player_verified ?? 0;
+  $('kbCorrections').textContent = k.corrections ?? 0;
   const labels = {
     boss:tr('knowledge.boss','Boss'),
     quest:tr('knowledge.quest','任务'),
@@ -2176,10 +2188,27 @@ $('btnSearch').onclick = async () => {
       const hints = Array.isArray(f.acquisition_hints) ? f.acquisition_hints : [];
       const brief = f.summary || f.guide_note || hints[0] || f.tip || f.use
         || f.category || f.archetype || '';
-      return `<div class="kb-item"><div class="t"><span>${x.name || x.id}</span><small>${x.type || ''}</small></div><div class="d">${brief}${x.hidden_by_spoiler ? ' · 详细内容被剧透等级隐藏' : ''}</div></div>`;
+      const evidence = f._evidence?.status === 'player_verified' ? ' · 玩家实测' : '';
+      return `<div class="kb-item"><div class="t"><span>${x.name || x.id}</span><small>${x.type || ''}</small></div><div class="d">${brief}${evidence}${x.hidden_by_spoiler ? ' · 详细内容被剧透等级隐藏' : ''}</div><button data-kb-correct="${encodeURIComponent(x.id || '')}">记录实测纠错</button></div>`;
     }).join('');
   }catch(e){ toast('检索失败：' + e.message); }
 };
+$('kbResults').addEventListener('click', async e => {
+  const btn = e.target.closest('[data-kb-correct]');
+  if(!btn) return;
+  const entityId = decodeURIComponent(btn.dataset.kbCorrect || '');
+  const field = prompt('要纠正哪个字段？例如 summary、guide_note、recommended_defense', 'summary');
+  if(!field) return;
+  const value = prompt('填写玩家实测内容：');
+  if(!value) return;
+  const note = prompt('测试条件或证据（可留空）：', '') || '';
+  try{
+    const r = await callEntry('pbz_correct_knowledge', {entity_id:entityId, field, value, note});
+    toast(r.output || '纠错已保存');
+    await refresh();
+    $('btnLoadCorrections').click();
+  }catch(err){ toast('纠错保存失败：' + err.message); }
+});
 document.querySelectorAll('#kbFilters button').forEach(btn => {
   btn.onclick = () => {
     document.querySelectorAll('#kbFilters button').forEach(b => b.classList.remove('active'));
@@ -2194,6 +2223,34 @@ $('kbQuery').addEventListener('keydown', e => { if(e.key === 'Enter') $('btnSear
 $('btnReloadKB').onclick = async () => {
   try{ const r = await callEntry('pbz_reload_knowledge', {}); toast(r.output || '已重载'); await refresh(); }
   catch(e){ toast('重载失败：' + e.message); }
+};
+$('btnLoadCorrections').onclick = async () => {
+  try{
+    const r = await callEntry('pbz_list_corrections', {limit:40});
+    const items = (r.data && r.data.items) || [];
+    const el = $('kbCorrectList');
+    el.innerHTML = '';
+    if(!items.length){
+      el.innerHTML = '<div class="empty">还没有玩家纠错。</div>';
+      return;
+    }
+    items.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'kb-item';
+      const title = document.createElement('div');
+      title.className = 't';
+      const name = document.createElement('span');
+      name.textContent = item.entity_name || item.entity_id || '未知实体';
+      const field = document.createElement('small');
+      field.textContent = item.field || '';
+      title.append(name, field);
+      const detail = document.createElement('div');
+      detail.className = 'd';
+      detail.textContent = `实测：${item.value ?? ''} · 原值：${item.before_value ?? '无'}${item.note ? ' · ' + item.note : ''}`;
+      row.append(title, detail);
+      el.appendChild(row);
+    });
+  }catch(e){ toast('纠错记录加载失败：' + e.message); }
 };
 $('btnRefreshMemory').onclick = refresh;
 $('btnExportMemory').onclick = async () => {

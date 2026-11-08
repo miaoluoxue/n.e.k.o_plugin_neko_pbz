@@ -312,6 +312,76 @@ class ToolMixin:
         return Ok({"output": "；".join(out)})
 
     @llm_tool(
+        name="pbz_correct_knowledge",
+        description="把玩家实测写成知识纠错，记录实体、字段、旧值、时间和备注；种子升级后仍会保留。",
+        parameters={
+            "type": "object",
+            "properties": {
+                "entity": {"type": "string", "description": "实体名称或 ID"},
+                "field": {"type": "string", "description": "字段，如 guide_note、recommended_defense、summary"},
+                "value": {"type": "string", "description": "玩家实测内容"},
+                "note": {"type": "string", "description": "证据或测试条件，可选"},
+            },
+            "required": ["entity", "field", "value"],
+        },
+    )
+    async def tool_pbz_correct_knowledge(self, entity: str = "", field: str = "",
+                                         value: str = "", note: str = "",
+                                         **_: Any) -> Any:
+        if not self.service:
+            return Ok({"output": "知识库未启动。"})
+        key = str(entity or "").strip()
+        if not key or not str(value or "").strip():
+            return Ok({"output": "需要实体名称和实测内容。"})
+        target = self.service.knowledge.get(key, spoiler_level=99)
+        if not target:
+            rows = self.service.knowledge.search(key, limit=5, spoiler_level=99)
+            if len(rows) > 1:
+                names = "、".join(f"{row.get('name')}（{row.get('id')}）" for row in rows)
+                return Ok({"output": f"「{key}」匹配到多个条目，请用 ID 指定：{names}"})
+            target = rows[0] if rows else None
+        if not target:
+            return Ok({"output": f"知识库里没有「{key}」。"})
+        ok = self.service.knowledge.remember_correction(
+            str(target["id"]), field, value, source="player", note=note)
+        if not ok:
+            return Ok({"output": "纠错没有保存；检查字段名后重试。"})
+        return Ok({
+            "output": f"已记录玩家实测：{target['name']} · {field} = {value}",
+            "data": {
+                "entity_id": target["id"],
+                "entity_name": target.get("name"),
+                "field": field,
+                "value": value,
+                "note": note,
+            },
+        })
+
+    @llm_tool(
+        name="pbz_list_corrections",
+        description="查看最近的玩家实测纠错，包含实体、字段、旧值、新值和时间。",
+        parameters={
+            "type": "object",
+            "properties": {"limit": {"type": "integer"}},
+        },
+    )
+    async def tool_pbz_list_corrections(self, limit: int = 10, **_: Any) -> Any:
+        if not self.service:
+            return Ok({"output": "知识库未启动。"})
+        items = self.service.knowledge.list_corrections(limit=max(1, min(limit, 30)))
+        if not items:
+            return Ok({"output": "还没有玩家实测纠错。"})
+        lines = []
+        for item in items:
+            entity = self.service.knowledge.get(
+                str(item.get("entity_id") or ""), spoiler_level=99)
+            name = (entity or {}).get("name") or item.get("entity_id")
+            lines.append(
+                f"{name} · {item.get('field')}：{item.get('value')}"
+                f"（原 {item.get('before_value')}）")
+        return Ok({"output": "\n".join(lines), "data": {"items": items}})
+
+    @llm_tool(
         name="pbz_quest_info",
         description="查询任务的分步目标、区域、前置、失败提醒与奖励。留空时读取当前任务；也可传任务名。",
         parameters={

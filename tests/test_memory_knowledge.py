@@ -100,9 +100,13 @@ def test_player_corrections_survive_seed_refresh(tmp_path):
     refreshed = KnowledgeStore(tmp_path / "correct.db", SEED, corrections_dir=corrections)
     refreshed.load_seed(SEED)
     assert refreshed.apply_corrections() >= 1
-    assert refreshed.get("boss.ah_hua", spoiler_level=2)["facts"]["summary"] == (
-        "玩家核对后的首领信息"
-    )
+    item = refreshed.get("boss.ah_hua", spoiler_level=2)
+    assert item["facts"]["summary"] == "玩家核对后的首领信息"
+    assert item["facts"]["_evidence"]["status"] == "player_verified"
+    assert refreshed.stats()["corrections"] == 1
+    assert refreshed.stats()["player_verified"] == 1
+    rows = refreshed.list_corrections()
+    assert "before_value" in rows[0]
     refreshed.close()
 
 

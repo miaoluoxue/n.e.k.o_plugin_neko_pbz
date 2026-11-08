@@ -154,7 +154,25 @@ class KnowledgeStore:
                     if not entity:
                         continue
                     facts = dict(entity.get("facts") or {})
+                    evidence = dict(facts.get("_evidence") or {})
                     facts[field] = item["value"]
+                    evidence.update({
+                        "status": "player_verified",
+                        "source": str(item.get("source") or "player"),
+                        "verified_at": float(item.get("ts") or time.time()),
+                        "note": str(item.get("note") or evidence.get("note") or ""),
+                        "before_value": item.get("before_value"),
+                    })
+                    history = list(evidence.get("history") or [])
+                    history.append({
+                        "field": field,
+                        "value": item["value"],
+                        "before_value": item.get("before_value"),
+                        "source": str(item.get("source") or "player"),
+                        "ts": float(item.get("ts") or time.time()),
+                    })
+                    evidence["history"] = history[-12:]
+                    facts["_evidence"] = evidence
                     self.db.execute(
                         """UPDATE entities SET facts_json=?, confidence=1, source=?, updated_at=?
                            WHERE id=?""",
@@ -293,12 +311,18 @@ class KnowledgeStore:
 
     def stats(self) -> Dict[str, Any]:
         with self._lock:
+            corrections = self.list_corrections(limit=100000)
             return {
                 "entities": self.db.execute("SELECT COUNT(*) c FROM entities").fetchone()["c"],
                 "relations": self.db.execute("SELECT COUNT(*) c FROM relations").fetchone()["c"],
                 "tips": self.db.execute("SELECT COUNT(*) c FROM tips WHERE verified=1").fetchone()["c"],
                 "unverified_tips": self.db.execute(
                     "SELECT COUNT(*) c FROM tips WHERE verified=0").fetchone()["c"],
+                "corrections": len(corrections),
+                "player_verified": len({
+                    str(item.get("entity_id") or "") for item in corrections
+                    if item.get("entity_id")
+                }),
             }
 
     def coverage(self) -> Dict[str, int]:
@@ -309,21 +333,48 @@ class KnowledgeStore:
         return {str(r["type"]): int(r["c"]) for r in rows}
 
     def remember_correction(self, entity_id: str, field: str, value: Any,
-                            *, source: str = "player") -> None:
+                            *, source: str = "player", note: str = "") -> bool:
         if not self.corrections_dir or not entity_id:
-            return
+            return False
+        field = str(field or "").strip()
+        if not field or field.startswith("_") or len(field) > 80:
+            return False
+        applied = False
         with self._lock:
             entity = self.get(entity_id, spoiler_level=99)
             if entity:
                 facts = dict(entity.get("facts") or {})
+                before = facts.get(field)
+                evidence = dict(facts.get("_evidence") or {})
+                now = time.time()
+                history = list(evidence.get("history") or [])
+                history.append({
+                    "field": field,
+                    "value": value,
+                    "before_value": before,
+                    "source": source,
+                    "ts": now,
+                })
+                evidence.update({
+                    "status": "player_verified",
+                    "source": source,
+                    "verified_at": now,
+                    "note": str(note or ""),
+                    "before_value": before,
+                    "history": history[-12:],
+                })
                 facts[field] = value
+                facts["_evidence"] = evidence
                 self.db.execute(
                     """UPDATE entities SET facts_json=?, confidence=1, source=?, updated_at=?
                        WHERE id=?""",
-                    (json.dumps(facts, ensure_ascii=False), source, time.time(),
+                    (json.dumps(facts, ensure_ascii=False), source, now,
                      entity.get("id") or entity_id),
                 )
                 self.db.commit()
+                applied = True
+        if not applied:
+            return False
         safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", entity_id)[:80] or "entity"
         path = self.corrections_dir / f"{safe}.json"
         with self._lock:
@@ -335,7 +386,23 @@ class KnowledgeStore:
                 items = []
             items.append({
                 "entity_id": entity_id, "field": field, "value": value,
-                "source": source, "ts": time.time(),
+                "before_value": before, "note": note, "source": source,
+                "ts": time.time(),
             })
             path.write_text(json.dumps(items, ensure_ascii=False, indent=2) + "\n",
                             encoding="utf-8")
+        return True
+
+    def list_corrections(self, *, limit: int = 50) -> List[Dict[str, Any]]:
+        if not self.corrections_dir or not self.corrections_dir.exists():
+            return []
+        items: List[Dict[str, Any]] = []
+        for path in sorted(self.corrections_dir.glob("*.json")):
+            try:
+                raw = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                continue
+            if isinstance(raw, list):
+                items.extend(item for item in raw if isinstance(item, dict))
+        items.sort(key=lambda item: float(item.get("ts") or 0), reverse=True)
+        return items[:max(0, int(limit))]
