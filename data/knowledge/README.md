@@ -21,15 +21,10 @@
 所有 `seed*.json` 在启动时导入 SQLite；每次升级种子会刷新默认数据，
 玩家纠正保存在 `corrections/`，启动和“重载种子”后会重新应用到数据库。
 
-## 刷新
+## 更新
 
-```powershell
-node ..\..\scripts\import_pbz_game_data.js
-node ..\..\scripts\import_pbz_game_data.js --game "D:\Games\PBZ"
-```
-
-导入器只读取本机安装目录并生成上述结构化 JSON；插件运行时不需要 Node。
-只保留紧凑事实，不复制安装包脚本、二进制资源或攻略全文。
+知识数据以当前目录中的 `seed*.json` 为准，由维护者直接更新，并通过测试校验。
+插件运行时不需要 Node，也不会读取游戏安装目录中的脚本或二进制资源。
 
 ## 实体格式
 

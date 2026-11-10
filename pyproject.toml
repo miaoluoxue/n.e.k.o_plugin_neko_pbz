@@ -1,0 +1,36 @@
+[project]
+name = "neko_pbz"
+version = "0.0.3"
+description = "N.E.K.O companion plugin for Phantom Blade Zero."
+requires-python = ">=3.11"
+license = "Apache-2.0"
+dependencies = []
+
+[tool.neko.build]
+exclude_dirs = [
+    ".github",
+    ".vscode",
+    ".venv",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".release-check",
+    ".smoke-*",
+    ".test-*",
+    "tests",
+    "game_bundle/tools",
+    "game_bundle/runtime",
+]
+exclude_files = [
+    ".gitignore",
+    "README.md",
+    "pyproject.toml",
+    "pytest.ini",
+    "ruff.toml",
+    "LICENSE",
+    "docs/HOST-INTEGRATION.md",
+    "docs/ONE-CLICK-INSTALL.md",
+    "data/knowledge/README.md",
+    "game_bundle/README.md",
+    "*.neko-plugin",
+    "*.neko-bundle",
+]

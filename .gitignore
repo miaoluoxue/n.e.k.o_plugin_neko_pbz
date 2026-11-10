@@ -4,8 +4,14 @@ __pycache__/
 .ruff_cache/
 .ci-pytest/
 .test-*/
+.smoke-*/
+.release-check/
 dist/
 .venv/
+store.db
+*.neko-plugin
+*.neko-bundle
+game_bundle/runtime/
 data/config/user.json
 data/config/general.json
 data/config/llm.json

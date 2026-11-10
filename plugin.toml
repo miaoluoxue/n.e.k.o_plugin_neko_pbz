@@ -1,10 +1,11 @@
 [plugin]
 id = "neko_pbz"
+type = "plugin"
 name = "影之刃零 · 猫娘陪玩"
 description = "让宿主猫娘陪主人玩《影之刃零》：读取当前局面、Boss/小怪/铃铛/任务，结合跨会话记忆陪聊、提醒与战前建议；独立 LLM 负责记忆整理，影帐面板负责状态与配置。只读当前装备，不读取背包，不改游戏存档。"
 short_description = "Phantom Blade Zero companion with host persona, memory and read-only game awareness."
 keywords = ["影之刃零", "Phantom Blade Zero", "PBZ", "陪玩", "猫娘", "铃铛", "铸魂", "杀气", "影之武装"]
-version = "0.2.0"
+version = "0.0.3"
 entry = "plugin.plugins.neko_pbz:NekoPbzPlugin"
 
 [plugin.author]
@@ -38,6 +39,6 @@ permissions = ["state:read", "action:call"]
 [[plugin.ui.guide]]
 id = "guide"
 title = "使用指南"
-entry = "docs/guide.md"
+entry = "docs/ui/guide.md"
 mode = "markdown"
 permissions = ["state:read"]

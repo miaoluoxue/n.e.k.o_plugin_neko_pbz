@@ -12,11 +12,16 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
+import tempfile
 import threading
 import time
+import urllib.request
+import zipfile
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, Iterable, Iterator, List
 
 APP_ID = "4115450"
 GAME_DIR_NAME = "PBZ"
@@ -24,6 +29,9 @@ OWN_JS = Path("ProjectPBZ/Content/JavaScript/PBZModLoader/generated-mods/"
               "pbz-neko-companion")
 OWN_JS_LEGACY = Path("ProjectPBZ/PBZModLoader/mods/pbz-neko-companion")
 OWN_LUA = Path("platform/steam/ue4ss/Mods/PBZNekoCompanion")
+RUNTIME_MANIFEST = Path("game_bundle/runtime-manifest.json")
+MAX_RUNTIME_ARCHIVE_BYTES = 64 * 1024 * 1024
+MAX_RUNTIME_EXPANDED_BYTES = 128 * 1024 * 1024
 
 
 class GameInstallError(RuntimeError):
@@ -53,6 +61,46 @@ def _dedupe(paths: Iterable[tuple[Path, str]]) -> List[tuple[Path, str]]:
     return out
 
 
+def _download_runtime_archive(url: str, destination: Path) -> None:
+    request = urllib.request.Request(
+        url, headers={"User-Agent": "neko_pbz-runtime-installer/1"}
+    )
+    total = 0
+    with urllib.request.urlopen(request, timeout=60) as response:
+        with destination.open("wb") as handle:
+            while chunk := response.read(1024 * 1024):
+                total += len(chunk)
+                if total > MAX_RUNTIME_ARCHIVE_BYTES:
+                    raise GameInstallError("UE4SS 运行时下载文件过大")
+                handle.write(chunk)
+
+
+def _extract_runtime_archive(archive: Path, destination: Path) -> None:
+    destination.mkdir(parents=True, exist_ok=True)
+    root = destination.resolve()
+    expanded = 0
+    with zipfile.ZipFile(archive) as bundle:
+        for info in bundle.infolist():
+            member = Path(info.filename)
+            if member.is_absolute() or ".." in member.parts:
+                raise GameInstallError("UE4SS 运行时压缩包包含不安全路径")
+            mode = (info.external_attr >> 16) & 0xFFFF
+            if stat.S_ISLNK(mode):
+                raise GameInstallError("UE4SS 运行时压缩包不能包含符号链接")
+            expanded += info.file_size
+            if expanded > MAX_RUNTIME_EXPANDED_BYTES:
+                raise GameInstallError("UE4SS 运行时解压后体积过大")
+            target = (destination / member).resolve()
+            if not target.is_relative_to(root):
+                raise GameInstallError("UE4SS 运行时压缩包路径越界")
+            if info.is_dir():
+                target.mkdir(parents=True, exist_ok=True)
+                continue
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with bundle.open(info) as source, target.open("wb") as output:
+                shutil.copyfileobj(source, output)
+
+
 class GameInstaller:
     def __init__(self, plugin_root: Path | str, data_root: Path | str,
                  configured_root: str = "", bridge_root: str = "") -> None:
@@ -64,9 +112,16 @@ class GameInstaller:
             else Path(os.environ.get("LOCALAPPDATA", ""))
             / "ProjectPBZ" / "Saved" / "NekoBridge"
         )
-        self.vendor = self.plugin_root / "installer" / "vendor" / "ue4ss"
-        self.js_source = self.plugin_root / "mod" / "pbz-neko-companion"
-        self.lua_source = self.plugin_root / "mod" / "lua" / "PBZNekoCompanion"
+        self.runtime = self.plugin_root / "game_bundle" / "runtime"
+        self.runtime_manifest = self.plugin_root / RUNTIME_MANIFEST
+        self.js_source = (
+            self.plugin_root / "game_bundle" / "mod" / "js"
+            / "pbz-neko-companion"
+        )
+        self.lua_source = (
+            self.plugin_root / "game_bundle" / "mod" / "lua"
+            / "PBZNekoCompanion"
+        )
         self._lock = threading.Lock()
         self._status_cache: tuple[float, str, Dict[str, Any]] | None = None
 
@@ -202,17 +257,75 @@ class GameInstaller:
         except (OSError, subprocess.SubprocessError):
             return False
 
-    def _vendor_ready(self) -> tuple[bool, str]:
-        required = (
-            self.vendor / "dwmapi.dll",
-            self.vendor / "version.dll",
-            self.vendor / "ue4ss" / "UE4SS.dll",
-            self.js_source / "main.js",
-            self.js_source / "game_api.js",
-            self.lua_source / "Scripts" / "main.lua",
-        )
-        missing = [str(path) for path in required if not path.is_file()]
+    def _load_runtime_manifest(self) -> Dict[str, Any]:
+        try:
+            manifest = json.loads(
+                self.runtime_manifest.read_text(encoding="utf-8")
+            )
+        except (OSError, ValueError) as exc:
+            raise GameInstallError(f"无法读取 UE4SS 运行时清单：{exc}") from exc
+        url = str(manifest.get("url") or "")
+        digest = str(manifest.get("sha256") or "").upper()
+        size = manifest.get("size")
+        if not url.startswith("https://"):
+            raise GameInstallError("UE4SS 运行时下载地址必须使用 HTTPS")
+        if re.fullmatch(r"[0-9A-F]{64}", digest) is None:
+            raise GameInstallError("UE4SS 运行时清单 SHA-256 无效")
+        if not isinstance(size, int) or not 0 < size <= MAX_RUNTIME_ARCHIVE_BYTES:
+            raise GameInstallError("UE4SS 运行时清单文件大小无效")
+        return {**manifest, "url": url, "sha256": digest, "size": size}
+
+    def _local_runtime_ready(self) -> bool:
+        return all(path.is_file() for path in (
+            self.runtime / "dwmapi.dll",
+            self.runtime / "version.dll",
+            self.runtime / "ue4ss" / "UE4SS.dll",
+        ))
+
+    def _runtime_ready(self) -> tuple[bool, str]:
+        try:
+            self._load_runtime_manifest()
+        except GameInstallError as exc:
+            return False, str(exc)
+        if self.runtime.exists() and not self._local_runtime_ready():
+            return False, f"本地 UE4SS 运行时目录不完整：{self.runtime}"
+        missing = [
+            str(path)
+            for path in (
+                self.js_source / "main.js",
+                self.js_source / "game_api.js",
+                self.lua_source / "Scripts" / "main.lua",
+            )
+            if not path.is_file()
+        ]
         return not missing, ", ".join(missing)
+
+    @contextmanager
+    def _runtime_source(self) -> Iterator[Path]:
+        if self._local_runtime_ready():
+            yield self.runtime
+            return
+        manifest = self._load_runtime_manifest()
+        with tempfile.TemporaryDirectory(prefix="neko_pbz_runtime_") as temp:
+            archive = Path(temp) / "runtime.zip"
+            _download_runtime_archive(manifest["url"], archive)
+            if archive.stat().st_size != manifest["size"]:
+                raise GameInstallError("UE4SS 运行时文件大小与清单不一致")
+            if _sha256(archive) != manifest["sha256"]:
+                raise GameInstallError("UE4SS 运行时 SHA-256 校验失败")
+            extracted = Path(temp) / "runtime"
+            _extract_runtime_archive(archive, extracted)
+            required = (
+                extracted / "dwmapi.dll",
+                extracted / "version.dll",
+                extracted / "ue4ss" / "UE4SS.dll",
+            )
+            missing = [str(path) for path in required if not path.is_file()]
+            if missing:
+                raise GameInstallError(
+                    "UE4SS 运行时缺少必要文件：" + ", ".join(missing)
+                )
+            yield extracted
 
     def status(self, selected: str = "") -> Dict[str, Any]:
         cache_key = str(selected or self.configured_root or "")
@@ -225,7 +338,7 @@ class GameInstaller:
         valid = [item for item in roots if item["valid"]]
         recommended = valid[0]["path"] if valid else ""
         root = Path(recommended) if recommended else None
-        vendor_ok, vendor_error = self._vendor_ready()
+        vendor_ok, vendor_error = self._runtime_ready()
         result = {
             "ok": bool(recommended),
             "game_root": recommended,
@@ -234,6 +347,7 @@ class GameInstaller:
             "game_running": self.game_running(),
             "vendor_ready": vendor_ok,
             "vendor_error": vendor_error,
+            "runtime_local": self._local_runtime_ready(),
             "ue4ss_present": bool(root and (
                 root / "platform" / "steam" / "ue4ss" / "UE4SS.dll"
             ).is_file()),
@@ -312,7 +426,7 @@ class GameInstaller:
             game_root = Path(valid[0]["path"])
             if self.game_running():
                 raise GameInstallError("请先关闭《影之刃零》再安装游戏侧组件")
-            vendor_ok, vendor_error = self._vendor_ready()
+            vendor_ok, vendor_error = self._runtime_ready()
             if not vendor_ok:
                 raise GameInstallError(
                     "插件包内游戏侧文件不完整：" + vendor_error)
@@ -337,22 +451,23 @@ class GameInstaller:
             ue4ss_dir = steam_dir / "ue4ss"
             ue4ss_present = (ue4ss_dir / "UE4SS.dll").is_file()
             if not ue4ss_present:
-                if ue4ss_dir.exists() and any(ue4ss_dir.iterdir()):
-                    raise GameInstallError(
-                        "检测到不完整的 UE4SS 目录，未覆盖现有文件")
-                for proxy in ("dwmapi.dll", "version.dll"):
-                    source = self.vendor / proxy
-                    target = steam_dir / proxy
-                    if target.exists() and _sha256(source) != _sha256(target):
+                with self._runtime_source() as runtime_source:
+                    if ue4ss_dir.exists() and any(ue4ss_dir.iterdir()):
                         raise GameInstallError(
-                            f"现有 {proxy} 与插件内置版本不同，"
-                            "为保护其他 Mod 已停止安装")
-                self._copy_tree(self.vendor / "ue4ss", ue4ss_dir)
-                for proxy in ("dwmapi.dll", "version.dll"):
-                    source = self.vendor / proxy
-                    target = steam_dir / proxy
-                    if not target.exists():
-                        shutil.copy2(source, target)
+                            "检测到不完整的 UE4SS 目录，未覆盖现有文件")
+                    for proxy in ("dwmapi.dll", "version.dll"):
+                        source = runtime_source / proxy
+                        target = steam_dir / proxy
+                        if target.exists() and _sha256(source) != _sha256(target):
+                            raise GameInstallError(
+                                f"现有 {proxy} 与运行时版本不同，"
+                                "为保护其他 Mod 已停止安装")
+                    self._copy_tree(runtime_source / "ue4ss", ue4ss_dir)
+                    for proxy in ("dwmapi.dll", "version.dll"):
+                        source = runtime_source / proxy
+                        target = steam_dir / proxy
+                        if not target.exists():
+                            shutil.copy2(source, target)
 
             js_target = game_root / OWN_JS
             legacy_target = game_root / OWN_JS_LEGACY

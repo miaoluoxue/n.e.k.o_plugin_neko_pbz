@@ -1,7 +1,7 @@
 # 与 N.E.K.O 现有插件保持一致的规则集
 target-version = "py311"
 line-length = 120
-extend-exclude = ["vendor", "mod", "static"]
+extend-exclude = ["game_bundle", "static"]
 respect-gitignore = false
 
 [lint]

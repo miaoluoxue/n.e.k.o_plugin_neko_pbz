@@ -19,7 +19,7 @@ N.E.K.O 宿主
 │  └─ shutdown：停止任务、会话、SQLite 与心跳
 ├─ 静态 UI
 │  ├─ static/index.html：影帐面板
-│  └─ docs/guide.md：使用指南
+│  └─ docs/ui/guide.md：简短使用指南
 ├─ @plugin_entry
 │  ├─ 状态/设置/知识/记忆/即时陪玩
 │  └─ 游戏目录检测与一键安装
@@ -124,14 +124,14 @@ F11、面板视觉侦察和 `pbz_look` 工具会：
 | 游戏窗口截图 | 屏幕捕获 | 视觉侦察 | 只截 PBZ 窗口，默认要求前台 |
 | Windows DPAPI | 当前用户加密 | 保护独立 LLM API Key | `CryptProtectData` |
 | SQLite | 本地读写 | 知识库与检索 | 数据库在插件数据目录 |
-| 外网 HTTPS | 可选 | 独立 LLM | 仅用户启用独立 LLM 时 |
+| 外网 HTTPS | 按需 | UE4SS 运行时下载、独立 LLM | 安装缺少的运行时或启用独立 LLM 时 |
 
 ## 游戏侧一键安装权限
 
 “调息 → 游戏侧组件 → 一键安装”会执行以下受控写入：
 
 - 创建 `_neko_pbz_backup/<时间戳>`；
-- 仅在缺少 `UE4SS.dll` 时复制随插件发布的 UE4SS；
+- 仅在缺少 `UE4SS.dll` 时下载固定版本，并在 SHA-256 校验通过后安装；
 - 仅在代理 DLL 缺失且无冲突时写入 `dwmapi.dll`、`version.dll`；
 - 更新本插件自己的 JS/Lua Mod 目录；
 - 向 `generated-config.js` 插入本插件条目；

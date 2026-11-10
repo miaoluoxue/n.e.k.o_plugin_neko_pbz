@@ -202,7 +202,8 @@ Module._load = function load(request, parent, isMain) {
 
 try {
     const apiPath = path.join(
-        __dirname, "..", "mod", "pbz-neko-companion", "game_api.js");
+        __dirname, "..", "game_bundle", "mod", "js",
+        "pbz-neko-companion", "game_api.js");
     delete require.cache[require.resolve(apiPath)];
     const realNow = Date.now;
     let api;

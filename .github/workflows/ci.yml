@@ -28,14 +28,10 @@ jobs:
       - name: Tests
         run: python -m pytest -q -p no:cacheprovider --basetemp=.ci-pytest
 
-      - name: Validate data and panel
-        run: python scripts/validate_assets.py
-
       - name: Check JavaScript
         run: |
-          node --check mod/pbz-neko-companion/game_api.js
-          node --check mod/pbz-neko-companion/main.js
-          node --check mod/pbz-neko-companion/ui_bridge.js
-          node --check scripts/import_pbz_game_data.js
+          node --check game_bundle/mod/js/pbz-neko-companion/game_api.js
+          node --check game_bundle/mod/js/pbz-neko-companion/main.js
+          node --check game_bundle/mod/js/pbz-neko-companion/ui_bridge.js
           node tests/test_game_api_equipment.js
           node -e "const fs=require('fs'),vm=require('vm');const s=fs.readFileSync('static/index.html','utf8');const m=s.match(/<script>([\s\S]*?)<\/script>/);new vm.Script(m[1]);"

@@ -1,8 +1,8 @@
 # 游戏侧一键安装
 
-完整插件通过 N.E.K.O 插件市场统一发布，不再生成独立的游戏 ZIP、UE4SS ZIP
-或插件 ZIP。UE4SS、PBZModLoader 代理和游戏侧 JS/Lua Mod 作为插件包内资源
-一起发布。
+完整插件通过 N.E.K.O 插件市场统一发布，不再生成插件 ZIP。市场包携带游戏侧
+JS/Lua Mod 与运行时清单；UE4SS 可执行文件从固定 Release 资产下载并校验
+SHA-256，不进入仓库或 Market 插件包。
 
 ## 使用
 
@@ -37,6 +37,7 @@ ProjectPBZ\
 ## 安全边界
 
 - 游戏运行中拒绝安装，不强制结束游戏进程。
+- 缺少 UE4SS 时下载固定版本，大小和 SHA-256 必须与清单一致才解压。
 - 已存在 `UE4SS.dll` 时，整个 UE4SS 核心目录保持原样。
 - 现有其他 Lua Mod、PuerTS Mod 不删除、不移动、不重排。
 - `mods.txt` 只追加缺失的 `PBZNekoCompanion : 1`。
@@ -50,25 +51,19 @@ ProjectPBZ\
 
 ## 插件包内资源
 
-- `installer\vendor\ue4ss\dwmapi.dll`
-- `installer\vendor\ue4ss\version.dll`
-- `installer\vendor\ue4ss\ue4ss\UE4SS.dll`
-- 自定义 `MemberVariableLayout.ini`
-- `UE4SS_Signatures`、`UE4SS_SDK_Backends`
-- UE4SS 基础依赖和 `Keybinds`
-- `mod\pbz-neko-companion`
-- `mod\lua\PBZNekoCompanion`
+- `game_bundle\runtime-manifest.json`：运行时下载地址、大小和 SHA-256
+- `game_bundle\mod\js\pbz-neko-companion`
+- `game_bundle\mod\lua\PBZNekoCompanion`
 
-这些文件由 `scripts\sync_vendor_ue4ss.ps1` 白名单同步，不收入用户现有的
-地图辅助、任务攻略或其他第三方 Mod。
+UE4SS 运行时 Release 资产只包含白名单同步的核心、签名、布局配置和内置依赖，
+不收入用户现有的地图辅助、任务攻略或其他第三方 Mod。
 
 ## 开发验证
 
 ```powershell
 ruff check .
 python -m pytest -q
-python .\scripts\validate_assets.py
-node --check .\mod\pbz-neko-companion\game_api.js
+node --check .\game_bundle\mod\js\pbz-neko-companion\game_api.js
 ```
 
 游戏目录检测和“不覆盖现有 Mod”的安装行为由 `tests\test_game_installer.py`

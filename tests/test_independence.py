@@ -28,7 +28,9 @@ def test_python_has_no_cross_plugin_imports():
 def test_game_mod_requires_only_game_apis_and_local_files():
     allowed = {"ue", "puerts", "Library/TsHelper"}
     bad = []
-    for path in (ROOT / "mod" / "pbz-neko-companion").glob("*.js"):
+    for path in (
+        ROOT / "game_bundle" / "mod" / "js" / "pbz-neko-companion"
+    ).glob("*.js"):
         text = path.read_text(encoding="utf-8")
         for dep in re.findall(r"require\([\"']([^\"']+)[\"']\)", text):
             if dep in allowed or dep.startswith("./"):

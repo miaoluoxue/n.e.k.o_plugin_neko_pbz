@@ -1,26 +1,41 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import shutil
+import zipfile
 from pathlib import Path
 
+from plugin.plugins.neko_pbz.core import game_installer as game_installer_module
 from plugin.plugins.neko_pbz.core.game_installer import GameInstaller
 
 
-def _make_plugin(root: Path) -> None:
-    vendor = root / "installer" / "vendor" / "ue4ss"
-    (vendor / "ue4ss" / "Mods").mkdir(parents=True)
-    (vendor / "dwmapi.dll").write_bytes(b"ue4ss-proxy")
-    (vendor / "version.dll").write_bytes(b"pbz-loader")
-    (vendor / "ue4ss" / "UE4SS.dll").write_bytes(b"bundled-ue4ss")
-    (vendor / "ue4ss" / "Mods" / "mods.txt").write_text(
-        "Keybinds : 1\n", encoding="utf-8")
+def _make_plugin(root: Path, *, with_runtime: bool = True) -> None:
+    runtime = root / "game_bundle" / "runtime"
+    if with_runtime:
+        (runtime / "ue4ss" / "Mods").mkdir(parents=True)
+        (runtime / "dwmapi.dll").write_bytes(b"ue4ss-proxy")
+        (runtime / "version.dll").write_bytes(b"pbz-loader")
+        (runtime / "ue4ss" / "UE4SS.dll").write_bytes(b"bundled-ue4ss")
+        (runtime / "ue4ss" / "Mods" / "mods.txt").write_text(
+            "Keybinds : 1\n", encoding="utf-8")
 
-    js = root / "mod" / "pbz-neko-companion"
+    manifest = root / "game_bundle" / "runtime-manifest.json"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    manifest.write_text(json.dumps({
+        "schema": 1,
+        "runtime": "test runtime",
+        "url": "https://example.invalid/runtime.zip",
+        "sha256": "0" * 64,
+        "size": 1,
+    }), encoding="utf-8")
+
+    js = root / "game_bundle" / "mod" / "js" / "pbz-neko-companion"
     js.mkdir(parents=True)
     (js / "main.js").write_text("game mod", encoding="utf-8")
     (js / "game_api.js").write_text("live state", encoding="utf-8")
 
-    lua = root / "mod" / "lua" / "PBZNekoCompanion"
+    lua = root / "game_bundle" / "mod" / "lua" / "PBZNekoCompanion"
     (lua / "Scripts").mkdir(parents=True)
     (lua / "Scripts" / "main.lua").write_text("lua mod", encoding="utf-8")
     (lua / "enabled.txt").write_text("1", encoding="ascii")
@@ -110,7 +125,7 @@ def test_install_preserves_existing_ue4ss_and_other_mods(
     ).is_file()
 
 
-def test_install_adds_bundled_ue4ss_only_when_missing(tmp_path, monkeypatch):
+def test_install_adds_local_runtime_only_when_missing(tmp_path, monkeypatch):
     monkeypatch.setattr(GameInstaller, "game_running", staticmethod(lambda: False))
     plugin = tmp_path / "plugin"
     _make_plugin(plugin)
@@ -132,3 +147,48 @@ def test_install_adds_bundled_ue4ss_only_when_missing(tmp_path, monkeypatch):
     assert states
     payload = json.loads(states[0].read_text(encoding="utf-8"))
     assert payload["game_root"] == str(game.resolve())
+
+
+def test_install_downloads_and_verifies_runtime_when_package_has_no_binary(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(GameInstaller, "game_running", staticmethod(lambda: False))
+    plugin = tmp_path / "plugin"
+    _make_plugin(plugin, with_runtime=False)
+    game = tmp_path / "game"
+    _make_game(game, with_ue4ss=False)
+
+    archive = tmp_path / "runtime.zip"
+    with zipfile.ZipFile(archive, "w") as bundle:
+        bundle.writestr("dwmapi.dll", b"downloaded-proxy")
+        bundle.writestr("version.dll", b"downloaded-loader")
+        bundle.writestr("ue4ss/UE4SS.dll", b"downloaded-ue4ss")
+        bundle.writestr("ue4ss/Mods/mods.txt", "Keybinds : 1\n")
+
+    digest = hashlib.sha256(archive.read_bytes()).hexdigest().upper()
+    manifest = plugin / "game_bundle" / "runtime-manifest.json"
+    manifest.write_text(json.dumps({
+        "schema": 1,
+        "runtime": "test runtime",
+        "url": "https://example.invalid/runtime.zip",
+        "sha256": digest,
+        "size": archive.stat().st_size,
+    }), encoding="utf-8")
+
+    def fake_download(_url: str, destination: Path) -> None:
+        shutil.copy2(archive, destination)
+
+    monkeypatch.setattr(
+        game_installer_module, "_download_runtime_archive", fake_download
+    )
+    result = GameInstaller(
+        plugin, tmp_path / "data", bridge_root=str(tmp_path / "bridge"),
+    ).install(str(game))
+
+    assert result["ue4ss_preserved"] is False
+    assert (
+        game / "platform" / "steam" / "ue4ss" / "UE4SS.dll"
+    ).read_bytes() == b"downloaded-ue4ss"
+    assert (
+        game / "platform" / "steam" / "dwmapi.dll"
+    ).read_bytes() == b"downloaded-proxy"

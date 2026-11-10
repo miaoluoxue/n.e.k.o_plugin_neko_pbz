@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-MOD = ROOT / "mod" / "pbz-neko-companion"
+MOD = ROOT / "game_bundle" / "mod" / "js" / "pbz-neko-companion"
 
 
 def test_overlay_failure_cannot_block_state_sampling():
