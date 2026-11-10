@@ -31,7 +31,8 @@ if (-not $Force) {
 
 function Copy-Plugin([string]$dest) {
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
-    $items = @("__init__.py", "plugin.toml", "core", "entries", "adapters", "perception", "static", "data", "i18n", "docs")
+    $items = @("__init__.py", "plugin.toml", "core", "entries", "adapters",
+        "perception", "static", "data", "i18n", "docs", "installer", "mod")
     foreach ($item in $items) {
         $src = Join-Path $dev $item
         if (-not (Test-Path -LiteralPath $src)) { continue }

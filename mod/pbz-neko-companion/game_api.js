@@ -7,6 +7,8 @@ const puerts = require("puerts");
 const TsHelper = (() => {
     try { return require("Library/TsHelper").default; } catch (_) { return null; }
 })();
+const moduleStartedAt = Date.now();
+const EQUIPMENT_SETTLE_MS = 15000;
 
 const gi = puerts.argv.getByName("GameInstance");
 const initialWorld = (() => {
@@ -65,6 +67,22 @@ function displayName(o, names = []) {
     return "";
 }
 function isValid(o) { return !!o && safe(() => UE.KismetSystemLibrary.IsValid(o), false); }
+function inspectKeys(object, limit = 120) {
+    if (!object) return [];
+    const found = new Set();
+    const collect = (value) => {
+        if (!value || (typeof value !== "object" && typeof value !== "function")) return;
+        for (const key of safe(() => Object.keys(value), []) || []) found.add(key);
+        for (const key of safe(() => Object.getOwnPropertyNames(value), []) || []) {
+            if (!["constructor", "prototype", "__proto__", "caller", "arguments"].includes(key)) {
+                found.add(key);
+            }
+        }
+    };
+    collect(object);
+    collect(safe(() => Object.getPrototypeOf(object), null));
+    return [...found].slice(0, limit);
+}
 function constructTag(name) {
     if (TsHelper && TsHelper.constructGameplayTag) {
         const hit = safe(() => TsHelper.constructGameplayTag(name), null);
@@ -169,117 +187,292 @@ function readVitals(character, asc) {
     };
 }
 
-// ── 当前装备（只读装备槽，不碰背包）────────
-function itemRef(v) {
-    if (v == null) return null;
-    if (typeof v === "string") return { id: v, name: v };
-    const id = text(safe(() => v.ItemID, "") || safe(() => v.ID, "")
-        || safe(() => v.WeaponID, "") || safe(() => v.RowName, ""));
-    const name = text(safe(() => v.Name, "") || safe(() => v.DisplayName, "")
-        || safe(() => v.WeaponName, "") || safe(() => v.ItemName, ""));
-    if (!id && !name) return null;
+// ── 当前装备（只读装备槽，不碰背包持有量）────────
+// 反射链已由运行中的 PBZBackPackSubsystem 确认：
+// MainWeapons / CurrentMainWeaponID / ShaqiWeapons / CurrentShaqiWeaponIndex
+// Accessories / TopMedicineID / BottomMedicineID。
+function scalarText(v) {
+    if (v == null) return "";
+    if (typeof v === "string") return v.trim();
+    if (typeof v === "number") return String(v);
+    if (typeof v === "boolean") return "";
+    const direct = text(v);
+    if (direct && !/^\[object\s/i.test(direct) && direct !== "None") return direct.trim();
+    return "";
+}
+function idText(v) {
+    if (v == null) return "";
+    if (Array.isArray(v) || safe(() => v.Num?.(), null) != null) {
+        const list = arr(v);
+        if (list.length) return idText(list[0]);
+    }
+    const direct = scalarText(v);
+    if (direct) return direct;
+    for (const name of [
+        "ID", "Id", "ItemID", "WeaponID", "ShaChiWeaponID", "ShaqiWeaponID",
+        "AccessoryID", "MedicineID", "Key", "Value",
+    ]) {
+        const found = scalarText(safe(() => v?.[name], null));
+        if (found) return found;
+    }
+    return "";
+}
+function idsFrom(v) {
+    if (v == null) return [];
+    const out = [];
+    if (typeof v === "string" || typeof v === "number") {
+        const id = idText(v);
+        return id ? [id] : [];
+    }
+    const list = arr(v);
+    if (list.length) {
+        for (const entry of list) {
+            const id = idText(entry);
+            if (id) out.push(id);
+        }
+    } else if (sequenceValues(v).length) {
+        for (const entry of sequenceValues(v)) {
+            const id = idText(entry);
+            if (id) out.push(id);
+        }
+    } else {
+        const id = idText(v);
+        if (id) out.push(id);
+    }
+    return [...new Set(out)].filter(id => id !== "None");
+}
+function localizeKey(key) {
+    const raw = scalarText(key);
+    if (!raw) return "";
+    const built = safe(
+        () => UE.PBZBlueprintFunctionLibrary.MakeTextByKey(raw), null);
+    return text(safe(() => UE.KismetTextLibrary.Conv_TextToString(built), "")) || raw;
+}
+function localizedValue(v) {
+    if (v == null) return "";
+    const key = scalarText(safe(() => v?.Key, null));
+    if (key) return localizeKey(key);
+    const textValue = text(
+        safe(() => UE.KismetTextLibrary.Conv_TextToString(v), ""));
+    if (textValue) return textValue;
+    return scalarText(v);
+}
+function rowName(row, names) {
+    for (const name of names) {
+        const value = localizedValue(safe(() => row?.[name], null));
+        if (value) return value;
+    }
+    return "";
+}
+function rowLevel(row) {
+    return num(safe(() => row?.Level, null)
+        ?? safe(() => row?.CurrentLevel, null)
+        ?? safe(() => row?.UpgradeLevel, null)
+        ?? safe(() => row?.Tier, null));
+}
+function equipmentLevel(backpack, category, id, row) {
+    const mapName = {
+        main_weapon: "MainWeaponInfos",
+        phantom_edge: "ShaqiWeaponInfos",
+        accessory: "Accessories",
+        medicine: "MedicineInfos",
+    }[category];
+    const instance = mapName
+        ? safe(() => backpack?.[mapName]?.Get(id), null)
+        : null;
+    const current = num(safe(() => instance?.WeaponLevel, null)
+        ?? safe(() => instance?.ShaChiWeaponLevel, null)
+        ?? safe(() => instance?.CurrentLevel, null)
+        ?? safe(() => instance?.Level, null)
+        ?? safe(() => instance?.UpgradeLevel, null)
+        ?? safe(() => instance?.Tier, null));
+    return current != null ? current : rowLevel(row);
+}
+function rowFor(backpack, category, id) {
+    if (!backpack || !id) return null;
+    if (category === "main_weapon") {
+        return safe(() => backpack.GetMainWeaponTableData(id), null);
+    }
+    if (category === "phantom_edge") {
+        return safe(() => backpack.GetShaqiWeaponTableData(id), null);
+    }
+    if (category === "accessory") {
+        return safe(() => backpack.GetAccessoryData(id), null)
+            || safe(() => UE.PBZBackPackSubsystem.GetAccessoryData(id), null);
+    }
+    if (category === "medicine") {
+        return safe(() => backpack.GetMedicineData(id), null)
+            || safe(() => UE.PBZBackPackSubsystem.GetMedicineData(id), null);
+    }
+    return null;
+}
+function equipmentItem(backpack, category, id, slot, slotIndex, active) {
+    const key = idText(id);
+    if (!key) return null;
+    const row = rowFor(backpack, category, key);
+    const names = category === "accessory" ? ["AccessoryName", "Name", "DisplayName"]
+        : ["WeaponName", "MedicineName", "Name", "DisplayName"];
+    const type = text(safe(() => row?.WeaponType, "")
+        || safe(() => row?.AccessoryType, "")
+        || safe(() => row?.MedicineType, "")
+        || safe(() => row?.Type, ""));
     return {
-        id: id || name, name: name || id,
-        type: text(safe(() => v.WeaponType, "") || safe(() => v.Type, "")),
-        category: text(safe(() => v.Category, "") || safe(() => v.ItemType, "")),
-        tier: num(safe(() => v.Tier, null) ?? safe(() => v.UpgradeLevel, null)),
-        soulcast_form: text(safe(() => v.SnapSoulName, "") || safe(() => v.SoulName, "")),
-        charges: num(safe(() => v.Charge, null) ?? safe(() => v.Charges, null)),
-        cooldown: num(safe(() => v.Cooldown, null)),
-        count: num(safe(() => v.Count, null) ?? safe(() => v.CurrentAmount, null)
-            ?? safe(() => v.Quantity, null) ?? safe(() => v.Num, null)),
-        uses: num(safe(() => v.Uses, null) ?? safe(() => v.RemainingUses, null)
-            ?? safe(() => v.CurrentUseCount, null)),
-        max_uses: num(safe(() => v.MaxUses, null) ?? safe(() => v.MaxUseCount, null)),
-        ready: safe(() => v.bReady, null),
-        tags: text(safe(() => v.Tags, "")),
+        id: key,
+        name: rowName(row, names) || key,
+        category,
+        type,
+        tier: equipmentLevel(backpack, category, key, row),
+        slot,
+        slot_index: slotIndex,
+        active: active === true,
+        resolved: !!row,
     };
 }
-function toList(v) {
-    if (v == null) return [];
-    if (typeof v === "string" || typeof v === "number") return [v];
-    const list = arr(v);
-    return list.length ? list : [v];
+function equippedIds(backpack, propertyName) {
+    return idsFrom(safe(() => backpack?.[propertyName], null));
 }
-function refsFrom(sources, names, slotName) {
-    for (const src of sources) {
-        for (const name of names) {
-            const list = toList(safe(() => src[name], null)).map(itemRef).filter(Boolean);
-            if (list.length) {
-                const seen = new Set();
-                return list.filter(item => {
-                    const key = item.id || item.name;
-                    if (seen.has(key)) return false;
-                    seen.add(key);
-                    item.slot = slotName;
-                    return true;
-                });
+function readEquipment(backpack) {
+    const mainIds = equippedIds(backpack, "MainWeapons");
+    const currentMainId = scalarText(
+        safe(() => backpack?.CurrentMainWeaponID, null));
+    if (currentMainId && !mainIds.includes(currentMainId)) mainIds.unshift(currentMainId);
+    const currentWeaponIndex = num(safe(() => backpack?.CurrentWeaponIndex, null));
+    const mainWeapons = mainIds.map((id, index) => equipmentItem(
+        backpack, "main_weapon", id,
+        index === 0 ? "primary" : "secondary",
+        index,
+        id === currentMainId
+            || (!currentMainId && currentWeaponIndex === index),
+    )).filter(Boolean);
+
+    const edgeIds = equippedIds(backpack, "ShaqiWeapons");
+    const currentEdgeIndex = num(
+        safe(() => backpack?.CurrentShaqiWeaponIndex, null));
+    const edges = edgeIds.map((id, index) => equipmentItem(
+        backpack, "phantom_edge", id, "edge", index,
+        currentEdgeIndex === index,
+    )).filter(Boolean);
+
+    // Accessories 是 39 件已获得饰品的 TMap；AssemblyAccessory 才是当前
+    // 6 个饰品装配槽（未装配槽为 "None"）。绝不能把前者当已装备列表。
+    const accessories = equippedIds(backpack, "AssemblyAccessory").map((id, index) =>
+        equipmentItem(backpack, "accessory", id, "accessory", index, true)
+    ).filter(Boolean);
+
+    const medicines = [];
+    for (const [slot, field] of [
+        ["top", "TopMedicineID"],
+        ["bottom", "BottomMedicineID"],
+    ]) {
+        const raw = safe(() => backpack?.[field], null);
+        for (const id of idsFrom(raw)) {
+            const item = equipmentItem(
+                backpack, "medicine", id, slot, medicines.length, true);
+            if (item && !medicines.some(existing => existing.id === item.id
+                && existing.slot === item.slot)) {
+                medicines.push(item);
             }
         }
     }
-    return [];
-}
-function firstRef(objs) {
-    const list = arr(objs).map(itemRef).filter(Boolean);
-    return list.length ? list[0] : null;
-}
-function readEquipment(character) {
-    const comps = [
-        safe(() => character.EquipmentComponent, null),
-        safe(() => character.EquipComponent, null),
-        safe(() => character.PBZEquipmentComponent, null),
-    ].filter(Boolean);
-    const sources = [character, ...comps];
-    let mainWeapons = refsFrom(sources, [
-        "MainWeapons", "EquippedWeapons", "WeaponList", "Weapons",
-        "MainWeaponSlots", "WeaponSlots",
-    ], "main");
-    let main = mainWeapons[0] || null;
-    if (!main) {
-        for (const src of sources) {
-            main = firstRef([
-                safe(() => src.MainWeapon, null),
-                safe(() => src.CurrentWeapon, null),
-                safe(() => src.Weapon, null),
-            ]);
-            if (!main) main = itemRef(safe(() => src.GetCurrentWeapon?.(), null));
-            if (main) break;
-        }
-        if (main) mainWeapons = [main];
-    }
-    let secondary = firstRef([
-        ...sources.map(src => safe(() => src.SecondaryWeapon, null)),
-        ...sources.map(src => safe(() => src.SubWeapon, null)),
-        ...sources.map(src => safe(() => src.OffhandWeapon, null)),
-    ]);
-    const edges = refsFrom(sources, [
-        "PhantomEdges", "ShaChiWeapons", "ShaqiWeapons",
-        "ShadowWeapons", "Armaments", "ShaqiWeaponSlots", "PhantomEdgeSlots",
-    ], "edge");
-    const accessories = refsFrom(sources, [
-        "Accessories", "AccessorySlots", "EquippedAccessories",
-    ], "accessory");
-    const medicines = refsFrom(sources, [
-        "Medicines", "MedicineSlots", "QuickItems", "QuickItemSlots",
-        "ConsumableSlots", "QuickUseItems", "Potions", "BottleSlots",
-    ], "medicine");
+
     return {
-        main_weapon: main,
+        main_weapon: mainWeapons.find(item => item.active) || mainWeapons[0] || null,
         main_weapons: mainWeapons,
-        secondary_weapon: secondary,
+        secondary_weapon: mainWeapons[1] || null,
         phantom_edges: edges,
         accessories,
         medicines,
     };
 }
+function emptyEquipment() {
+    return {
+        main_weapon: null,
+        main_weapons: [],
+        secondary_weapon: null,
+        phantom_edges: [],
+        accessories: [],
+        medicines: [],
+    };
+}
+function probeEquipmentValue(v) {
+    if (v == null) return null;
+    if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
+        return v;
+    }
+    const ids = idsFrom(v);
+    if (ids.length) return ids;
+    const direct = scalarText(v);
+    return direct || `[${typeof v}]`;
+}
+function inspectContainer(v, limit = 80) {
+    if (v == null) return null;
+    return {
+        type: typeof v,
+        num: safe(() => v.Num?.(), null),
+        length: safe(() => v.length, null),
+        iterable: safe(() => typeof v[Symbol.iterator] === "function", false),
+        keys: inspectKeys(v, limit),
+    };
+}
+function sequenceValues(v, limit = 64) {
+    if (v == null) return [];
+    if (Array.isArray(v)) return v.slice(0, limit);
+    const out = [];
+    if (safe(() => typeof v[Symbol.iterator] === "function", false)) {
+        safe(() => {
+            for (const value of v) {
+                out.push(value);
+                if (out.length >= limit) break;
+            }
+        }, null);
+    }
+    if (out.length) return out;
+    const count = num(safe(() => v.Num?.(), null));
+    if (count != null) {
+        for (let index = 0; index < Math.min(count, limit); index++) {
+            const value = safe(() => v.Get(index), null);
+            if (value != null) out.push(value);
+        }
+    }
+    return out;
+}
+function probeSequence(v, limit = 64) {
+    return sequenceValues(v, limit).map(value => {
+        if (typeof value === "string" || typeof value === "number"
+            || typeof value === "boolean") return value;
+        if (Array.isArray(value)) {
+            return {
+                value: scalarText(value[0]),
+                pair_value_shape: inspectContainer(value[1], 80),
+            };
+        }
+        const tag = scalarText(safe(() => value?.TagName, null));
+        const key = scalarText(safe(() => value?.Key, null));
+        const direct = scalarText(value);
+        return {
+            value: tag || key || direct || null,
+            keys: inspectKeys(value, 16),
+        };
+    });
+}
 
 // ── 敌人扫描 ──────────────────────────────
 let classCache = { ts: 0, classes: [] };
 let bellCache = { ts: 0, classes: [] };
+let networkClassCache = null;
 const CLASS_SKIP = /(Widget|Button|Component|Subsystem|Manager|FunctionLibrary|DataAsset|Anim|Camera|PlayerController|HUD|UI|Text|Image|Sound|Niagara|LevelSequence)/i;
 const CLASS_HINT = /(Monster|Enemy|Boss|Mob|AICharacter|NPC)/i;
 const EXPLICIT_ENEMY = ["PBZAICharacter", "PBZMonsterCharacter", "PBZEnemyCharacter"];
 const EXPLICIT_BELL = ["PBZBellActor", "BellActor", "BP_Bell_C", "BP_BellBase_C"];
+
+function discoverNetworkClasses() {
+    if (networkClassCache) return networkClassCache;
+    const keys = safe(() => Object.keys(UE), []) || [];
+    networkClassCache = keys.filter(name => /(Http|WebSocket|Websocket|Socket|Tcp)/i.test(name))
+        .filter(name => !CLASS_SKIP.test(name))
+        .slice(0, 40);
+    return networkClassCache;
+}
 
 function discoverClasses() {
     if (Date.now() - classCache.ts < 30000 && classCache.classes.length) return classCache.classes;
@@ -471,7 +664,16 @@ function snapshot(options = {}) {
     const vitals = readVitals(character, asc);
     const deadTag = hasTag(asc, "CharacterState.Death")
         || hasTag(asc, "CharacterState.Dead") || hasTag(asc, "State.Dead");
-    const equipment = readEquipment(character);
+    const world = readWorld(character);
+    const attributeSet = safe(() => character?.AttributeSetBase, null);
+    const backpack = safe(
+        () => UE.PBZBackPackSubsystem.GetBackPackSubsytemByContextObject(liveContext()), null);
+    // PBZMainStart 早于武器 DataAsset 缓存完成。过早读取 TArray/TMap 槽位或
+    // 调用表数据接口会让 PuerTS 把未就绪对象传给原生代码，导致进程级崩溃。
+    const equipmentReady = !!character
+        && Date.now() - moduleStartedAt >= EQUIPMENT_SETTLE_MS
+        && !!(world.name || world.id);
+    const equipment = equipmentReady ? readEquipment(backpack) : emptyEquipment();
     const scanned = safeMode
         ? { enemies: [], boss: null, diagnostics: [] }
         : scanEnemies(character);
@@ -490,7 +692,7 @@ function snapshot(options = {}) {
             cutscene: false,
             menu_open: false,
         },
-        world: readWorld(character),
+        world,
         save: readSave(),
         player: {
             name: objName(character),
@@ -513,6 +715,7 @@ function snapshot(options = {}) {
         bell: readBell(character, safeMode),
         capabilities: {
             safe_mode: safeMode,
+            network_classes: discoverNetworkClasses(),
             character: !!character,
             asc: !!asc,
             vitals: vitals.probes,
@@ -525,6 +728,89 @@ function snapshot(options = {}) {
                 accessories: equipment.accessories.length,
                 medicines: equipment.medicines.length,
             },
+            runtime_probe: safeMode ? {
+                character_class: character ? objName(character.GetClass()) : "",
+                character_keys: inspectKeys(character),
+                attribute_set_class: attributeSet ? objName(attributeSet.GetClass()) : "",
+                attribute_set_keys: inspectKeys(attributeSet),
+                backpack_class: backpack ? objName(backpack.GetClass()) : "",
+                backpack_keys: inspectKeys(backpack),
+                backpack_values: backpack && equipmentReady ? {
+                    current_weapon_index: probeEquipmentValue(
+                        safe(() => backpack.CurrentWeaponIndex, null)),
+                    current_main_weapon_id: probeEquipmentValue(
+                        safe(() => backpack.CurrentMainWeaponID, null)),
+                    main_weapons: probeEquipmentValue(
+                        safe(() => backpack.MainWeapons, null)),
+                    current_shaqi_weapon_index: probeEquipmentValue(
+                        safe(() => backpack.CurrentShaqiWeaponIndex, null)),
+                    shaqi_weapons: probeEquipmentValue(
+                        safe(() => backpack.ShaqiWeapons, null)),
+                    accessories: probeEquipmentValue(
+                        safe(() => backpack.Accessories, null)),
+                    top_medicine_id: probeEquipmentValue(
+                        safe(() => backpack.TopMedicineID, null)),
+                    bottom_medicine_id: probeEquipmentValue(
+                        safe(() => backpack.BottomMedicineID, null)),
+                    accessories_shape: inspectContainer(
+                        safe(() => backpack.Accessories, null)),
+                    accessories_sample: probeSequence(
+                        safe(() => backpack.Accessories, null), 12),
+                    assembly_accessory: probeEquipmentValue(
+                        safe(() => backpack.AssemblyAccessory, null)),
+                    assembly_accessory_shape: inspectContainer(
+                        safe(() => backpack.AssemblyAccessory, null)),
+                    assembly_accessory_sample: probeSequence(
+                        safe(() => backpack.AssemblyAccessory, null), 12),
+                    current_main_info_shape: inspectContainer(safe(
+                        () => backpack.MainWeaponInfos.Get(scalarText(
+                            safe(() => backpack.CurrentMainWeaponID, null))),
+                        null)),
+                    current_main_table_shape: inspectContainer(
+                        rowFor(backpack, "main_weapon", scalarText(
+                            safe(() => backpack.CurrentMainWeaponID, null)))),
+                    current_main_level_data_shape: inspectContainer(safe(
+                        () => backpack.GetMainWeaponLevelData(scalarText(
+                            safe(() => backpack.CurrentMainWeaponID, null))),
+                        null)),
+                    current_edge_info_shape: inspectContainer(safe(() => {
+                        const ids = equippedIds(backpack, "ShaqiWeapons");
+                        const index = num(safe(
+                            () => backpack.CurrentShaqiWeaponIndex, null));
+                        return ids[index || 0]
+                            ? backpack.ShaqiWeaponInfos.Get(ids[index || 0])
+                            : null;
+                    }, null)),
+                    medicine_infos_shape: inspectContainer(
+                        safe(() => backpack.MedicineInfos, null)),
+                    accessory_slot_tags: probeEquipmentValue(
+                        safe(() => backpack.AccessorySlotTags, null)),
+                    accessory_slot_tags_shape: inspectContainer(
+                        safe(() => backpack.AccessorySlotTags, null)),
+                    accessory_slot_tag_values: probeSequence(
+                        safe(() => backpack.AccessorySlotTags, null), 12),
+                    accessory_infos_result_shape: inspectContainer(
+                        safe(() => backpack.GetAccessoryInfos(), null)),
+                    accessory_infos_result_sample: probeSequence(
+                        safe(() => backpack.GetAccessoryInfos(), null), 12),
+                    accessory_equipped_snapshot: probeEquipmentValue(
+                        safe(() => backpack.EquippedSnapshot, null)),
+                    accessory_equipped_snapshot_shape: inspectContainer(
+                        safe(() => backpack.EquippedSnapshot, null)),
+                    has_equipped_snapshot: safe(
+                        () => backpack.bHasEquippedSnapshot, null),
+                    top_medicine_row_shape: inspectContainer(
+                        rowFor(backpack, "medicine", scalarText(
+                            safe(() => backpack.TopMedicineID, null)))),
+                    top_medicine_map_row_shape: inspectContainer(safe(
+                        () => backpack.MedicineInfos.Get(scalarText(
+                            safe(() => backpack.TopMedicineID, null))), null)),
+                    top_medicine_static_row_shape: inspectContainer(safe(
+                        () => UE.PBZBackPackSubsystem.GetMedicineData(
+                            scalarText(safe(() => backpack.TopMedicineID, null))),
+                        null)),
+                } : { deferred: !equipmentReady },
+            } : {},
         },
     };
 }

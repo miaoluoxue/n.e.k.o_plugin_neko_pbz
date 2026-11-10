@@ -12,6 +12,7 @@ from .secrets import protect_secret, unprotect_secret
 DEFAULTS: Dict[str, Any] = {
     "enabled": True,
     "bridge_dir": "",
+    "game_install_dir": "",
     "poll_interval": 0.35,
     "state_stale_seconds": 3.0,
     "save_key": "",
@@ -20,6 +21,8 @@ DEFAULTS: Dict[str, Any] = {
     "voice_enabled": True,
     "overlay_enabled": True,
     "proactive": True,
+    "show_prompt_in_chat": False,
+    "event_chat_hold_seconds": 20.0,
     "boss_advice_min": 1,
     "boss_advice_max": 3,
     "host_reply_timeout": 10.0,

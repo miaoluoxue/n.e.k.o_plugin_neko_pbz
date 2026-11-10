@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import time
 from pathlib import Path
@@ -10,6 +11,7 @@ from typing import Any, Dict
 from plugin.sdk.plugin import Ok, plugin_entry, ui
 
 from ..core.config import ConfigStore
+from ..core.game_installer import GameInstaller, GameInstallError
 
 
 class UiMixin:
@@ -19,9 +21,28 @@ class UiMixin:
     def _config_store(self) -> ConfigStore:
         return ConfigStore(self._data_root())
 
+    def _game_installer(self) -> GameInstaller:
+        return GameInstaller(
+            Path(__file__).resolve().parent.parent,
+            self._data_root(),
+            str(self.cfg.get("game_install_dir") or ""),
+            str(self.cfg.get("bridge_dir") or ""),
+        )
+
+    def _panel_state(self) -> Dict[str, Any]:
+        data = dict(self.service.snapshot() if self.service
+                    else {"connected": False})
+        try:
+            data["installer"] = self._game_installer().status()
+        except Exception as exc:
+            data["installer"] = {
+                "ok": False, "can_install": False, "error": str(exc),
+            }
+        return data
+
     @ui.context(id="dashboard", title="影之刃零陪玩")
     def pbz_dashboard_context(self) -> Dict[str, Any]:
-        return self.service.snapshot() if self.service else {"connected": False}
+        return self._panel_state()
 
     @plugin_entry(
         id="get_dashboard_state",
@@ -31,7 +52,7 @@ class UiMixin:
         metadata={"agent_hidden": True},
     )
     async def act_dashboard(self, **_) -> Any:
-        data = self.service.snapshot() if self.service else {"connected": False}
+        data = self._panel_state()
         return Ok({"output": "ok", "data": data})
 
     @plugin_entry(
@@ -42,7 +63,7 @@ class UiMixin:
         metadata={"agent_hidden": True},
     )
     async def act_panel_state(self, **_: Any) -> Any:
-        return Ok(self.service.snapshot() if self.service else {"connected": False})
+        return Ok(self._panel_state())
 
     @plugin_entry(
         id="pbz_i18n",
@@ -68,11 +89,14 @@ class UiMixin:
             "properties": {
                 "enabled": {"type": "boolean"},
                 "bridge_dir": {"type": "string"},
+                "game_install_dir": {"type": "string"},
                 "spoiler_level": {"type": "integer"},
                 "verbosity": {"type": "string"},
                 "voice_enabled": {"type": "boolean"},
                 "overlay_enabled": {"type": "boolean"},
                 "proactive": {"type": "boolean"},
+                "show_prompt_in_chat": {"type": "boolean"},
+                "event_chat_hold_seconds": {"type": "number"},
                 "boss_advice_min": {"type": "integer"},
                 "boss_advice_max": {"type": "integer"},
                 "quiet_minutes": {"type": "number"},
@@ -100,8 +124,11 @@ class UiMixin:
     )
     async def act_save_settings(self, **kwargs: Any) -> Any:
         patch = {k: v for k, v in kwargs.items() if k in {
-            "enabled", "bridge_dir", "spoiler_level", "verbosity", "voice_enabled",
+            "enabled", "bridge_dir", "game_install_dir", "spoiler_level",
+            "verbosity", "voice_enabled",
             "overlay_enabled", "proactive", "boss_advice_min", "boss_advice_max",
+            "show_prompt_in_chat",
+            "event_chat_hold_seconds",
             "llm_enabled", "llm_provider", "llm_model", "llm_base_url",
             "llm_timeout", "llm_max_calls_per_minute",
             "vision_enabled", "vision_require_foreground", "assist_enabled",
@@ -120,6 +147,72 @@ class UiMixin:
                else self._config_store().save(patch))
         self.cfg = cfg
         return Ok({"output": "设置已保存", "data": cfg})
+
+    @plugin_entry(
+        id="pbz_installer_status",
+        name="检测游戏安装",
+        description="自动检测《影之刃零》游戏目录及游戏侧组件安装状态。",
+        input_schema={
+            "type": "object",
+            "properties": {"game_root": {"type": "string"}},
+        },
+        metadata={"agent_hidden": True},
+    )
+    async def act_installer_status(self, game_root: str = "", **_: Any) -> Any:
+        try:
+            status = self._game_installer().status(game_root)
+            return Ok({"output": (
+                "已检测到游戏目录" if status.get("game_root")
+                else "未检测到游戏目录"
+            ), "data": status})
+        except Exception as exc:
+            return Ok({
+                "output": f"检测失败：{exc}",
+                "data": {"ok": False, "error": str(exc)},
+            })
+
+    @plugin_entry(
+        id="pbz_install_game_mod",
+        name="一键安装游戏侧组件",
+        description="把随插件发布的 UE4SS 与游戏 Mod 安装到自动检测的游戏目录。",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "game_root": {"type": "string"},
+                "confirm": {"type": "boolean"},
+            },
+        },
+        metadata={"agent_hidden": True},
+    )
+    async def act_install_game_mod(
+        self, game_root: str = "", confirm: bool = False, **_: Any
+    ) -> Any:
+        if not confirm:
+            return Ok({
+                "output": "安装未确认",
+                "data": {"ok": False, "error": "confirm_required"},
+            })
+        try:
+            installer = self._game_installer()
+            result = await asyncio.to_thread(installer.install, game_root)
+            patch = {"game_install_dir": result.get("game_root") or game_root}
+            cfg = (self.service.apply_settings(patch) if self.service
+                   else self._config_store().save(patch))
+            self.cfg = cfg
+            return Ok({
+                "output": "游戏侧组件安装完成，请重新启动游戏和 N.E.K.O",
+                "data": result,
+            })
+        except GameInstallError as exc:
+            return Ok({
+                "output": f"安装未执行：{exc}",
+                "data": {"ok": False, "error": str(exc)},
+            })
+        except Exception as exc:
+            return Ok({
+                "output": f"安装失败：{exc}",
+                "data": {"ok": False, "error": str(exc)},
+            })
 
     @plugin_entry(
         id="pbz_test_llm",

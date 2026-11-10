@@ -20,3 +20,22 @@ def test_overlay_failure_cannot_block_state_sampling():
     assert "const ENABLE_OVERLAY = false" in main
     assert "safeMode: true" in main
     assert "SAMPLE_INTERVAL_MS = 1000" in main
+
+
+def test_equipment_reads_confirmed_backpack_loadout_fields():
+    api = (MOD / "game_api.js").read_text(encoding="utf-8")
+    for field in (
+        "CurrentMainWeaponID", "MainWeapons", "ShaqiWeapons",
+        "CurrentShaqiWeaponIndex", "AssemblyAccessory",
+        "TopMedicineID", "BottomMedicineID",
+    ):
+        assert field in api
+    assert "GetMainWeaponTableData" in api
+    assert "GetShaqiWeaponTableData" in api
+    assert "GetAccessoryData" in api
+    assert "GetMedicineData" in api
+    assert "MainWeaponInfos" in api
+    assert "ShaqiWeaponInfos" in api
+    assert "WeaponLevel" in api
+    assert "ShaChiWeaponLevel" in api
+    assert "Inventories" not in api

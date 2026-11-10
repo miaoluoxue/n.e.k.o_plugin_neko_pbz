@@ -33,7 +33,7 @@ _COOLDOWN = {
     "player_damaged": 30.0, "healed": 60.0, "boss_end": 20.0,
 }
 
-_P0 = {"death", "critical_hp", "boss_phase", "victory"}
+_P0 = {"death", "respawn", "critical_hp", "boss_phase", "victory"}
 _P1 = {"low_hp", "shachi_low", "boss_spawn", "bell_near", "enemy_spotted",
        "combat_start", "weapon_changed", "player_damaged", "respawn"}
 
@@ -63,7 +63,10 @@ class PbzService:
             self.knowledge.load_seed(seed_file)
         self.knowledge.apply_corrections()
         self.speech = HostSpeech(
-            plugin, voice_enabled=bool(self.cfg.get("voice_enabled", True)))
+            plugin,
+            voice_enabled=bool(self.cfg.get("voice_enabled", True)),
+            show_prompt_in_chat=bool(
+                self.cfg.get("show_prompt_in_chat", False)))
         self.engine = EventEngine()
         self.prompts = PromptBuilder()
         self.llm = LLMProvider(int(cfg.get("llm_max_calls_per_minute", 10)))
@@ -72,6 +75,7 @@ class PbzService:
         self._stopping = False
         self._queue: Deque[Dict[str, Any]] = deque(maxlen=64)
         self._last_spoke = 0.0
+        self._last_user_chat_at = 0.0
         self._last_event: Dict[str, float] = {}
         self._last_tip: Dict[str, float] = {}
         self._log: Deque[Dict[str, Any]] = deque(maxlen=int(cfg.get("event_log_limit", 200)))
@@ -137,6 +141,8 @@ class PbzService:
         cfg = ConfigStore(self.data_root).save(patch)
         self.cfg.update(cfg)
         self.speech.voice_enabled = bool(cfg.get("voice_enabled", True))
+        self.speech.show_prompt_in_chat = bool(
+            cfg.get("show_prompt_in_chat", False))
         self.configure_llm()
         return cfg
 
@@ -163,6 +169,10 @@ class PbzService:
             encoding="utf-8")
         tmp.replace(path)
         return {"path": str(path), "data": payload}
+
+    def note_chat_activity(self) -> None:
+        self._last_user_chat_at = time.time()
+        setattr(self.plugin, "_last_user_chat_at", self._last_user_chat_at)
 
     @property
     def llm_available(self) -> bool:
@@ -593,7 +603,7 @@ class PbzService:
         ok = self.speech.speak_image(
             prompt, result.get("image_bytes") or "",
             result.get("mime", "image/jpeg"),
-            fallback="画面看到了，喵在。", line_id=line_id)
+            fallback="画面看到了，喵在。", line_id=line_id, priority="P1")
         self._last_vision_ts = now
         self._last_vision.update({"ok": True, "error": "", "submitted": bool(ok),
                                   "captured_at": result.get("captured_at", now)})
@@ -627,26 +637,57 @@ class PbzService:
         self.digest_ts = time.time()
 
     # ── 事件处理 ─────────────────────────
+    @staticmethod
+    def _event_identity(event: Dict[str, Any]) -> str:
+        data = event.get("data") or {}
+        try:
+            payload = json.dumps(
+                data, ensure_ascii=False, sort_keys=True, default=str,
+                separators=(",", ":"))
+        except (TypeError, ValueError):
+            payload = str(data)
+        return f"{event.get('type') or ''}|{payload}"
+
     def _enqueue(self, event: Dict[str, Any]) -> None:
         now = time.time()
         keep = []
+        identity = self._event_identity(event)
         for item in self._queue:
             kind = str(item.get("type") or "")
             age = now - float(item.get("ts") or now)
-            limit = 25.0 if self._priority(kind) == "P0" else (
-                35.0 if self._priority(kind) == "P1" else 10.0)
+            limit = 35.0 if self._priority(kind) == "P0" else (
+                60.0 if self._priority(kind) == "P1" else 12.0)
             if age <= limit:
                 keep.append(item)
+        for item in keep:
+            if self._event_identity(item) != identity:
+                continue
+            if abs(float(event.get("ts") or now)
+                   - float(item.get("ts") or now)) <= 3.0:
+                return
         keep.append(event)
         self._queue = deque(keep[-64:], maxlen=64)
 
     async def _process_queue(self) -> None:
         if not self._queue:
             return
-        if self.speech.waiting:
+        now = time.time()
+        waiting = self.speech.waiting
+        chat_active = self._chat_active(now)
+        pending_priority = str(
+            getattr(self.speech, "pending_priority", "") or "").upper()
+        if waiting and pending_priority == "P0":
+            return
+        urgent_only = chat_active or waiting
+        candidates = [
+            (index, item) for index, item in enumerate(self._queue)
+            if not urgent_only
+            or self._priority(str(item.get("type") or "")) == "P0"
+        ]
+        if not candidates:
             return
         ranked = sorted(
-            enumerate(self._queue),
+            candidates,
             key=lambda pair: (
                 {"P0": 0, "P1": 1, "P2": 2}.get(
                     self._priority(str(pair[1].get("type") or "")), 2),
@@ -689,7 +730,9 @@ class PbzService:
             event, self.last_state or {}, memory_digest=self.digest, tips=tips,
             spoiler_level=int(self.cfg.get("spoiler_level", 1)))
         line_id = self.bridge.next_id(kind or "line")
-        ok = self.speech.speak(built["prompt"], fallback=built["fallback"], line_id=line_id)
+        ok = self.speech.speak(
+            built["prompt"], fallback=built["fallback"], line_id=line_id,
+            priority=self._priority(kind))
         self._last_spoke = time.time()
         self._log.append({
             "ts": time.time(), "type": kind, "priority": self._priority(kind),
@@ -712,6 +755,7 @@ class PbzService:
 
     def _should_speak(self, event: Dict[str, Any]) -> bool:
         kind = str(event.get("type") or "")
+        priority = self._priority(kind)
         state = self.last_state or {}
         game = state.get("game") or {}
         if game.get("cutscene") or game.get("menu_open"):
@@ -720,6 +764,8 @@ class PbzService:
             return False
         if time.time() < float(self.cfg.get("quiet_until") or 0):
             return False
+        if self._chat_active() and priority != "P0":
+            return False
         now = time.time()
         key = self._event_key(event)
         if now - self._last_event.get(key, 0.0) < _COOLDOWN.get(kind, 30.0):
@@ -727,6 +773,23 @@ class PbzService:
         if kind not in _P0 and now - self._last_spoke < 4.0:
             return False
         return True
+
+    def _chat_hold_seconds(self) -> float:
+        raw = self.cfg.get("event_chat_hold_seconds", 20.0)
+        try:
+            return max(0.0, float(20.0 if raw is None else raw))
+        except (TypeError, ValueError):
+            return 20.0
+
+    def _chat_active(self, now: float | None = None) -> bool:
+        window = self._chat_hold_seconds()
+        if window <= 0:
+            return False
+        last = max(
+            float(getattr(self.plugin, "_last_user_chat_at", 0.0) or 0.0),
+            float(self._last_user_chat_at or 0.0),
+        )
+        return last > 0 and (time.time() if now is None else now) - last < window
 
     # ── 最终台词写回游戏 ─────────────────
     async def _poll_final(self) -> None:
@@ -746,6 +809,7 @@ class PbzService:
             self.speech.pending_ts = 0.0
             self.speech.pending_fallback = ""
             self.speech.pending_id = ""
+            self.speech.pending_priority = ""
             if fallback:
                 self.bridge.write_reply(fallback, priority="P1", ttl=5.0,
                                         line_id=line_id or "fallback")
@@ -856,6 +920,11 @@ class PbzService:
             "boss_advice_max": int(self.cfg.get("boss_advice_max", 3)),
             "overlay": bool(self.cfg.get("overlay_enabled", True)),
             "proactive": bool(self.cfg.get("proactive", True)),
+            "event_chat_hold_seconds": self._chat_hold_seconds(),
+            "user_chat_active": self._chat_active(),
+            "event_queue": len(self._queue),
+            "show_prompt_in_chat": bool(
+                self.cfg.get("show_prompt_in_chat", False)),
             "llm": {
                 "enabled": bool(self.cfg.get("llm_enabled")),
                 "provider": str(self.cfg.get("llm_provider") or ""),

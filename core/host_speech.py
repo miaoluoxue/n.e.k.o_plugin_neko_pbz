@@ -89,14 +89,39 @@ class HostSpeech:
     """把事实提示交给宿主，并回收最终台词。"""
 
     def __init__(self, plugin: Any, *, voice_enabled: bool = True,
-                 lanlan_name: str = "") -> None:
+                 lanlan_name: str = "",
+                 show_prompt_in_chat: bool = False) -> None:
         self.plugin = plugin
         self.voice_enabled = bool(voice_enabled)
+        self.show_prompt_in_chat = bool(show_prompt_in_chat)
         self.pending_ts = 0.0
         self.pending_fallback = ""
         self.pending_id = ""
+        self.pending_priority = ""
         self.last_error = ""
         self.watcher = ConversationWatcher(getattr(plugin, "ctx", None), lanlan_name)
+
+    def _resolve_target_lanlan(self) -> str:
+        ctx = getattr(self.plugin, "ctx", None)
+        candidates: List[Any] = [ctx]
+        host_ctx = getattr(ctx, "_host_ctx", None)
+        if host_ctx is not None:
+            candidates.append(host_ctx)
+        for source in candidates:
+            for name in ("_current_lanlan", "lanlan_name", "current_lanlan"):
+                value = str(getattr(source, name, "") or "").strip()
+                if value:
+                    return value
+        for name in (
+            "NEKO_TARGET_LANLAN",
+            "NEKO_LANLAN_NAME",
+            "NEKO_HER_NAME",
+            "NEKO_CHARACTER",
+        ):
+            value = str(os.environ.get(name, "") or "").strip()
+            if value:
+                return value
+        return ""
 
     def _push_parts(self, parts: List[Dict[str, Any]], *, behavior: str,
                     visibility: List[str]) -> bool:
@@ -110,8 +135,7 @@ class HostSpeech:
                 visibility=visibility,
                 ai_behavior=behavior,
             )
-            ctx = getattr(self.plugin, "ctx", None)
-            target = str(getattr(ctx, "lanlan_name", "") or os.environ.get("NEKO_CHARACTER", "")).strip()
+            target = self._resolve_target_lanlan()
             if target:
                 kwargs["target_lanlan"] = target
             try:
@@ -132,41 +156,62 @@ class HostSpeech:
         return self._push_parts([{"type": "text", "text": text}],
                                 behavior=behavior, visibility=visibility)
 
-    def speak(self, prompt: str, *, fallback: str = "", line_id: str = "") -> bool:
+    def _priority_rank(self, priority: str) -> int:
+        return {"P0": 0, "P1": 1, "P2": 2}.get(
+            str(priority or "").upper(), 2)
+
+    def speak(self, prompt: str, *, fallback: str = "", line_id: str = "",
+              priority: str = "P1") -> bool:
         prompt = str(prompt or "").strip()
         if not prompt:
             return False
         if not self.voice_enabled:
             # 不播报时只作为上下文，不制造无声的“回复”。
             return self._push(prompt, behavior="read", visibility=[])
-        ok = self._push(prompt, behavior="respond", visibility=["chat"])
+        if self.waiting and not (
+                self._priority_rank(priority) < self._priority_rank(
+                    self.pending_priority)):
+            self.last_error = "host reply already pending"
+            return False
+        visibility = ["chat"] if self.show_prompt_in_chat else []
+        ok = self._push(prompt, behavior="respond", visibility=visibility)
         if ok:
             self.pending_ts = time.time()
             self.pending_fallback = fallback
             self.pending_id = line_id
+            self.pending_priority = str(priority or "P1").upper()
         return ok
 
     def note_context(self, text: str) -> bool:
         return self._push(text, behavior="read", visibility=[])
 
     def speak_image(self, prompt: str, image_bytes: bytes, mime: str = "image/jpeg",
-                    *, fallback: str = "", line_id: str = "") -> bool:
+                    *, fallback: str = "", line_id: str = "",
+                    priority: str = "P1") -> bool:
         """把文字提示 + 游戏截图交给宿主视觉模型，并触发猫娘回复/TTS。"""
         if not image_bytes:
-            return self.speak(prompt, fallback=fallback, line_id=line_id)
+            return self.speak(
+                prompt, fallback=fallback, line_id=line_id, priority=priority)
         if not self.voice_enabled:
             return self._push_parts([
                 {"type": "text", "text": prompt},
                 {"type": "image", "data": image_bytes, "mime": mime},
             ], behavior="read", visibility=[])
+        if self.waiting and not (
+                self._priority_rank(priority) < self._priority_rank(
+                    self.pending_priority)):
+            self.last_error = "host reply already pending"
+            return False
+        visibility = ["chat"] if self.show_prompt_in_chat else []
         ok = self._push_parts([
             {"type": "text", "text": str(prompt or "").strip()},
             {"type": "image", "data": image_bytes, "mime": mime},
-        ], behavior="respond", visibility=["chat"])
+        ], behavior="respond", visibility=visibility)
         if ok:
             self.pending_ts = time.time()
             self.pending_fallback = fallback
             self.pending_id = line_id
+            self.pending_priority = str(priority or "P1").upper()
         return ok
 
     def note_vision(self, prompt: str, image_bytes: bytes,
@@ -194,6 +239,7 @@ class HostSpeech:
             self.pending_ts = 0.0
             self.pending_fallback = ""
             self.pending_id = ""
+            self.pending_priority = ""
             return result
         return None
 

@@ -77,6 +77,7 @@ def test_low_hp_pushes_respond_then_writes_final_subtitle(tmp_path):
         await svc._tick()
         assert plugin.calls, "低血应触发一次 respond"
         assert plugin.calls[-1]["ai_behavior"] == "respond"
+        assert plugin.calls[-1]["visibility"] == []
         conv = plugin.ctx.bus.conversations
         conv.text = "别怕，喵在这儿。"
         conv.ts = svc.speech.pending_ts + 0.01
@@ -163,6 +164,7 @@ def test_assist_uses_current_quest_and_host_persona(tmp_path):
     async def run():
         await svc._tick()
         assert plugin.calls[-1]["ai_behavior"] == "respond"
+        assert plugin.calls[-1]["visibility"] == []
         prompt = plugin.calls[-1]["parts"][0]["text"]
         assert "[即时陪玩请求]" in prompt
         assert "白山秘闻" in prompt
@@ -200,3 +202,68 @@ def test_event_queue_drops_stale_low_priority_and_prefers_p0(tmp_path):
         await svc.stop()
 
     asyncio.run(run())
+
+
+def test_event_queue_deduplicates_same_event_from_two_sources(tmp_path):
+    plugin = _Plugin(tmp_path / "data")
+    bridge = tmp_path / "bridge-dedupe"
+    bridge.mkdir()
+    cfg = {
+        "bridge_dir": str(bridge), "poll_interval": 0.1,
+        "state_stale_seconds": 30, "voice_enabled": True,
+        "spoiler_level": 1, "proactive": True,
+        "boss_advice_min": 1, "boss_advice_max": 3,
+        "quiet_until": 0, "host_reply_timeout": 10,
+        "event_log_limit": 20,
+    }
+    svc = PbzService(plugin, cfg, tmp_path / "data")
+    now = time.time()
+    event = {
+        "type": "weapon_changed", "ts": now,
+        "data": {"weapon": {"id": "Weapon_001", "name": "黑伤"}},
+    }
+    svc._enqueue({**event, "source": "structured"})
+    svc._enqueue({**event, "source": "bridge", "ts": now + 0.2})
+    assert len(svc._queue) == 1
+
+    async def run():
+        await svc.stop()
+
+    asyncio.run(run())
+
+
+def test_chat_holds_important_events_but_allows_urgent_interrupts(tmp_path):
+    plugin = _Plugin(tmp_path / "data")
+    bridge = tmp_path / "bridge-priority"
+    bridge.mkdir()
+    cfg = {
+        "bridge_dir": str(bridge), "poll_interval": 0.1,
+        "state_stale_seconds": 30, "voice_enabled": True,
+        "spoiler_level": 1, "proactive": True,
+        "boss_advice_min": 1, "boss_advice_max": 3,
+        "quiet_until": 0, "host_reply_timeout": 10,
+        "event_log_limit": 20, "event_chat_hold_seconds": 20,
+    }
+    svc = PbzService(plugin, cfg, tmp_path / "data")
+    svc.note_chat_activity()
+    now = time.time()
+    svc._enqueue({
+        "type": "boss_spawn", "ts": now,
+        "data": {"boss_id": "boss", "name": "Boss"},
+    })
+
+    async def run_hold():
+        await svc._process_queue()
+        assert not plugin.calls
+        assert len(svc._queue) == 1
+
+        svc._enqueue({
+            "type": "critical_hp", "ts": time.time(),
+            "data": {"hp_percent": 10},
+        })
+        await svc._process_queue()
+        assert plugin.calls[-1]["ai_behavior"] == "respond"
+        assert "critical_hp" in plugin.calls[-1]["parts"][0]["text"]
+        await svc.stop()
+
+    asyncio.run(run_hold())

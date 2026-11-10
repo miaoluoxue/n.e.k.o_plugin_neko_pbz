@@ -558,7 +558,13 @@ data/knowledge/pbz_knowledge.db
 - 武器数据：`config_WeaponItemDatas_*`、`config_ShaChiWeaponItemDatas_*`（现有 Mod 里出现）
 - **禁止**调用 `PBZBackPackSubsystem.Inventories` 做玩家持有量扫描（设计排除）
 - 影之武装：`PhantomEdges_*` 数据与 `ShaChiWeapon` 相关接口
-- 装备槽/当前武器：需 P0 找 `PBZEquipment*` / `PBZPlayer*` 子系统；找不到就用 UI 画面兜底，**不回退到背包**
+- 当前装备（已由实机确认）：`PBZBackPackSubsystem.MainWeapons`、
+  `CurrentMainWeaponID`、`ShaqiWeapons`、`CurrentShaqiWeaponIndex`、
+  `AssemblyAccessory`、`TopMedicineID`、`BottomMedicineID`。
+  物品名称通过对应的 `Get*TableData` / `Get*Data` 只读解析；
+  不回退到 `Inventories` 背包持有量。
+- `Accessories` 是已获得饰品集合（实机为 39 项），不是当前装备；
+  当前六槽装配读取 `AssemblyAccessory`。
 
 #### D. 铸魂与成长（P2，用户明确要求）
 

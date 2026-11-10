@@ -31,8 +31,18 @@ N.E.K.O 插件 · 游戏状态感知 · 江湖知识库 · 跨会话记忆 · �
 
 ## 快速开始
 
-1. 在 N.E.K.O 插件管理中导入并启用 `neko_pbz`。
-2. 运行插件部署脚本，安装游戏侧 Mod：
+1. 从 N.E.K.O 插件市场安装并启用 `neko_pbz`。
+2. 关闭《影之刃零》，打开“影帐 → 调息 → 游戏侧组件”。
+3. 点击“自动检测”，再点击“一键安装 UE4SS + Mod”。
+4. 启动《影之刃零》，确认 `PBZModLoader` 与 `PBZNekoCompanion` 已加载。
+5. 打开“影帐”面板，确认连接状态与游戏状态正常更新。
+6. 在 N.E.K.O 聊天里直接向猫娘提问或让她陪玩。
+
+详细安装与安全边界见 [docs/ONE-CLICK-INSTALL.md](docs/ONE-CLICK-INSTALL.md)。
+宿主接入点、UI 权限与操作系统权限见
+[docs/HOST-INTEGRATION.md](docs/HOST-INTEGRATION.md)。
+
+开发环境可运行部署脚本，安装当前工作区版本：
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\deploy.ps1
@@ -40,10 +50,6 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\deploy.ps1
 
 部署前请关闭《影之刃零》和 N.E.K.O。脚本检测到运行中进程会停止并提示；
 自动化场景确认风险后可显式添加 `-Force`，但运行中的游戏仍需重启后才会加载新 Mod。
-
-3. 启动《影之刃零》，确认 `PBZModLoader` 与 `PBZNekoCompanion` 已加载。
-4. 打开“影帐”面板，确认连接状态与游戏状态正常更新。
-5. 在 N.E.K.O 聊天里直接向猫娘提问或让她陪玩。
 
 ## 可以这样问
 
@@ -103,6 +109,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\deploy.ps1
 
 聊天中也可以自然地说“看看我现在该怎么打”“帮我复盘这一局”，
 由 `pbz_assist` 工具选择对应焦点。
+
+游戏事件默认只作为隐藏上下文注入宿主 LLM，聊天窗只显示猫娘最终回复；
+“影之刃零陪玩事件”“当前事实”“要求”等提示词不会默认出现在近对话窗口。
+需要调试时可在“调息”显式打开事件提示词显示，默认关闭。
+
+闲聊是主通道：闲聊保护窗口内，普通和重要事件只排队，不打断对话；
+死亡、复活、低血、Boss 阶段和胜利等紧急事件可以插队。保护窗口默认 20 秒，
+可在“调息”调整。
 
 “当前任务”卡片上方可以设置本局目标，例如“推进主线”“收集三件武器”。
 目标完成后会保留状态；复盘时会同时参考最近一次死亡前的生命、杀气、Boss 血量和附近敌人。
@@ -274,7 +288,10 @@ python -m pytest -q
 python .\scripts\validate_assets.py
 node --check .\scripts\import_pbz_game_data.js
 node --check .\mod\pbz-neko-companion\main.js
+node .\tests\test_game_api_equipment.js
 ```
+
+发行包不会包含 `data\config`、`data\memory`、数据库或诊断记录。
 
 GitHub Actions 会在 `main` 推送与 Pull Request 上执行相同检查，包括数据 JSON、
 i18n 键一致性、实体 ID 唯一性、面板挂载点和 JavaScript 语法。

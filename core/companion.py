@@ -40,15 +40,18 @@ def _equipped(state: Dict[str, Any]) -> str:
     if names:
         bits.append("武器 " + "、".join(names))
     secondary = eq.get("secondary_weapon") or {}
-    if secondary.get("name"):
+    if secondary.get("name") and secondary.get("name") not in names:
         bits.append(f"副武器 {secondary.get('name')}")
     edges = [e.get("name") for e in eq.get("phantom_edges") or []
              if isinstance(e, dict) and e.get("name")]
     if edges:
         bits.append("影之武装 " + "、".join(edges))
-    acc = eq.get("accessories") or []
+    acc = [
+        str(x.get("name") or x.get("id")) if isinstance(x, dict) else str(x)
+        for x in eq.get("accessories") or [] if x
+    ]
     if acc:
-        bits.append("饰品 " + "、".join(str(x) for x in acc))
+        bits.append("饰品 " + "、".join(acc))
     meds = [m.get("name") for m in eq.get("medicines") or []
             if isinstance(m, dict) and m.get("name")]
     if meds:

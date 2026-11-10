@@ -1371,12 +1371,26 @@ body[data-style="landscape"] .brand-footer::before{
 
     <!-- 调息 -->
     <section id="view-settings" class="view">
+      <article class="card" style="margin-bottom:12px">
+        <h3><span data-i18n="settings.game_install">游戏侧组件</span> <span class="sub">UE4SS + 游戏 Mod</span></h3>
+        <p class="muted small" id="installerStatus">正在检测游戏目录…</p>
+        <label class="field"><span data-i18n="settings.game_path">游戏根目录</span>
+          <input id="gameInstallPath" data-i18n-placeholder="settings.game_path_placeholder" placeholder="留空自动检测，或填写包含 platform\steam\PBZ.exe 的目录">
+        </label>
+        <div class="actions">
+          <button id="btnDetectGame" data-i18n="settings.detect_game">自动检测</button>
+          <button class="primary" id="btnInstallGame" data-i18n="settings.install_game">一键安装 UE4SS + Mod</button>
+        </div>
+        <p class="muted small" data-i18n="settings.game_install_note">安装前请关闭游戏。只补充本插件文件，不覆盖已有 UE4SS，不删除其他 Mod；安装前自动备份。</p>
+      </article>
       <div class="grid g-2">
         <article class="card">
           <h3>陪伴节奏</h3>
           <label class="switch"><span>宿主 TTS 播报猫娘回复</span><input id="voiceEnabled" type="checkbox"></label>
           <label class="switch"><span>游戏内字幕</span><input id="overlayEnabled" type="checkbox"></label>
           <label class="switch"><span>允许主动开口</span><input id="proactive" type="checkbox"></label>
+          <label class="switch"><span data-i18n="settings.show_prompt">调试：在聊天窗显示发给 LLM 的事件提示词</span><input id="showPromptInChat" type="checkbox"></label>
+          <label class="field"><span data-i18n="settings.chat_hold">闲聊保护窗口（秒）</span><input id="eventChatHold" type="number" min="0" max="120" step="1"></label>
           <label class="switch"><span>允许 F12 / 面板即时陪玩</span><input id="assistEnabled" type="checkbox"></label>
           <label class="field" style="margin-top:12px"><span>剧透等级</span>
             <select id="spoiler">
@@ -1947,6 +1961,7 @@ function applyUI(ui){
 function slotMeta(item){
   if(!item || typeof item !== 'object') return '';
   const bits = [];
+  if(item.active) bits.push('当前');
   if(item.tier != null) bits.push(`+${item.tier}`);
   if(item.soulcast_form) bits.push(item.soulcast_form);
   if(item.uses != null) bits.push(`余 ${item.uses}${item.max_uses ? '/' + item.max_uses : ''}`);
@@ -1975,6 +1990,14 @@ function renderLoadout(s){
   let mains = s.main_weapons || [];
   if(!mains.length && s.weapon) mains = [{name:s.weapon}];
   if(s.secondary_weapon) mains = [...mains, s.secondary_weapon];
+  const seen = new Set();
+  mains = mains.filter(item => {
+    const key = item && typeof item === 'object'
+      ? (item.id || item.name || '') : String(item || '');
+    if(!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   fillSlots('mainWeaponList', mains, '刃', 2);
   const edges = s.edges_detail && s.edges_detail.length
     ? s.edges_detail : (s.phantom_edges || []);
@@ -2032,6 +2055,7 @@ function render(s){
   renderKB(s);
   renderLLM(s);
   applyUI(s.ui || {});
+  renderInstallerStatus(s.installer || {});
 
   $('bridgeDir').textContent = s.bridge_dir || '—';
   $('pathConfig').textContent = s.paths?.config || '—';
@@ -2044,6 +2068,8 @@ function render(s){
     $('voiceEnabled').checked = s.voice !== false;
     $('overlayEnabled').checked = s.overlay !== false;
     $('proactive').checked = s.proactive !== false;
+    $('showPromptInChat').checked = s.show_prompt_in_chat === true;
+    $('eventChatHold').value = s.event_chat_hold_seconds ?? 20;
     $('assistEnabled').checked = s.assist?.enabled !== false;
     $('spoiler').value = s.spoiler_level ?? 1;
     $('adviceMin').value = s.boss_advice_min ?? 1;
@@ -2095,9 +2121,13 @@ async function loadI18n(){
 
 async function saveSettings(extra={}){
   const payload = {
+    game_install_dir: $('gameInstallPath').value.trim(),
     voice_enabled: $('voiceEnabled').checked,
     overlay_enabled: $('overlayEnabled').checked,
     proactive: $('proactive').checked,
+    show_prompt_in_chat: $('showPromptInChat').checked,
+    event_chat_hold_seconds: $('eventChatHold').value.trim() === ''
+      ? 20 : Number($('eventChatHold').value),
     assist_enabled: $('assistEnabled').checked,
     spoiler_level: Number($('spoiler').value),
     boss_advice_min: Number($('adviceMin').value),
@@ -2117,7 +2147,73 @@ async function saveSettings(extra={}){
   toast(r.output || '已保存');
   await refresh();
 }
+
+function renderInstallerStatus(st){
+  const status = $('installerStatus');
+  const pathInput = $('gameInstallPath');
+  if(!status || !pathInput) return;
+  const path = st.game_root || st.configured_root || '';
+  if(document.activeElement !== pathInput && path) {
+    pathInput.value = path;
+  }
+  if(st.ok && st.game_root){
+    const ue = st.ue4ss_present ? 'UE4SS 已存在' : '将安装 UE4SS';
+    const mod = st.mod_installed ? '本插件 Mod 已安装' : '将安装本插件 Mod';
+    const running = st.game_running ? ' · 请先关闭游戏' : '';
+    status.textContent = `${st.game_root} · ${ue} · ${mod}${running}`;
+    $('btnInstallGame').disabled = !st.can_install;
+  }else{
+    status.textContent = st.error || '未检测到游戏目录，请手动填写';
+    $('btnInstallGame').disabled = true;
+  }
+}
+
+async function detectGameInstall(){
+  const button = $('btnDetectGame');
+  button.disabled = true;
+  try{
+    const r = await callEntry('pbz_installer_status', {
+      game_root: $('gameInstallPath').value.trim()
+    });
+    const st = r.data || r;
+    if(st.game_root) $('gameInstallPath').value = st.game_root;
+    renderInstallerStatus(st);
+    if(st.game_root) {
+      await callEntry('pbz_save_settings', {game_install_dir: st.game_root});
+    }
+    toast(st.game_root ? '已检测到游戏目录' : (st.error || '未检测到游戏目录'));
+  }catch(e){
+    toast('检测失败：' + e.message);
+  }finally{
+    button.disabled = false;
+  }
+}
+
+async function installGameSide(){
+  const button = $('btnInstallGame');
+  button.disabled = true;
+  button.textContent = '正在安装…';
+  try{
+    const r = await callEntry('pbz_install_game_mod', {
+      game_root: $('gameInstallPath').value.trim(),
+      confirm: true
+    });
+    toast(r.output || '安装完成');
+    const st = await callEntry('pbz_installer_status', {
+      game_root: $('gameInstallPath').value.trim()
+    });
+    renderInstallerStatus(st.data || st);
+    await refresh();
+  }catch(e){
+    toast('安装失败：' + e.message);
+  }finally{
+    button.textContent = '一键安装 UE4SS + Mod';
+    button.disabled = false;
+  }
+}
 $('btnSave').onclick = () => saveSettings().catch(e => toast('保存失败：' + e.message));
+$('btnDetectGame').onclick = detectGameInstall;
+$('btnInstallGame').onclick = installGameSide;
 function previewUI(){
   applyUI({
     style: $('uiStyle').value,

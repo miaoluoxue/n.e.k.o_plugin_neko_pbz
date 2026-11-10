@@ -6,7 +6,7 @@ import asyncio
 from pathlib import Path
 from typing import Any, Dict
 
-from plugin.sdk.plugin import lifecycle
+from plugin.sdk.plugin import Ok, lifecycle, message
 
 from ..core.config import ConfigStore
 from ..core.service import PbzService
@@ -17,6 +17,15 @@ class LifecycleMixin:
     service: Any
     _boot_task: Any
     _boot_failed: bool
+
+    @message(id="chat_activity", source="chat")
+    async def pbz_chat_activity(self, **_) -> Any:
+        if self.service:
+            self.service.note_chat_activity()
+        else:
+            import time
+            self._last_user_chat_at = time.time()
+        return Ok({"status": "observed"})
 
     def _data_root(self) -> Path:
         try:

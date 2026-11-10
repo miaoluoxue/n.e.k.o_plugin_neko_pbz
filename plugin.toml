@@ -23,7 +23,7 @@ enabled = true
 auto_start = false
 
 [plugin.store]
-enabled = true
+enabled = false
 
 [plugin.ui]
 enabled = true

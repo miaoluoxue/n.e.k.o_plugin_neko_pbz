@@ -28,3 +28,4 @@ class NekoPbzPlugin(NekoPluginBase, LifecycleMixin, UiMixin, ToolMixin):
         self.service: Any = None
         self._boot_task: Optional[Any] = None
         self._boot_failed = False
+        self._last_user_chat_at = 0.0

@@ -1,0 +1,22 @@
+﻿{
+    "schema":  1,
+    "captured_utc":  "2026-11-10T13:24:13.9440633Z",
+    "game_version":  "CL-302256_JKS-17280",
+    "runtime":  "UE4SS v3.0.1 Beta #5ebd595",
+    "built_in_mods":  [
+                          "CheatManagerEnablerMod",
+                          "ConsoleCommandsMod",
+                          "ConsoleEnablerMod",
+                          "SplitScreenMod",
+                          "LineTraceMod",
+                          "BPML_GenericFunctions",
+                          "BPModLoaderMod",
+                          "Keybinds",
+                          "shared"
+                      ],
+    "hashes":  {
+                   "dwmapi.dll":  "7D24AE6D29A67B613BFF2188151CFAFBECB1C8692DBD7F20FECC4335DCE9F296",
+                   "version.dll":  "643FDE8F9A3C800203C2CAA879BA0FED58C772C4FC5B599A7032F87F69C98044",
+                   "ue4ss\\UE4SS.dll":  "80D78737C825AFAB15D6A6137DB45E6CC1BB92198E0305BF1C7F5685C4F7E37E"
+               }
+}
