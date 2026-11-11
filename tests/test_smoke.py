@@ -33,5 +33,5 @@ def test_ui_guide_and_game_bundle_exist() -> None:
         ROOT / "game_bundle" / "mod" / "js" / "pbz-neko-companion" / "main.js"
     ).is_file()
     assert (
-        ROOT / "game_bundle" / "runtime" / "ue4ss" / "UE4SS.dll"
+        ROOT / "game_bundle" / "runtime-manifest.json"
     ).is_file()
