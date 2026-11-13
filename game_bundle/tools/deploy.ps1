@@ -79,6 +79,49 @@ function Ensure-ModsTxt([string]$path) {
     }
 }
 
+function Ensure-ModsIni([string]$path) {
+    $text = if (Test-Path -LiteralPath $path) {
+        Get-Content -LiteralPath $path -Raw -Encoding UTF8
+    } else {
+        "[Loader]`nEnabled=1`nVersion=1`n`n[Mods]`n"
+    }
+    $lines = @($text -split "`r?`n")
+    $section = $false
+    $found = $false
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $line = $lines[$i].Trim()
+        if ($line -match '^\[([^\]]+)\]$') {
+            $section = $Matches[1].Trim() -ieq "Mods"
+            continue
+        }
+        if ($section -and $line -match '^pbz-neko-companion\s*=') {
+            $lines[$i] = "pbz-neko-companion=1"
+            $found = $true
+        }
+    }
+    if (-not $found) {
+        $modsAt = -1
+        for ($i = 0; $i -lt $lines.Count; $i++) {
+            if ($lines[$i].Trim() -ieq "[Mods]") { $modsAt = $i; break }
+        }
+        if ($modsAt -lt 0) {
+            $lines += @("", "[Mods]")
+            $modsAt = $lines.Count - 1
+        }
+        $before = @($lines[0..$modsAt])
+        $after = if ($modsAt + 1 -lt $lines.Count) {
+            @($lines[($modsAt + 1)..($lines.Count - 1)])
+        } else {
+            @()
+        }
+        $lines = $before + @("pbz-neko-companion=1") + $after
+    }
+    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $path) | Out-Null
+    Copy-Item -LiteralPath $path -Destination ($path + ".bak.neko") -Force -ErrorAction SilentlyContinue
+    Set-Content -LiteralPath $path -Value (($lines -join "`n").TrimEnd() + "`n") -Encoding UTF8
+    Write-Host "pbz loader mods.ini += pbz-neko-companion=1"
+}
+
 if (-not $SkipPlugin) {
     foreach ($root in $liveRoots) { Copy-Plugin $root }
 }
@@ -96,13 +139,14 @@ if (-not $SkipMod) {
     $modSrc = Join-Path $bundle "mod\js\pbz-neko-companion"
     $loader = Join-Path $GameRoot "ProjectPBZ\Content\JavaScript\PBZModLoader"
     $generated = Join-Path $loader "generated-mods\pbz-neko-companion"
-    $legacy = Join-Path $GameRoot "ProjectPBZ\PBZModLoader\mods\pbz-neko-companion"
-    foreach ($dst in @($generated, $legacy)) {
+    $persistent = Join-Path $GameRoot "ProjectPBZ\PBZModLoader\mods\pbz-neko-companion"
+    foreach ($dst in @($generated, $persistent)) {
         New-Item -ItemType Directory -Force -Path $dst | Out-Null
         Copy-Item -Path (Join-Path $modSrc "*") -Destination $dst -Recurse -Force
         Write-Host "js mod -> $dst"
     }
     Add-JsMod (Join-Path $loader "generated-config.js") "pbz-neko-companion"
+    Ensure-ModsIni (Join-Path $GameRoot "ProjectPBZ\PBZModLoader\mods.ini")
 
     $luaSrc = Join-Path $bundle "mod\lua\PBZNekoCompanion"
     $luaDst = Join-Path $GameRoot "platform\steam\ue4ss\Mods\PBZNekoCompanion"
@@ -115,6 +159,6 @@ if (-not $SkipMod) {
 }
 
 Write-Host "`n部署完成。重启游戏/插件后："
-Write-Host "  - 当前面板使用安全模式，不自动注入游戏内 UMG"
+Write-Host "  - PBZModLoader 会根据 mods.ini 重建 generated-config / generated-mods"
 Write-Host "  - 面板检查 state / mod_status / game_heartbeat 的 EasyCsv 槽位"
 Write-Host "  - 实际桥接目录: $bridge"
