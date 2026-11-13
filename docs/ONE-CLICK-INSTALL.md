@@ -40,10 +40,15 @@ ProjectPBZ\
 - 缺少 UE4SS 时下载固定版本，大小和 SHA-256 必须与清单一致才解压。
 - 已存在 `UE4SS.dll` 时，整个 UE4SS 核心目录保持原样。
 - 现有其他 Lua Mod、PuerTS Mod 不删除、不移动、不重排。
+- JS 源码写入 `ProjectPBZ\PBZModLoader\mods\pbz-neko-companion`，这是
+  PBZModLoader 启动时扫描的持久来源目录。
+- `ProjectPBZ\PBZModLoader\mods.ini` 只增加或启用
+  `pbz-neko-companion=1`，保留已有 Mod 条目。
 - `mods.txt` 只追加缺失的 `PBZNekoCompanion : 1`。
-- `generated-config.js` 只插入 `pbz-neko-companion`，保留其他 Mod 条目。
+- `generated-config.js` / `generated-mods` 是启动时可能重建的派生缓存；
+  实际启用状态以 `mods.ini` 和持久源码目录为准。
 - 发现 UE4SS 目录残缺或代理 DLL 与内置版本冲突时停止，不覆盖已有环境。
-- 修改前自动备份本插件目录、`mods.txt` 和 `generated-config.js`，备份位于：
+- 修改前自动备份本插件目录、`mods.ini`、`mods.txt` 和生成缓存，备份位于：
 
 ```text
 <游戏根目录>\_neko_pbz_backup\<时间戳>\

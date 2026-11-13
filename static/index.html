@@ -2158,7 +2158,14 @@ function renderInstallerStatus(st){
   }
   if(st.ok && st.game_root){
     const ue = st.ue4ss_present ? 'UE4SS 已存在' : '将安装 UE4SS';
-    const mod = st.mod_installed ? '本插件 Mod 已安装' : '将安装本插件 Mod';
+    let mod = '将安装本插件 Mod';
+    if(st.mod_installed && st.mod_enabled){
+      mod = st.generated_mod_present
+        ? '本插件 Mod 已安装并启用'
+        : '本插件 Mod 已启用 · 重启游戏后生成';
+    }else if(st.mod_installed){
+      mod = '本插件 Mod 已安装但未在 mods.ini 启用';
+    }
     const running = st.game_running ? ' · 请先关闭游戏' : '';
     status.textContent = `${st.game_root} · ${ue} · ${mod}${running}`;
     $('btnInstallGame').disabled = !st.can_install;

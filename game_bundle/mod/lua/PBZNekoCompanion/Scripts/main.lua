@@ -48,6 +48,11 @@ local function push_tick()
                     mailbox:SetText(FText(MSG .. body .. "|6"))
                 end)
             end)
+            local ack = io.open(bridge .. "/reply_ack.txt", "w")
+            if ack then
+                ack:write('{"id":"' .. id .. '"}')
+                ack:close()
+            end
         end
     end
 end

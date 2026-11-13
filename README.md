@@ -58,6 +58,9 @@
 ## 常见问题
 
 - **面板未连接**：确认游戏侧组件已安装，然后重启游戏和 N.E.K.O。
+- **检测显示已安装但仍无数据**：确认“调息 → 游戏侧组件”显示
+  `本插件 Mod 已安装并启用`。`generated-mods` 会在游戏启动时重建，
+  持久启用状态由 `ProjectPBZ\PBZModLoader\mods.ini` 保证。
 - **生命或装备为空**：在“侦察 → 状态校准”查看具体读取失败项。
 - **没有语音**：检查宿主 TTS 是否开启，以及插件是否处于静默时间。
 - **没有游戏字幕**：确认 `PBZNekoCompanion` 已启用并重启游戏。
@@ -69,6 +72,7 @@ ruff check .
 python -m pytest -q
 node --check .\game_bundle\mod\js\pbz-neko-companion\main.js
 node .\tests\test_game_api_equipment.js
+node .\tests\test_mod_runtime_behavior.js
 ```
 
 游戏侧资源与工具统一位于 [game_bundle](game_bundle/)。

@@ -36,6 +36,19 @@ def test_bridge_roundtrip(tmp_path):
     assert line.count("|") == 3 and line.endswith("先敲铃。\n")
 
 
+def test_reply_queue_waits_for_lua_ack(tmp_path):
+    b = Bridge(tmp_path)
+    first = b.write_reply("第一条", line_id="line-1")
+    b.write_reply("第二条", line_id="line-2")
+    assert first["id"] == "line-1"
+    assert b.read_reply()["text"] == "第一条"
+    assert not (b.root / "reply_ack.txt").exists()
+
+    (b.root / "reply_ack.txt").write_text('{"id":"line-1"}', encoding="utf-8")
+    assert b.poll_reply_ack() == "line-1"
+    assert b.read_reply()["text"] == "第二条"
+
+
 def test_bridge_reads_easycsv_slots(tmp_path):
     b = Bridge(tmp_path)
     state_dir = b.root / "state"
@@ -72,6 +85,17 @@ def test_bridge_consumes_assist_request_once(tmp_path):
     assert b.consume_assist_request() == "quest"
     assert not path.exists()
     assert b.consume_assist_request() == ""
+
+
+def test_bridge_atomically_claims_duplicate_hotkey_requests(tmp_path):
+    b = Bridge(tmp_path)
+    path = b.root / "vision_request.txt"
+    path.write_text("1", encoding="utf-8")
+    claimed_a = b._claim(path)
+    claimed_b = b._claim(path)
+    assert claimed_a is not None
+    assert claimed_b is None
+    claimed_a.unlink()
 
 
 def test_event_engine_low_hp_death_and_boss():

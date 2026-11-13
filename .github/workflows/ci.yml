@@ -34,4 +34,5 @@ jobs:
           node --check game_bundle/mod/js/pbz-neko-companion/main.js
           node --check game_bundle/mod/js/pbz-neko-companion/ui_bridge.js
           node tests/test_game_api_equipment.js
+          node tests/test_mod_runtime_behavior.js
           node -e "const fs=require('fs'),vm=require('vm');const s=fs.readFileSync('static/index.html','utf8');const m=s.match(/<script>([\s\S]*?)<\/script>/);new vm.Script(m[1]);"

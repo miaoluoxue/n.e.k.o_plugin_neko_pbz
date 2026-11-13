@@ -134,7 +134,9 @@ F11、面板视觉侦察和 `pbz_look` 工具会：
 - 仅在缺少 `UE4SS.dll` 时下载固定版本，并在 SHA-256 校验通过后安装；
 - 仅在代理 DLL 缺失且无冲突时写入 `dwmapi.dll`、`version.dll`；
 - 更新本插件自己的 JS/Lua Mod 目录；
-- 向 `generated-config.js` 插入本插件条目；
+- 向 `ProjectPBZ\PBZModLoader\mods` 写入持久 JS 源码；
+- 向 `mods.ini` 增加或启用 `pbz-neko-companion=1`；
+- 向 `generated-config.js` 插入本插件条目（派生缓存，游戏启动时可重建）；
 - 向 `mods.txt` 追加 `PBZNekoCompanion : 1`；
 - 创建桥接目录。
 

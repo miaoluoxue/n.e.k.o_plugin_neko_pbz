@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import os
 import time
+from collections import deque
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -53,10 +54,15 @@ class Bridge:
         self.events_path = self.root / "events.jsonl"
         self.reply_path = self.root / "reply.json"
         self.reply_text_path = self.root / "reply.txt"
+        self.reply_ack_path = self.root / "reply_ack.txt"
         self.heartbeat_path = self.root / "heartbeat.json"
         self._events_offset = 0
         self._events_inode = 0
         self._seq = 0
+        self._reply_queue = deque(maxlen=64)
+        self._reply_inflight_id = ""
+        self._reply_inflight_ts = 0.0
+        self._reply_inflight_ttl = 6.0
 
     # ── 读 ────────────────────────────────
     def read_state(self) -> Optional[Dict[str, Any]]:
@@ -141,12 +147,51 @@ class Bridge:
             "channel": "subtitle",
         }
         if text:
-            write_json(self.reply_path, payload)
-            line = "%s|%.6f|%.1f|%s\n" % (
-                payload["id"], payload["ts"], payload["ttl"],
-                text.replace("\r", " ").replace("\n", " "))
-            _atomic_write(self.reply_text_path, line)
+            self._reply_queue.append(payload)
+            self._flush_reply_queue()
         return payload
+
+    def _write_reply_now(self, payload: Dict[str, Any]) -> None:
+        write_json(self.reply_path, payload)
+        line = "%s|%.6f|%.1f|%s\n" % (
+            payload["id"], payload["ts"], payload["ttl"],
+            str(payload["text"]).replace("\r", " ").replace("\n", " "))
+        _atomic_write(self.reply_text_path, line)
+
+    def _flush_reply_queue(self) -> bool:
+        now = time.time()
+        if self._reply_inflight_id:
+            if now - self._reply_inflight_ts <= self._reply_inflight_ttl + 3.0:
+                return False
+            self._reply_inflight_id = ""
+            self._reply_inflight_ts = 0.0
+        if not self._reply_queue:
+            return False
+        payload = self._reply_queue.popleft()
+        self._write_reply_now(payload)
+        self._reply_inflight_id = str(payload["id"])
+        self._reply_inflight_ts = now
+        self._reply_inflight_ttl = float(payload.get("ttl") or 6.0)
+        return True
+
+    def poll_reply_ack(self) -> str:
+        """消费 Lua 的显示 ACK，并发送排队中的下一条字幕。"""
+        ack = read_json(self.reply_ack_path) or {}
+        ack_id = str(ack.get("id") or "").strip()
+        if self.reply_ack_path.exists():
+            try:
+                self.reply_ack_path.unlink()
+            except OSError:
+                pass
+        if ack_id and ack_id == self._reply_inflight_id:
+            self._reply_inflight_id = ""
+            self._reply_inflight_ts = 0.0
+        self._flush_reply_queue()
+        return ack_id
+
+    def flush_reply_queue(self) -> bool:
+        """对外入口：ACK 丢失超时后释放队列。"""
+        return self._flush_reply_queue()
 
     def write_heartbeat(self, *, game_seq: int = 0, plugin_seq: int = 0,
                         status: str = "ok") -> None:
@@ -169,28 +214,46 @@ class Bridge:
     def consume_vision_request(self) -> bool:
         """游戏内 F11 写入的一次性视觉侦察请求。"""
         path = self.root / "vision_request.txt"
-        if not path.exists():
+        claimed = self._claim(path)
+        if claimed is None:
             return False
         try:
-            path.unlink()
+            return True
+        finally:
+            try:
+                claimed.unlink()
+            except OSError:
+                pass
+
+    @staticmethod
+    def _claim(path: Path) -> Optional[Path]:
+        """O_EXCL 式文件认领：多个消费者只能有一个成功移走请求。"""
+        claimed = path.with_name(
+            f"{path.name}.{os.getpid()}.{time.time_ns()}.claim")
+        try:
+            os.replace(path, claimed)
+        except FileNotFoundError:
+            return None
         except OSError:
-            pass
-        return True
+            return None
+        return claimed
 
     def consume_assist_request(self) -> str:
         """Consume one F12/manual assist request and return its focus."""
         path = self.root / "assist_request.txt"
-        if not path.exists():
+        claimed = self._claim(path)
+        if claimed is None:
             return ""
         focus = "brief"
         try:
-            raw = path.read_text(encoding="utf-8-sig", errors="ignore").strip().lower()
+            raw = claimed.read_text(
+                encoding="utf-8-sig", errors="ignore").strip().lower()
             if raw in {"brief", "quest", "boss", "review"}:
                 focus = raw
         except OSError:
             pass
         try:
-            path.unlink()
+            claimed.unlink()
         except OSError:
             pass
         return focus

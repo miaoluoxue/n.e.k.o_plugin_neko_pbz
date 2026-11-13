@@ -5,10 +5,11 @@ const api = require("./game_api");
 const { Overlay } = require("./ui_bridge");
 
 const bridge = api.bridgeDir();
-// Stability first: arbitrary UMG insertion at MainStart can crash some game
-// builds. The panel only needs the file bridge, so in-game overlay is opt-in.
-const ENABLE_OVERLAY = false;
-const SAMPLE_INTERVAL_MS = 1000;
+// The mailbox is the hotkey/subtitle transport for the UE4SS Lua bridge.
+// Keep it active by default; Overlay.tick() contains every UMG failure so it
+// cannot stop state.json sampling.
+const ENABLE_OVERLAY = true;
+const SAMPLE_INTERVAL_MS = 500;
 let seq = 0;
 let overlay = null;
 let timer = null;

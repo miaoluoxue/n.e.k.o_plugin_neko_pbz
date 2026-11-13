@@ -25,9 +25,11 @@ from typing import Any, Dict, Iterable, Iterator, List
 
 APP_ID = "4115450"
 GAME_DIR_NAME = "PBZ"
-OWN_JS = Path("ProjectPBZ/Content/JavaScript/PBZModLoader/generated-mods/"
-              "pbz-neko-companion")
-OWN_JS_LEGACY = Path("ProjectPBZ/PBZModLoader/mods/pbz-neko-companion")
+MOD_ID = "pbz-neko-companion"
+OWN_JS_SOURCE = Path("ProjectPBZ/PBZModLoader/mods/pbz-neko-companion")
+OWN_JS_GENERATED = Path("ProjectPBZ/Content/JavaScript/PBZModLoader/generated-mods/"
+                        "pbz-neko-companion")
+OWN_MODS_INI = Path("ProjectPBZ/PBZModLoader/mods.ini")
 OWN_LUA = Path("platform/steam/ue4ss/Mods/PBZNekoCompanion")
 RUNTIME_MANIFEST = Path("game_bundle/runtime-manifest.json")
 MAX_RUNTIME_ARCHIVE_BYTES = 64 * 1024 * 1024
@@ -339,6 +341,9 @@ class GameInstaller:
         recommended = valid[0]["path"] if valid else ""
         root = Path(recommended) if recommended else None
         vendor_ok, vendor_error = self._runtime_ready()
+        mod_state = self._mods_ini_state(root / OWN_MODS_INI) if root else {
+            "present": False, "enabled": False,
+        }
         result = {
             "ok": bool(recommended),
             "game_root": recommended,
@@ -352,9 +357,14 @@ class GameInstaller:
                 root / "platform" / "steam" / "ue4ss" / "UE4SS.dll"
             ).is_file()),
             "mod_installed": bool(root and (
-                root / OWN_JS / "main.js"
+                root / OWN_JS_SOURCE / "main.js"
             ).is_file() and (
                 root / OWN_LUA / "Scripts" / "main.lua"
+            ).is_file()),
+            "mod_enabled": mod_state["enabled"],
+            "mods_ini_present": mod_state["present"],
+            "generated_mod_present": bool(root and (
+                root / OWN_JS_GENERATED / "main.js"
             ).is_file()),
             "can_install": bool(root and vendor_ok and not self.game_running()),
             "error": "" if recommended else "未找到影之刃零安装目录",
@@ -384,8 +394,8 @@ class GameInstaller:
                 shutil.copy2(Path(root) / name, current / name)
 
     def _ensure_js_config(self, path: Path) -> None:
-        entry = ('{"id":"pbz-neko-companion","enabled":true,'
-                 '"entry":"mods/pbz-neko-companion/main.js"}')
+        entry = (f'{{"id":"{MOD_ID}","enabled":true,'
+                 f'"entry":"mods/{MOD_ID}/main.js"}}')
         if not path.exists():
             path.write_text(
                 "'use strict';\nmodule.exports = "
@@ -395,7 +405,7 @@ class GameInstaller:
             return
         text = path.read_text(encoding="utf-8-sig")
         if re.search(
-                r'"id"\s*:\s*"pbz-neko-companion"', text):
+                rf'"id"\s*:\s*"{re.escape(MOD_ID)}"', text):
             return
         match = re.search(r'(?s)"mods"\s*:\s*\[(?P<body>.*?)\]', text)
         if not match:
@@ -405,6 +415,73 @@ class GameInstaller:
         insert_at = match.end() - 1
         updated = text[:insert_at] + separator + entry + text[insert_at:]
         path.write_text(updated, encoding="utf-8")
+
+    @staticmethod
+    def _mods_ini_state(path: Path) -> Dict[str, bool]:
+        try:
+            text = path.read_text(encoding="utf-8-sig", errors="ignore")
+        except OSError:
+            return {"present": False, "enabled": False}
+        section = ""
+        enabled = False
+        for raw in text.splitlines():
+            line = raw.strip()
+            if not line or line.startswith((";", "#")):
+                continue
+            if line.startswith("[") and line.endswith("]"):
+                section = line[1:-1].strip().casefold()
+                continue
+            if section != "mods" or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            if key.strip().casefold() == MOD_ID:
+                enabled = value.strip() == "1"
+        return {"present": True, "enabled": enabled}
+
+    @staticmethod
+    def _ensure_mods_ini(path: Path) -> None:
+        """持久启用源码 Mod；PBZModLoader 启动时会据此重生成 derived 文件。"""
+        text = path.read_text(encoding="utf-8-sig", errors="ignore") if path.exists() else ""
+        lines = text.replace("\r\n", "\n").replace("\r", "\n").splitlines()
+        section_start = -1
+        section_end = len(lines)
+        for index, raw in enumerate(lines):
+            if raw.strip().casefold() == "[mods]":
+                section_start = index
+                break
+        if section_start >= 0:
+            for index in range(section_start + 1, len(lines)):
+                line = lines[index].strip()
+                if line.startswith("[") and line.endswith("]"):
+                    section_end = index
+                    break
+
+        updated: List[str] = []
+        found = False
+        for index, raw in enumerate(lines):
+            line = raw.strip()
+            in_mods = section_start >= 0 and section_start < index < section_end
+            if in_mods and line and not line.startswith((";", "#")) and "=" in line:
+                key = line.split("=", 1)[0].strip()
+                if key.casefold() == MOD_ID:
+                    if not found:
+                        updated.append(f"{MOD_ID}=1")
+                        found = True
+                    continue
+            updated.append(raw)
+
+        if section_start < 0:
+            if updated and updated[-1].strip():
+                updated.append("")
+            updated.extend(["[Mods]", f"{MOD_ID}=1"])
+        elif not found:
+            updated.insert(section_start + 1, f"{MOD_ID}=1")
+
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_name(path.name + ".tmp")
+        tmp.write_text("\n".join(updated).rstrip() + "\n",
+                       encoding="utf-8", newline="\n")
+        os.replace(tmp, path)
 
     def _ensure_mods_txt(self, path: Path) -> None:
         text = path.read_text(
@@ -435,8 +512,9 @@ class GameInstaller:
             backup_root = game_root / "_neko_pbz_backup" / stamp
             backups: List[str] = []
             tracked = (
-                OWN_JS,
-                OWN_JS_LEGACY,
+                OWN_JS_SOURCE,
+                OWN_JS_GENERATED,
+                OWN_MODS_INI,
                 OWN_LUA,
                 Path("ProjectPBZ/Content/JavaScript/PBZModLoader/"
                      "generated-config.js"),
@@ -469,14 +547,15 @@ class GameInstaller:
                         if not target.exists():
                             shutil.copy2(source, target)
 
-            js_target = game_root / OWN_JS
-            legacy_target = game_root / OWN_JS_LEGACY
+            js_target = game_root / OWN_JS_GENERATED
+            source_target = game_root / OWN_JS_SOURCE
             lua_target = game_root / OWN_LUA
             self._copy_tree(self.js_source, js_target)
-            self._copy_tree(self.js_source, legacy_target)
+            self._copy_tree(self.js_source, source_target)
             self._copy_tree(self.lua_source, lua_target)
             (lua_target / "enabled.txt").write_text("1\n", encoding="ascii")
 
+            self._ensure_mods_ini(game_root / OWN_MODS_INI)
             self._ensure_js_config(
                 game_root / "ProjectPBZ/Content/JavaScript/PBZModLoader/"
                 "generated-config.js")
@@ -491,6 +570,11 @@ class GameInstaller:
                                                time.gmtime()),
                 "game_root": str(game_root),
                 "ue4ss_preserved": ue4ss_present,
+                "js_source": str(OWN_JS_SOURCE),
+                "js_generated": str(OWN_JS_GENERATED),
+                "mods_ini": str(OWN_MODS_INI),
+                "mod_enabled": self._mods_ini_state(
+                    game_root / OWN_MODS_INI)["enabled"],
                 "backups": backups,
                 "backup_root": str(backup_root),
             }

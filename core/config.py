@@ -14,7 +14,7 @@ DEFAULTS: Dict[str, Any] = {
     "bridge_dir": "",
     "game_install_dir": "",
     "poll_interval": 0.35,
-    "state_stale_seconds": 3.0,
+    "state_stale_seconds": 4.0,
     "save_key": "",
     "spoiler_level": 1,
     "verbosity": "normal",

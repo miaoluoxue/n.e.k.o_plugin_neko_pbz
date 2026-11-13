@@ -230,6 +230,7 @@ class PbzService:
 
     # ── 主循环 ───────────────────────────
     async def _tick(self) -> None:
+        self.bridge.flush_reply_queue()
         if self.bridge.consume_vision_request() and self.cfg.get("vision_enabled", True):
             await self.capture_and_comment(force=True)
         assist_focus = self.bridge.consume_assist_request()

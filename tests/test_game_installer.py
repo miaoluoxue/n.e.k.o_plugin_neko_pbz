@@ -55,6 +55,12 @@ def _make_game(root: Path, *, with_ue4ss: bool) -> None:
     (loader / "generated-mods" / "other").mkdir(parents=True)
     (loader / "generated-mods" / "other" / "main.js").write_text(
         "keep", encoding="utf-8")
+    persistent = root / "ProjectPBZ" / "PBZModLoader"
+    persistent.mkdir(parents=True, exist_ok=True)
+    (persistent / "mods.ini").write_text(
+        "[Loader]\nEnabled=1\nVersion=1\n\n[Mods]\nother=1\n",
+        encoding="utf-8",
+    )
 
     if with_ue4ss:
         mods = root / "platform" / "steam" / "ue4ss" / "Mods"
@@ -123,6 +129,21 @@ def test_install_preserves_existing_ue4ss_and_other_mods(
         game / "ProjectPBZ" / "Content" / "JavaScript" / "PBZModLoader" /
         "generated-mods" / "pbz-neko-companion" / "main.js"
     ).is_file()
+    assert (
+        game / "ProjectPBZ" / "PBZModLoader" / "mods" /
+        "pbz-neko-companion" / "main.js"
+    ).is_file()
+    mods_ini = (
+        game / "ProjectPBZ" / "PBZModLoader" / "mods.ini"
+    ).read_text(encoding="utf-8")
+    assert "other=1" in mods_ini
+    assert "pbz-neko-companion=1" in mods_ini
+    status = GameInstaller(
+        plugin, tmp_path / "data", bridge_root=str(tmp_path / "bridge"),
+    ).status(str(game))
+    assert status["mod_installed"] is True
+    assert status["mod_enabled"] is True
+    assert status["generated_mod_present"] is True
 
 
 def test_install_adds_local_runtime_only_when_missing(tmp_path, monkeypatch):
@@ -147,6 +168,30 @@ def test_install_adds_local_runtime_only_when_missing(tmp_path, monkeypatch):
     assert states
     payload = json.loads(states[0].read_text(encoding="utf-8"))
     assert payload["game_root"] == str(game.resolve())
+
+
+def test_generated_cache_reset_keeps_source_mod_enabled(tmp_path, monkeypatch):
+    monkeypatch.setattr(GameInstaller, "game_running", staticmethod(lambda: False))
+    plugin = tmp_path / "plugin"
+    _make_plugin(plugin)
+    game = tmp_path / "game"
+    _make_game(game, with_ue4ss=True)
+    installer = GameInstaller(
+        plugin, tmp_path / "data", bridge_root=str(tmp_path / "bridge"),
+    )
+    assert installer.install(str(game))["ok"] is True
+
+    loader = game / "ProjectPBZ" / "Content" / "JavaScript" / "PBZModLoader"
+    (loader / "generated-config.js").write_text(
+        "'use strict';\nmodule.exports = {\"version\":1,\"mods\":[]};\n",
+        encoding="utf-8",
+    )
+    shutil.rmtree(loader / "generated-mods" / "pbz-neko-companion")
+
+    status = installer.status(str(game))
+    assert status["generated_mod_present"] is False
+    assert status["mod_installed"] is True
+    assert status["mod_enabled"] is True
 
 
 def test_install_downloads_and_verifies_runtime_when_package_has_no_binary(
