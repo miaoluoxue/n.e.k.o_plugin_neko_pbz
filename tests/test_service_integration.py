@@ -131,6 +131,30 @@ def test_llm_priority_independent_then_host_fallback(tmp_path):
     asyncio.run(svc2.stop())
 
 
+def test_apply_settings_never_returns_llm_key(tmp_path):
+    plugin = _Plugin(tmp_path / "privacy-data")
+    bridge = tmp_path / "bridge-privacy"
+    bridge.mkdir()
+    cfg = {
+        "bridge_dir": str(bridge), "poll_interval": 0.1,
+        "state_stale_seconds": 30, "voice_enabled": True,
+        "spoiler_level": 1, "proactive": True,
+        "boss_advice_min": 1, "boss_advice_max": 3,
+        "quiet_until": 0, "host_reply_timeout": 10,
+        "event_log_limit": 20, "llm_enabled": False,
+    }
+    svc = PbzService(plugin, cfg, tmp_path / "privacy-data")
+    result = svc.apply_settings({"llm_api_key": "sk-never-return-this"})
+    payload = json.dumps(result, ensure_ascii=False)
+
+    assert result["llm_api_key"] == ""
+    assert result["llm_key_set"] is True
+    assert "sk-never-return-this" not in payload
+    assert svc.cfg["llm_api_key"] == "sk-never-return-this"
+
+    asyncio.run(svc.stop())
+
+
 def test_assist_uses_current_quest_and_host_persona(tmp_path):
     plugin = _Plugin(tmp_path / "data")
     bridge = tmp_path / "bridge-assist"

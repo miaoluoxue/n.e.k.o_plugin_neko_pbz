@@ -58,6 +58,14 @@ DEFAULTS: Dict[str, Any] = {
     "ui_show_llm_strip": True,
 }
 
+def public_settings(cfg: Dict[str, Any]) -> Dict[str, Any]:
+    """返回可安全交给面板/命令响应的配置副本，永不回传 API Key。"""
+    out = dict(cfg)
+    out["llm_key_set"] = bool(str(out.get("llm_api_key") or "").strip())
+    out["llm_api_key"] = ""
+    return out
+
+
 # 兼容扩展位；默认桥接目录由 %LOCALAPPDATA%、用户配置和文档目录动态解析。
 _BRIDGE_CANDIDATES = ()
 

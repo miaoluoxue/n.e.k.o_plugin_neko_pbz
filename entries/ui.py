@@ -10,7 +10,7 @@ from typing import Any, Dict
 
 from plugin.sdk.plugin import Ok, plugin_entry, ui
 
-from ..core.config import ConfigStore
+from ..core.config import ConfigStore, public_settings
 from ..core.game_installer import GameInstaller, GameInstallError
 
 
@@ -143,8 +143,10 @@ class UiMixin:
         minutes = kwargs.get("quiet_minutes")
         if minutes is not None:
             patch["quiet_until"] = time.time() + max(0.0, float(minutes)) * 60
-        cfg = (self.service.apply_settings(patch) if self.service
-               else self._config_store().save(patch))
+        if self.service:
+            cfg = self.service.apply_settings(patch)
+        else:
+            cfg = public_settings(self._config_store().save(patch))
         self.cfg = cfg
         return Ok({"output": "设置已保存", "data": cfg})
 

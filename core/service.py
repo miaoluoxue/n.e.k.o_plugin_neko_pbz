@@ -15,7 +15,7 @@ from ..adapters import LLMProvider, LLMThrottle
 from ..perception import capture_pbz_window
 from .bridge import Bridge
 from .companion import PromptBuilder
-from .config import ConfigStore
+from .config import ConfigStore, public_settings
 from .diagnostics import diagnose_state
 from .events import EventEngine
 from .host_speech import HostSpeech
@@ -144,7 +144,7 @@ class PbzService:
         self.speech.show_prompt_in_chat = bool(
             cfg.get("show_prompt_in_chat", False))
         self.configure_llm()
-        return cfg
+        return public_settings(cfg)
 
     def export_diagnostics(self) -> Dict[str, Any]:
         state = self.last_state or {}
