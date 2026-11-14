@@ -80,7 +80,6 @@ class PbzService:
         self._last_spoke = 0.0
         self._last_user_chat_at = 0.0
         self._last_event: Dict[str, float] = {}
-        self._last_tip: Dict[str, float] = {}
         self._log: Deque[Dict[str, Any]] = deque(maxlen=int(cfg.get("event_log_limit", 200)))
         self._snapshot: Dict[str, Any] = {"connected": False}
         self.save_key = ""
@@ -773,6 +772,11 @@ class PbzService:
         if self._chat_active() and priority != "P0":
             return False
         now = time.time()
+        max_window = max(_COOLDOWN.values(), default=90.0)
+        self._last_event = {
+            key: stamp for key, stamp in self._last_event.items()
+            if now - stamp < max_window
+        }
         key = self._event_key(event)
         if now - self._last_event.get(key, 0.0) < _COOLDOWN.get(kind, 30.0):
             return False

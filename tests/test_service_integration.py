@@ -282,6 +282,30 @@ def test_event_queue_deduplicates_same_event_from_two_sources(tmp_path):
     asyncio.run(run())
 
 
+def test_event_cooldown_cache_prunes_expired_entries(tmp_path):
+    plugin = _Plugin(tmp_path / "cooldown-data")
+    bridge = tmp_path / "bridge-cooldown"
+    bridge.mkdir()
+    cfg = {
+        "bridge_dir": str(bridge), "poll_interval": 0.1,
+        "state_stale_seconds": 30, "voice_enabled": True,
+        "spoiler_level": 1, "proactive": True,
+        "boss_advice_min": 1, "boss_advice_max": 3,
+        "quiet_until": 0, "host_reply_timeout": 10,
+        "event_log_limit": 20,
+    }
+    svc = PbzService(plugin, cfg, tmp_path / "cooldown-data")
+    now = time.time()
+    svc._last_event = {
+        f"expired-{index}": now - 600 for index in range(200)
+    }
+    svc._last_event["zone_change|"] = now
+
+    assert not svc._should_speak({"type": "zone_change", "data": {}})
+    assert set(svc._last_event) == {"zone_change|"}
+    asyncio.run(svc.stop())
+
+
 def test_chat_holds_important_events_but_allows_urgent_interrupts(tmp_path):
     plugin = _Plugin(tmp_path / "data")
     bridge = tmp_path / "bridge-priority"
