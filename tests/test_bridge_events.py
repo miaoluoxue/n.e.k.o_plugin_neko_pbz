@@ -69,6 +69,40 @@ def test_bridge_reads_easycsv_slots(tmp_path):
     assert b.read_game_heartbeat()["game_seq"] == 3
 
 
+def test_bridge_prefers_newer_root_state_over_stale_easycsv(tmp_path):
+    b = Bridge(tmp_path)
+    stale = _state()
+    stale["ts"] = time.time() - 600
+    stale["seq"] = 1
+    b.game_state_path.parent.mkdir()
+    b.game_state_path.write_text(json.dumps(stale), encoding="utf-8")
+    fresh = _state()
+    fresh["ts"] = time.time()
+    fresh["seq"] = 2
+    b.state_path.write_text(json.dumps(fresh), encoding="utf-8")
+    assert b.read_state()["seq"] == 2
+
+
+def test_bridge_prefers_newer_root_status_and_heartbeat(tmp_path):
+    b = Bridge(tmp_path)
+    b.mod_status_path.parent.mkdir()
+    b.mod_status_path.write_text(json.dumps({
+        "ts": time.time() - 100, "state_ready": False,
+    }), encoding="utf-8")
+    (b.root / "mod_status.json").write_text(json.dumps({
+        "ts": time.time(), "state_ready": True,
+    }), encoding="utf-8")
+    b.game_heartbeat_path.parent.mkdir()
+    b.game_heartbeat_path.write_text(json.dumps({
+        "ts": time.time() - 100, "game_seq": 1,
+    }), encoding="utf-8")
+    (b.root / "game_heartbeat.json").write_text(json.dumps({
+        "ts": time.time(), "game_seq": 2,
+    }), encoding="utf-8")
+    assert b.read_mod_status()["state_ready"] is True
+    assert b.read_game_heartbeat()["game_seq"] == 2
+
+
 def test_bridge_reads_utf16_easycsv_json(tmp_path):
     b = Bridge(tmp_path)
     state_dir = b.root / "state"

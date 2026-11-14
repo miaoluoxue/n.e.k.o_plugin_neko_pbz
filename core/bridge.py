@@ -65,15 +65,35 @@ class Bridge:
         self._reply_inflight_ttl = 6.0
 
     # ── 读 ────────────────────────────────
+    @staticmethod
+    def _read_freshest(paths: List[Path]) -> Optional[Dict[str, Any]]:
+        """从多代桥接路径中选时间最新的一份，避免旧 EasyCsv 永久截胡。"""
+        best: Optional[Dict[str, Any]] = None
+        best_stamp = float("-inf")
+        for path in paths:
+            data = read_json(path)
+            if data is None:
+                continue
+            try:
+                stamp = float(data.get("ts") or 0.0)
+            except (TypeError, ValueError):
+                stamp = 0.0
+            if stamp <= 0:
+                try:
+                    stamp = path.stat().st_mtime
+                except OSError:
+                    stamp = 0.0
+            if stamp > best_stamp:
+                best, best_stamp = data, stamp
+        return best
+
     def read_state(self) -> Optional[Dict[str, Any]]:
-        state = None
-        for path in (self.game_state_path,
-                     self.state_path,
-                     self.state_path.with_name(self.state_path.name + ".csv"),
-                     self.root / "state.csv"):
-            state = read_json(path)
-            if state is not None:
-                break
+        state = self._read_freshest([
+            self.game_state_path,
+            self.state_path,
+            self.state_path.with_name(self.state_path.name + ".csv"),
+            self.root / "state.csv",
+        ])
         if state is None:
             return None
         if int(state.get("version") or 0) != 1:
@@ -81,10 +101,18 @@ class Bridge:
         return state
 
     def read_mod_status(self) -> Optional[Dict[str, Any]]:
-        return read_json(self.mod_status_path)
+        return self._read_freshest([
+            self.mod_status_path,
+            self.root / "mod_status.json",
+            self.root / "mod_status.csv",
+        ])
 
     def read_game_heartbeat(self) -> Optional[Dict[str, Any]]:
-        return read_json(self.game_heartbeat_path)
+        return self._read_freshest([
+            self.game_heartbeat_path,
+            self.root / "game_heartbeat.json",
+            self.root / "game_heartbeat.csv",
+        ])
 
     def state_age(self, state: Optional[Dict[str, Any]] = None) -> float:
         state = state if state is not None else self.read_state()
