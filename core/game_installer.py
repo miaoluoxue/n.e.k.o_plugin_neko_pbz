@@ -385,6 +385,33 @@ class GameInstaller:
             shutil.copy2(source, destination)
 
     @staticmethod
+    def _remove_path(path: Path) -> None:
+        if path.is_symlink():
+            path.unlink()
+        elif path.is_dir():
+            shutil.rmtree(path)
+        elif path.exists():
+            path.unlink()
+
+    def _restore_tracked(self, game_root: Path, backup_root: Path,
+                         tracked: Iterable[Path]) -> None:
+        """把自有安装目标恢复到备份状态；未备份的目标视为本次新建。"""
+        for relative in tracked:
+            target = game_root / relative
+            saved = backup_root / relative
+            if not saved.exists():
+                if target.exists():
+                    self._remove_path(target)
+                continue
+            if target.exists():
+                self._remove_path(target)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if saved.is_dir():
+                shutil.copytree(saved, target)
+            else:
+                shutil.copy2(saved, target)
+
+    @staticmethod
     def _copy_tree(source: Path, destination: Path) -> None:
         destination.mkdir(parents=True, exist_ok=True)
         for root, dirs, files in os.walk(source):
@@ -528,42 +555,52 @@ class GameInstaller:
             steam_dir = game_root / "platform" / "steam"
             ue4ss_dir = steam_dir / "ue4ss"
             ue4ss_present = (ue4ss_dir / "UE4SS.dll").is_file()
-            if not ue4ss_present:
-                with self._runtime_source() as runtime_source:
-                    if ue4ss_dir.exists() and any(ue4ss_dir.iterdir()):
-                        raise GameInstallError(
-                            "检测到不完整的 UE4SS 目录，未覆盖现有文件")
-                    for proxy in ("dwmapi.dll", "version.dll"):
-                        source = runtime_source / proxy
-                        target = steam_dir / proxy
-                        if target.exists() and _sha256(source) != _sha256(target):
-                            raise GameInstallError(
-                                f"现有 {proxy} 与运行时版本不同，"
-                                "为保护其他 Mod 已停止安装")
-                    self._copy_tree(runtime_source / "ue4ss", ue4ss_dir)
-                    for proxy in ("dwmapi.dll", "version.dll"):
-                        source = runtime_source / proxy
-                        target = steam_dir / proxy
-                        if not target.exists():
-                            shutil.copy2(source, target)
-
             js_target = game_root / OWN_JS_GENERATED
             source_target = game_root / OWN_JS_SOURCE
             lua_target = game_root / OWN_LUA
-            self._copy_tree(self.js_source, js_target)
-            self._copy_tree(self.js_source, source_target)
-            self._copy_tree(self.lua_source, lua_target)
-            (lua_target / "enabled.txt").write_text("1\n", encoding="ascii")
+            runtime_added: List[Path] = []
+            try:
+                if not ue4ss_present:
+                    with self._runtime_source() as runtime_source:
+                        if ue4ss_dir.exists() and any(ue4ss_dir.iterdir()):
+                            raise GameInstallError(
+                                "检测到不完整的 UE4SS 目录，未覆盖现有文件")
+                        for proxy in ("dwmapi.dll", "version.dll"):
+                            source = runtime_source / proxy
+                            target = steam_dir / proxy
+                            if target.exists() and _sha256(source) != _sha256(target):
+                                raise GameInstallError(
+                                    f"现有 {proxy} 与运行时版本不同，"
+                                    "为保护其他 Mod 已停止安装")
+                        runtime_added.append(ue4ss_dir)
+                        self._copy_tree(runtime_source / "ue4ss", ue4ss_dir)
+                        for proxy in ("dwmapi.dll", "version.dll"):
+                            source = runtime_source / proxy
+                            target = steam_dir / proxy
+                            if not target.exists():
+                                runtime_added.append(target)
+                                shutil.copy2(source, target)
 
-            self._ensure_mods_ini(game_root / OWN_MODS_INI)
-            self._ensure_js_config(
-                game_root / "ProjectPBZ/Content/JavaScript/PBZModLoader/"
-                "generated-config.js")
-            self._ensure_mods_txt(
-                game_root / "platform/steam/ue4ss/Mods/mods.txt")
+                self._copy_tree(self.js_source, js_target)
+                self._copy_tree(self.js_source, source_target)
+                self._copy_tree(self.lua_source, lua_target)
+                (lua_target / "enabled.txt").write_text("1\n", encoding="ascii")
 
-            for slot in ("state", "mod_status", "game_heartbeat"):
-                (self.bridge_root / slot).mkdir(parents=True, exist_ok=True)
+                self._ensure_mods_ini(game_root / OWN_MODS_INI)
+                self._ensure_js_config(
+                    game_root / "ProjectPBZ/Content/JavaScript/PBZModLoader/"
+                    "generated-config.js")
+                self._ensure_mods_txt(
+                    game_root / "platform/steam/ue4ss/Mods/mods.txt")
+
+                for slot in ("state", "mod_status", "game_heartbeat"):
+                    (self.bridge_root / slot).mkdir(parents=True, exist_ok=True)
+            except Exception:
+                self._restore_tracked(game_root, backup_root, tracked)
+                for added in reversed(runtime_added):
+                    if added.exists():
+                        self._remove_path(added)
+                raise
 
             state = {
                 "installed_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ",

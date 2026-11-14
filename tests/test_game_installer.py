@@ -6,8 +6,12 @@ import shutil
 import zipfile
 from pathlib import Path
 
+import pytest
 from plugin.plugins.neko_pbz.core import game_installer as game_installer_module
-from plugin.plugins.neko_pbz.core.game_installer import GameInstaller
+from plugin.plugins.neko_pbz.core.game_installer import (
+    GameInstaller,
+    GameInstallError,
+)
 
 
 def _make_plugin(root: Path, *, with_runtime: bool = True) -> None:
@@ -144,6 +148,45 @@ def test_install_preserves_existing_ue4ss_and_other_mods(
     assert status["mod_installed"] is True
     assert status["mod_enabled"] is True
     assert status["generated_mod_present"] is True
+
+
+def test_install_rolls_back_owned_paths_after_partial_failure(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(GameInstaller, "game_running", staticmethod(lambda: False))
+    plugin = tmp_path / "plugin"
+    _make_plugin(plugin)
+    game = tmp_path / "game"
+    _make_game(game, with_ue4ss=True)
+    loader = game / "ProjectPBZ" / "Content" / "JavaScript" / "PBZModLoader"
+    config_path = loader / "generated-config.js"
+    original_config = config_path.read_text(encoding="utf-8")
+    mods_ini = game / "ProjectPBZ" / "PBZModLoader" / "mods.ini"
+    original_mods_ini = mods_ini.read_text(encoding="utf-8")
+    mods_txt = game / "platform" / "steam" / "ue4ss" / "Mods" / "mods.txt"
+    original_mods_txt = mods_txt.read_text(encoding="utf-8")
+
+    installer = GameInstaller(
+        plugin, tmp_path / "data", bridge_root=str(tmp_path / "bridge"))
+
+    def fail_config(_path: Path) -> None:
+        raise GameInstallError("forced partial failure")
+
+    monkeypatch.setattr(installer, "_ensure_js_config", fail_config)
+    with pytest.raises(GameInstallError, match="forced partial failure"):
+        installer.install(str(game))
+
+    assert config_path.read_text(encoding="utf-8") == original_config
+    assert mods_ini.read_text(encoding="utf-8") == original_mods_ini
+    assert mods_txt.read_text(encoding="utf-8") == original_mods_txt
+    assert not (loader / "generated-mods" / "pbz-neko-companion").exists()
+    assert not (
+        game / "ProjectPBZ" / "PBZModLoader" / "mods" / "pbz-neko-companion"
+    ).exists()
+    assert not (
+        game / "platform" / "steam" / "ue4ss" / "Mods" / "PBZNekoCompanion"
+    ).exists()
+    assert (loader / "generated-mods" / "other" / "main.js").is_file()
 
 
 def test_install_adds_local_runtime_only_when_missing(tmp_path, monkeypatch):
