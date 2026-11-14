@@ -240,6 +240,19 @@ try {
     );
     assert.equal(state.capabilities.equipment.main_weapon, true);
     assert.equal(state.capabilities.equipment.phantom_edges, 2);
+    assert.equal(
+        state.capabilities.runtime_probe,
+        null,
+        "normal samples must omit the large reflection probe",
+    );
+    const debugState = api.snapshot({
+        safeMode: true,
+        includeRuntimeProbe: true,
+    });
+    assert.ok(
+        debugState.capabilities.runtime_probe,
+        "reflection probe must remain available when explicitly requested",
+    );
     console.log("game_api equipment test passed");
 } finally {
     Module._load = originalLoad;

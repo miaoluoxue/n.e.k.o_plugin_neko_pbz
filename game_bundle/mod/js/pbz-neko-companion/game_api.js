@@ -659,6 +659,7 @@ function readSave() {
 
 function snapshot(options = {}) {
     const safeMode = options.safeMode === true;
+    const includeRuntimeProbe = safeMode && options.includeRuntimeProbe === true;
     const character = getLocalCharacter();
     const asc = getAsc(character);
     const vitals = readVitals(character, asc);
@@ -728,7 +729,7 @@ function snapshot(options = {}) {
                 accessories: equipment.accessories.length,
                 medicines: equipment.medicines.length,
             },
-            runtime_probe: safeMode ? {
+            runtime_probe: includeRuntimeProbe ? {
                 character_class: character ? objName(character.GetClass()) : "",
                 character_keys: inspectKeys(character),
                 attribute_set_class: attributeSet ? objName(attributeSet.GetClass()) : "",
@@ -810,7 +811,7 @@ function snapshot(options = {}) {
                             scalarText(safe(() => backpack.TopMedicineID, null))),
                         null)),
                 } : { deferred: !equipmentReady },
-            } : {},
+            } : null,
         },
     };
 }
