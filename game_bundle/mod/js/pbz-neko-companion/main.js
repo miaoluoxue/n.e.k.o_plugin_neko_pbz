@@ -33,7 +33,7 @@ function ensureOverlay() {
 }
 
 function writeStatus(stateReady) {
-    writeFile("mod_status.json", JSON.stringify({
+    return writeFile("mod_status.json", JSON.stringify({
         version: 1,
         ts: Date.now() / 1000,
         state_ready: stateReady,
@@ -64,12 +64,13 @@ function tick() {
             overlay_error: overlay?.overlayError || overlayError,
             mod_ready: true,
         };
-        if (!writeFile("state.json", JSON.stringify(state))) {
+        const stateReady = writeFile("state.json", JSON.stringify(state));
+        if (!stateReady) {
             lastError = "state.json write failed";
         } else {
             lastError = "";
         }
-        writeStatus(true);
+        writeStatus(stateReady);
         if (Date.now() - heartbeatAt > 2000) {
             heartbeatAt = Date.now();
             writeFile("game_heartbeat", JSON.stringify({
