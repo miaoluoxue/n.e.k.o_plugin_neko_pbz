@@ -83,6 +83,21 @@ def test_bridge_prefers_newer_root_state_over_stale_easycsv(tmp_path):
     assert b.read_state()["seq"] == 2
 
 
+def test_bridge_ignores_newer_invalid_state_versions(tmp_path):
+    b = Bridge(tmp_path)
+    valid = _state()
+    valid["ts"] = time.time() - 10
+    valid["seq"] = 7
+    b.state_path.write_text(json.dumps(valid), encoding="utf-8")
+    invalid = _state()
+    invalid["ts"] = time.time()
+    invalid["version"] = "not-a-version"
+    b.game_state_path.parent.mkdir()
+    b.game_state_path.write_text(json.dumps(invalid), encoding="utf-8")
+
+    assert b.read_state()["seq"] == 7
+
+
 def test_bridge_prefers_newer_root_status_and_heartbeat(tmp_path):
     b = Bridge(tmp_path)
     b.mod_status_path.parent.mkdir()

@@ -16,7 +16,7 @@ import os
 import time
 from collections import deque
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 
 def _atomic_write(path: Path, payload: str) -> None:
@@ -66,13 +66,16 @@ class Bridge:
 
     # ── 读 ────────────────────────────────
     @staticmethod
-    def _read_freshest(paths: List[Path]) -> Optional[Dict[str, Any]]:
+    def _read_freshest(
+        paths: List[Path],
+        accept: Optional[Callable[[Dict[str, Any]], bool]] = None,
+    ) -> Optional[Dict[str, Any]]:
         """从多代桥接路径中选时间最新的一份，避免旧 EasyCsv 永久截胡。"""
         best: Optional[Dict[str, Any]] = None
         best_stamp = float("-inf")
         for path in paths:
             data = read_json(path)
-            if data is None:
+            if data is None or (accept is not None and not accept(data)):
                 continue
             try:
                 stamp = float(data.get("ts") or 0.0)
@@ -87,18 +90,23 @@ class Bridge:
                 best, best_stamp = data, stamp
         return best
 
+    @staticmethod
+    def _is_state_v1(data: Dict[str, Any]) -> bool:
+        try:
+            return int(data.get("version") or 0) == 1
+        except (TypeError, ValueError):
+            return False
+
     def read_state(self) -> Optional[Dict[str, Any]]:
-        state = self._read_freshest([
-            self.game_state_path,
-            self.state_path,
-            self.state_path.with_name(self.state_path.name + ".csv"),
-            self.root / "state.csv",
-        ])
-        if state is None:
-            return None
-        if int(state.get("version") or 0) != 1:
-            return None
-        return state
+        return self._read_freshest(
+            [
+                self.game_state_path,
+                self.state_path,
+                self.state_path.with_name(self.state_path.name + ".csv"),
+                self.root / "state.csv",
+            ],
+            accept=self._is_state_v1,
+        )
 
     def read_mod_status(self) -> Optional[Dict[str, Any]]:
         return self._read_freshest([
