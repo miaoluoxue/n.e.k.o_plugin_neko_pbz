@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+
 from plugin.plugins.neko_pbz.core.host_speech import HostSpeech
 
 
@@ -79,3 +81,19 @@ def test_urgent_priority_can_replace_a_normal_pending_reply():
     assert speech.pending_id == "urgent"
     assert speech.pending_priority == "P0"
     assert not speech.speak("后续普通事件", priority="P1")
+
+
+def test_final_reply_keeps_pending_priority():
+    plugin = _Plugin()
+    speech = HostSpeech(plugin, voice_enabled=True)
+
+    class _Watcher:
+        async def poll(self):
+            return [("ai", "紧急回应", speech.pending_ts + 0.01, "reply")]
+
+    speech.watcher = _Watcher()
+    assert speech.speak("紧急事件", line_id="urgent", priority="P0")
+    result = asyncio.run(speech.poll_final())
+
+    assert result is not None
+    assert result["priority"] == "P0"

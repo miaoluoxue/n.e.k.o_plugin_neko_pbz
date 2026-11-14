@@ -155,6 +155,32 @@ def test_apply_settings_never_returns_llm_key(tmp_path):
     asyncio.run(svc.stop())
 
 
+def test_timeout_fallback_keeps_urgent_priority(tmp_path):
+    plugin = _Plugin(tmp_path / "fallback-data")
+    bridge = tmp_path / "bridge-fallback"
+    bridge.mkdir()
+    cfg = {
+        "bridge_dir": str(bridge), "poll_interval": 0.1,
+        "state_stale_seconds": 30, "voice_enabled": True,
+        "spoiler_level": 1, "proactive": True,
+        "boss_advice_min": 1, "boss_advice_max": 3,
+        "quiet_until": 0, "host_reply_timeout": 1,
+        "event_log_limit": 20,
+    }
+    svc = PbzService(plugin, cfg, tmp_path / "fallback-data")
+    assert svc.speech.speak(
+        "紧急事实", fallback="先退开。", line_id="urgent-fallback",
+        priority="P0")
+    svc.speech.pending_ts = time.time() - 2
+
+    asyncio.run(svc._poll_final())
+
+    reply = svc.bridge.read_reply()
+    assert reply["text"] == "先退开。"
+    assert reply["priority"] == "P0"
+    asyncio.run(svc.stop())
+
+
 def test_assist_uses_current_quest_and_host_persona(tmp_path):
     plugin = _Plugin(tmp_path / "data")
     bridge = tmp_path / "bridge-assist"

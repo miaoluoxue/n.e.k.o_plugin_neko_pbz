@@ -234,8 +234,11 @@ class HostSpeech:
         for role, text, ts, turn_type in turns:
             if role != "ai" or ts < self.pending_ts - 0.05:
                 continue
-            result = {"text": text, "ts": ts, "turn_type": turn_type,
-                      "id": self.pending_id, "fallback": self.pending_fallback}
+            result = {
+                "text": text, "ts": ts, "turn_type": turn_type,
+                "id": self.pending_id, "fallback": self.pending_fallback,
+                "priority": self.pending_priority or "P1",
+            }
             self.pending_ts = 0.0
             self.pending_fallback = ""
             self.pending_id = ""

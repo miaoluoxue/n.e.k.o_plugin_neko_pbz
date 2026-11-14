@@ -802,8 +802,7 @@ class PbzService:
         final = await self.speech.poll_final()
         if final:
             self.bridge.write_reply(
-                final["text"], priority=self._priority(
-                    str((self._log[-1] or {}).get("type") or "line")) if self._log else "P1",
+                final["text"], priority=final.get("priority", "P1"),
                 ttl=6.0, mood=final.get("turn_type", ""), line_id=final.get("id", ""))
             self._log.append({"ts": time.time(), "type": "host_reply",
                               "text": final["text"], "submitted": True})
@@ -812,12 +811,13 @@ class PbzService:
                 self.cfg.get("host_reply_timeout", 10.0)):
             fallback = self.speech.pending_fallback
             line_id = self.speech.pending_id
+            priority = self.speech.pending_priority or "P1"
             self.speech.pending_ts = 0.0
             self.speech.pending_fallback = ""
             self.speech.pending_id = ""
             self.speech.pending_priority = ""
             if fallback:
-                self.bridge.write_reply(fallback, priority="P1", ttl=5.0,
+                self.bridge.write_reply(fallback, priority=priority, ttl=5.0,
                                         line_id=line_id or "fallback")
                 self._log.append({"ts": time.time(), "type": "fallback",
                                   "text": fallback, "submitted": True})
