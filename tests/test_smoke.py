@@ -12,6 +12,9 @@ def test_plugin_manifest_exists() -> None:
     text = manifest.read_text(encoding="utf-8")
     assert 'id = "neko_pbz"' in text
     assert 'entry = "plugin.plugins.neko_pbz:NekoPbzPlugin"' in text
+    assert "[plugin_runtime]" not in text
+    runtime_example = (ROOT / "config.example.toml").read_text(encoding="utf-8")
+    assert "[plugin_runtime]" in runtime_example
 
 
 def test_release_version_and_package_metadata_match() -> None:

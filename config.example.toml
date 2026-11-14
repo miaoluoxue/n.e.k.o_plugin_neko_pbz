@@ -1,0 +1,4 @@
+# 可变运行配置模板。宿主会复制为用户级配置，安装后不修改本文件。
+[plugin_runtime]
+enabled = true
+auto_start = false
