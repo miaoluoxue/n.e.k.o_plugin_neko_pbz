@@ -87,3 +87,10 @@ def test_game_assets_and_tools_use_one_bundle_root():
     ).is_file()
     assert not (ROOT / "installer").exists()
     assert not (ROOT / "mod").exists()
+
+
+def test_deploy_does_not_overwrite_user_data_tree():
+    script = _text(ROOT / "game_bundle" / "tools" / "deploy.ps1")
+    assert '"static", "data", "i18n"' not in script
+    assert 'data\\knowledge' in script
+    assert '$_.Extension -eq ".json"' in script

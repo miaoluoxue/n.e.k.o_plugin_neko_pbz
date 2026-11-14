@@ -33,7 +33,7 @@ if (-not $Force) {
 function Copy-Plugin([string]$dest) {
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
     $items = @("__init__.py", "plugin.toml", "core", "entries", "adapters",
-        "perception", "static", "data", "i18n", "docs", "game_bundle")
+        "perception", "static", "i18n", "docs", "game_bundle")
     foreach ($item in $items) {
         $src = Join-Path $dev $item
         if (-not (Test-Path -LiteralPath $src)) { continue }
@@ -44,6 +44,17 @@ function Copy-Plugin([string]$dest) {
         } else {
             Copy-Item -LiteralPath $src -Destination $dst -Force
         }
+    }
+    # data/ 含用户知识库、纠错和记忆，部署代码时只同步只读种子 JSON。
+    $seedSrc = Join-Path $dev "data\knowledge"
+    if (Test-Path -LiteralPath $seedSrc) {
+        $seedDst = Join-Path $dest "data\knowledge"
+        New-Item -ItemType Directory -Force -Path $seedDst | Out-Null
+        Get-ChildItem -LiteralPath $seedSrc -File |
+            Where-Object { $_.Extension -eq ".json" -or $_.Name -eq "README.md" } |
+            ForEach-Object {
+                Copy-Item -LiteralPath $_.FullName -Destination $seedDst -Force
+            }
     }
     Write-Host "plugin -> $dest"
 }
