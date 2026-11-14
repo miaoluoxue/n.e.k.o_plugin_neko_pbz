@@ -69,7 +69,10 @@ class PbzService:
                 self.cfg.get("show_prompt_in_chat", False)))
         self.engine = EventEngine()
         self.prompts = PromptBuilder()
-        self.llm = LLMProvider(int(cfg.get("llm_max_calls_per_minute", 10)))
+        self.llm = LLMProvider(
+            int(cfg.get("llm_max_calls_per_minute", 10)),
+            host_timeout=float(cfg.get("host_reply_timeout", 10.0)),
+        )
         self.configure_llm()
         self._task: Optional[asyncio.Task] = None
         self._stopping = False
@@ -112,6 +115,8 @@ class PbzService:
     def configure_llm(self) -> None:
         self.llm._throttle = LLMThrottle(
             int(self.cfg.get("llm_max_calls_per_minute", 10)))
+        self.llm.host_timeout = max(
+            0.1, float(self.cfg.get("host_reply_timeout", 10.0)))
         provider = str(self.cfg.get("llm_provider") or "").strip()
         model = str(self.cfg.get("llm_model") or "").strip()
         key = str(self.cfg.get("llm_api_key") or "").strip()
@@ -129,7 +134,7 @@ class PbzService:
             self.llm.set_host_call(None)
         else:
             async def fallback(prompt: str) -> str:
-                out = host(prompt)
+                out = await asyncio.to_thread(host, prompt)
                 if inspect.isawaitable(out):
                     out = await out
                 if isinstance(out, dict):

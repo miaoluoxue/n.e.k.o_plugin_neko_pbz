@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 import logging
 import time
 from typing import Any, Callable, Dict, List, Optional
@@ -104,10 +105,15 @@ class LLMClient:
 class LLMProvider:
     """装配宿主注入或配置自建的 LLM，提供限流调用 + token 统计。"""
 
-    def __init__(self, max_calls_per_minute: int = 15) -> None:
+    def __init__(
+        self,
+        max_calls_per_minute: int = 15,
+        host_timeout: float = 10.0,
+    ) -> None:
         self._host_call: Optional[Callable[[str], Any]] = None
         self._client: Optional[LLMClient] = None
         self._throttle = LLMThrottle(max_calls_per_minute)
+        self.host_timeout = max(0.1, float(host_timeout))
         # token 统计(内存累计 + 定期落盘)
         self._stats: Dict[str, Any] = {
             "calls": 0, "prompt_tokens": 0, "completion_tokens": 0,
@@ -211,8 +217,14 @@ class LLMProvider:
                     await self._record(prompt, out, usage)
                 return out
             if self._host_call:
-                result = self._host_call(prompt)
-                out = await result if asyncio.iscoroutine(result) else str(result)
+                async def call_host() -> str:
+                    result = await asyncio.to_thread(self._host_call, prompt)
+                    if inspect.isawaitable(result):
+                        result = await result
+                    return str(result or "")
+
+                out = await asyncio.wait_for(
+                    call_host(), timeout=self.host_timeout)
                 await self._record(prompt, out, None)  # 宿主不返回 usage, 估算
                 return out
         except Exception as exc:
