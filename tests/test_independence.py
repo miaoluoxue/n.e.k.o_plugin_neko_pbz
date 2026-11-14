@@ -45,3 +45,13 @@ def test_llm_client_is_vendored():
     assert vendor.exists()
     text = vendor.read_text(encoding="utf-8")
     assert "class LLMClient" in text and "class LLMProvider" in text
+
+
+def test_runtime_has_no_hardcoded_absolute_paths():
+    files = [ROOT / "__init__.py", *sorted((ROOT / "core").glob("*.py")),
+             *sorted((ROOT / "adapters").glob("*.py")),
+             *sorted((ROOT / "entries").glob("*.py")),
+             *sorted((ROOT / "perception").glob("*.py"))]
+    pattern = re.compile(r"(?i)(?<![A-Za-z])[A-Z]:[\\/]")
+    bad = [path.name for path in files if pattern.search(path.read_text(encoding="utf-8"))]
+    assert not bad, f"运行时代码出现机器绝对路径: {bad}"

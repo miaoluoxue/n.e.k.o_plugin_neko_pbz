@@ -58,12 +58,8 @@ DEFAULTS: Dict[str, Any] = {
     "ui_show_llm_strip": True,
 }
 
-# 已知安装位置；用户可在面板覆盖。
-_BRIDGE_CANDIDATES = (
-    r"E:\SteamLibrary\steamapps\common\PBZ\ProjectPBZ\Saved\NekoBridge",
-    r"D:\SteamLibrary\steamapps\common\PBZ\ProjectPBZ\Saved\NekoBridge",
-    r"C:\Program Files (x86)\Steam\steamapps\common\PBZ\ProjectPBZ\Saved\NekoBridge",
-)
+# 兼容扩展位；默认桥接目录由 %LOCALAPPDATA%、用户配置和文档目录动态解析。
+_BRIDGE_CANDIDATES = ()
 
 
 def _home_documents() -> Iterable[Path]:
@@ -121,41 +117,42 @@ def bridge_candidates(configured: str = "") -> list[Path]:
     return out
 
 
-def resolve_bridge_dir(configured: str = "") -> Path:
+def _ensure_directory(path: Path) -> bool:
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+        return True
+    except OSError:
+        return _exists(path)
+
+
+def resolve_bridge_dir(
+    configured: str = "",
+    fallback_root: Path | str | None = None,
+) -> Path:
     """找到游戏 Mod 与插件共用的桥接目录。
 
-    游戏侧用 `ProjectSavedDir()/NekoBridge`，所以优先已知 Steam 路径；
-    找不到时退回 Documents 下的兼容位置。目录由插件创建。
+    游戏侧用 `ProjectSavedDir()/NekoBridge`，所以优先带活动文件的路径；
+    找不到时退回插件可写数据目录，避免首次启动被用户目录权限卡死。
     """
     candidates = bridge_candidates(configured)
     active = [(path, _bridge_activity(path)) for path in candidates]
     fresh = [(path, stamp) for path, stamp in active if stamp > 0]
     if fresh:
         path = max(fresh, key=lambda item: item[1])[0]
-        try:
-            path.mkdir(parents=True, exist_ok=True)
-        except OSError:
-            pass
+        _ensure_directory(path)
         return path
     configured_path = next(
         (path for path in candidates if configured and str(path) == str(Path(configured))),
         None,
     )
-    if configured_path is not None:
-        try:
-            configured_path.mkdir(parents=True, exist_ok=True)
-        except OSError:
-            pass
+    if configured_path is not None and _ensure_directory(configured_path):
         return configured_path
     for path in candidates:
-        if _exists(path.parent):
-            try:
-                path.mkdir(parents=True, exist_ok=True)
-            except OSError:
-                pass
+        if _exists(path.parent) and _ensure_directory(path):
             return path
-    fallback = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "NekoBridge"
-    fallback.mkdir(parents=True, exist_ok=True)
+    fallback = (Path(fallback_root) if fallback_root is not None
+                else Path.home() / "NekoBridge")
+    _ensure_directory(fallback)
     return fallback
 
 
@@ -216,7 +213,10 @@ class ConfigStore:
                 if key in DEFAULTS and value is not None:
                     cfg[key] = value
             self._migrate_legacy(cfg)
-        cfg["bridge_dir"] = str(resolve_bridge_dir(str(cfg.get("bridge_dir") or "")))
+        cfg["bridge_dir"] = str(resolve_bridge_dir(
+            str(cfg.get("bridge_dir") or ""),
+            self.data_root / "bridge",
+        ))
         return cfg
 
     def _migrate_legacy(self, cfg: Dict[str, Any]) -> None:
@@ -248,7 +248,10 @@ class ConfigStore:
         for key, value in (patch or {}).items():
             if key in DEFAULTS and value is not None:
                 cfg[key] = value
-        cfg["bridge_dir"] = str(resolve_bridge_dir(str(cfg.get("bridge_dir") or "")))
+        cfg["bridge_dir"] = str(resolve_bridge_dir(
+            str(cfg.get("bridge_dir") or ""),
+            self.data_root / "bridge",
+        ))
         self._write_category_files(cfg)
         return cfg
 

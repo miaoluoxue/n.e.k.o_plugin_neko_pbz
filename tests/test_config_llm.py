@@ -51,3 +51,16 @@ def test_bridge_prefers_latest_game_state_path(tmp_path, monkeypatch):
     monkeypatch.setattr(config_module, "_BRIDGE_CANDIDATES", ())
     monkeypatch.setattr(config_module, "_home_documents", lambda: ())
     assert config_module.resolve_bridge_dir(str(configured)) == active
+
+
+def test_config_save_uses_writable_plugin_fallback(tmp_path, monkeypatch):
+    local_app = tmp_path / "LocalAppData"
+    local_app.mkdir()
+    monkeypatch.setenv("LOCALAPPDATA", str(local_app))
+    monkeypatch.setattr(config_module, "_BRIDGE_CANDIDATES", ())
+    monkeypatch.setattr(config_module, "_home_documents", lambda: ())
+    store = ConfigStore(tmp_path / "plugin-data")
+    cfg = store.save({"voice_enabled": False})
+    fallback = tmp_path / "plugin-data" / "bridge"
+    assert cfg["bridge_dir"] == str(fallback)
+    assert fallback.is_dir()
