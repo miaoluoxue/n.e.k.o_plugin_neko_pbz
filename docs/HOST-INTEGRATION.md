@@ -227,3 +227,34 @@ permissions = ["state:read", "action:call"]
 
 操作系统层必须使用当前用户普通权限运行。若游戏目录需要管理员权限，应由用户
 自行调整目录权限或选择可写安装位置，插件不主动提权。
+
+## 完整权限清单
+
+权限 ID 是审查标签，不是已冻结的云玩家权限字段。
+
+| 审计 ID | 权限 | 实际 API/资源 | 降级 |
+|---|---|---|---|
+| `HOST_LIFECYCLE` | 启停 | `@lifecycle`、命令循环、心跳 | 停用插件停止服务 |
+| `HOST_ENTRY` | 面板/工具入口 | `@plugin_entry`、`@llm_tool` | 聊天/面板对应入口不可用 |
+| `HOST_CHAT_EVENT` | 聊天活动 | `@message chat_activity` | 主动陪玩时机降级 |
+| `HOST_PUSH_RESPOND` | 猫娘回复 | `push_message(ai_behavior="respond")` | 模板/本地字幕 fallback |
+| `HOST_PUSH_READ` | 隐藏上下文 | `push_message(visibility=[], ai_behavior="read")` | 不提供上下文，游戏仍可运行 |
+| `HOST_PUSH_BLIND` | 游戏字幕事实 | `push_message(ai_behavior="blind")` | 本地 fallback |
+| `HOST_CONVERSATION_BUS` | 最终 AI 台词读取 | `ctx.bus.conversations.get` | 超时使用本地 fallback |
+| `HOST_DATA_PATH` | 插件私有数据 | `data_path()`、JSON、知识库和记忆 SQLite | 服务降级为空状态 |
+| `HOST_CTX_PRIVATE` | 多角色目标 | `ctx._current_lanlan`、host ctx | 单角色 fallback |
+| `REGISTRY_READ` | Steam 路径 | HKCU/HKLM Steam 注册表 | 游戏目录探测失败 |
+| `FS_GAME_DIR_READ` | 游戏目录/文件探测 | PBZ 根目录、现有 UE4SS、DLL 冲突 | 禁止自动安装 |
+| `FS_GAME_DIR_WRITE` | 一键安装 | UE4SS、代理 DLL、Mod、`mods.ini/txt` | 明确报错并保留原文件 |
+| `PROCESS_QUERY` | 安装前进程检查 | `tasklist /FI IMAGENAME eq PBZ.exe` | 无法确认时拒绝写入 |
+| `NET_HTTPS_RUNTIME` | 下载 UE4SS | `urllib.request` HTTPS、固定清单/SHA-256 | 下载失败不安装 |
+| `PROXY_DLL_INSTALL` | DLL 代理加载 | `dwmapi.dll`、`version.dll`、`UE4SS.dll` | 无冲突才安装，可从备份回滚 |
+| `SCREEN_CAPTURE` | 视觉侦察 | PBZ 窗口 `ImageGrab` | 无法截图时只返回状态 |
+| `HOST_VISION_MODEL` | 图片交宿主模型 | `push_message` 图像 part / `@llm_tool` | 不出图，不影响文字陪玩 |
+| `FS_BRIDGE_RW` | 游戏桥接 | `%LOCALAPPDATA%\ProjectPBZ\Saved\NekoBridge` | 桥不可用时只保留面板 |
+| `SQLITE_PRIVATE` | 知识库与插件记忆 | 插件 `data_path()` 内 SQLite | 损坏时重建/降级 |
+| `NET_HTTPS_LLM` | 独立 LLM | `httpx`，用户配置 | 未配置时宿主/模板 fallback |
+
+红线审计：未发现写宿主记忆库、角色记忆卡或对话数据库；所有猫娘上下文都通过
+官方 `push_message`；对话总线只读。最高风险权限是代理 DLL、游戏目录写入、
+进程查询、运行时下载和屏幕捕获。
